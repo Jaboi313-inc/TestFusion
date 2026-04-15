@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="TestFusion.Core/TestFusion.Core.csproj" />
+  <Project Path="TestFusion.Data/TestFusion.Data.csproj" />
+  <Project Path="TestFusion.SyncService/TestFusion.SyncService.csproj" />
+  <Project Path="TestFusion.Tests/TestFusion.Tests.csproj" />
+  <Project Path="TestFusion.Web/TestFusion.Web.csproj" />
+</Solution>
