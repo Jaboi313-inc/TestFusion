@@ -11,15 +11,18 @@ namespace TestFusion.SyncService
 
     public class PlaywrightService
     {
+        private readonly ILogger<PlaywrightService> _logger;
         private readonly SiteSettings _siteSettings;
         private readonly Intervals _intervals;
         private readonly AuthSettings _auth;
 
         public PlaywrightService(
+            ILogger<PlaywrightService> logger,
             IOptions<SiteSettings> siteSettings,
             IOptions<Intervals> intervals,
             IOptions<AuthSettings> auth)
         {
+            _logger = logger;
             _siteSettings = siteSettings.Value;
             _intervals = intervals.Value;
             _auth = auth.Value;
@@ -42,6 +45,7 @@ namespace TestFusion.SyncService
         private async Task GoToSite(IPage page)
         {
             await page.GotoAsync(_siteSettings.BaseUrl);
+            _logger.LogInformation("Playwrightservice : Navigation complete");
         }
 
         private async Task Login(IPage page)
@@ -50,6 +54,9 @@ namespace TestFusion.SyncService
             await page.Locator("#password").FillAsync(_auth.Password);
 
             await page.Locator("#btn-login").ClickAsync();
+
+            await page.WaitForURLAsync(_siteSettings.BaseUrl);
+            _logger.LogInformation("Playwrightservice : Login successful");
         }
     }
 }
