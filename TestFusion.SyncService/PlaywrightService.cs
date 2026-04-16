@@ -16,19 +16,19 @@ namespace TestFusion.SyncService
     {
         private readonly ILogger<PlaywrightService> _logger;
         private readonly SiteSettings _siteSettings;
-        private readonly Intervals _intervals;
         private readonly AuthSettings _auth;
+        private readonly JSONService _jsonService;
 
         public PlaywrightService(
-            ILogger<PlaywrightService> logger,
-            IOptions<SiteSettings> siteSettings,
-            IOptions<Intervals> intervals,
-            IOptions<AuthSettings> auth)
+        ILogger<PlaywrightService> logger,
+        IOptions<SiteSettings> siteSettings,
+        IOptions<AuthSettings> auth,
+        JSONService jsonService)
         {
             _logger = logger;
             _siteSettings = siteSettings.Value;
-            _intervals = intervals.Value;
             _auth = auth.Value;
+            _jsonService = jsonService;
         }
         public async Task Run()
         {
@@ -106,6 +106,21 @@ namespace TestFusion.SyncService
             );
             _logger.LogInformation("Playwrightservice : Data retrieval for ID : {Id} successful", id);
             _logger.LogInformation(json);
+            await SaveJsonToFile(_jsonService.ConvertToSimpleJSON(json), "SimpleJSON");
+        }
+
+        private async Task SaveJsonToFile(List<string> data, string fileName)
+        {
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "data");
+            Directory.CreateDirectory(folder);
+
+            var filePath = Path.Combine(folder, $"{fileName}_{DateTime.Now:yyyy_MM_dd__HH_mm_ss}.json");
+
+            var options = new JsonSerializerOptions { WriteIndented = true };
+
+            var json = JsonSerializer.Serialize(data, options);
+
+            await File.WriteAllTextAsync(filePath, json);
         }
     }
 }

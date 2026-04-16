@@ -13,6 +13,7 @@ builder.Services.Configure<AuthSettings>(
     builder.Configuration.GetSection("Auth"));
 
 builder.Services.AddSingleton<PlaywrightService>();
+builder.Services.AddSingleton<JSONService>();
 
 builder.Services.AddHostedService<Worker>();
 
