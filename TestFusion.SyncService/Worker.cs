@@ -1,10 +1,24 @@
 using Microsoft.Extensions.Options;
+using TestFusion.SyncService.Models;
 
 namespace TestFusion.SyncService
 {
-    public class Worker(
-        ILogger<Worker> logger) : BackgroundService
+    public class Worker : BackgroundService
     {
+        private readonly ILogger<Worker> _logger;
+        private readonly Intervals _intervals;
+        private readonly PlaywrightService _playwrightService;
+
+        public Worker(
+            ILogger<Worker> logger,
+            IOptions<Intervals> intervals,
+            PlaywrightService playwrightService)
+        {
+            _logger = logger;
+            _intervals = intervals.Value;
+            _playwrightService = playwrightService;
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var workerLoop = RunWorkerLoop(stoppingToken);
@@ -17,31 +31,30 @@ namespace TestFusion.SyncService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, stoppingToken);
+                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+
+                await Task.Delay(_intervals.WorkerHeartbeatInterval, stoppingToken);
             }
         }
 
         private async Task RunPlaywrightLoop(CancellationToken stoppingToken)
         {
-            var interval = TimeSpan.FromMinutes(5);
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    logger.LogInformation("Starting PlaywrightService");
+                    _logger.LogInformation("Starting PlaywrightService");
 
-                    await PlaywrightService.Run();
+                    await _playwrightService.Run();
 
-                    logger.LogInformation("PlaywrightService done");
+                    _logger.LogInformation("PlaywrightService done");
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error while running PlaywrightService");
+                    _logger.LogError(ex, "Error while running PlaywrightService");
                 }
 
-                await Task.Delay(interval, stoppingToken);
+                await Task.Delay(_intervals.PlaywrightInterval, stoppingToken);
             }
         }
     }
