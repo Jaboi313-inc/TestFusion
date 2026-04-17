@@ -105,11 +105,10 @@ namespace TestFusion.SyncService
                 "() => JSON.stringify(window.appdatam)"
             );
             _logger.LogInformation("Playwrightservice : Data retrieval for ID : {Id} successful", id);
-            _logger.LogInformation(json);
-            await SaveJsonToFile(_jsonService.ConvertToSimpleJSON(json), "SimpleJSON");
+            await SaveJsonToFile(_jsonService.ConvertToSimpleJSON(json), "SimpleJSON"); // Only for testing
         }
 
-        private async Task SaveJsonToFile(List<string> data, string fileName)
+        private async Task SaveJsonToFile(SimpleJSON data, string fileName)
         {
             var folder = Path.Combine(Directory.GetCurrentDirectory(), "data");
             Directory.CreateDirectory(folder);
