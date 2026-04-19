@@ -1,0 +1,44 @@
+﻿body {
+    font-family: Arial, sans-serif;
+}
+
+#top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 20px;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.list-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr 1fr 1fr;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.header {
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.btn:hover {
+    background-color: #218838;
+}

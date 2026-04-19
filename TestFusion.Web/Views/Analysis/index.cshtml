@@ -1,0 +1,37 @@
+﻿
+@{
+    ViewData["Title"] = "Analyse overzicht";
+}
+
+
+<link rel="stylesheet" href="~/css/site.css" />
+<link rel="stylesheet" href="~/css/analysis.css" />
+
+<div id="top-bar">
+    <h2>Testresultaten overzicht</h2>
+
+    <a class="btn" asp-controller="Analyse" asp-action="Generate">
+        Genereer analyse
+    </a>
+</div>
+
+<div class="list">
+
+    <div class="list-row header">
+        <span></span>
+        <span>Verstuiver #</span>
+        <span>Merk</span>
+        <span>Type</span>
+        <span>Datum, Tijd</span>
+    </div>
+
+    <div class="list-row">
+        <input type="checkbox">
+        <span>Temp</span>
+        <span>Temp</span>
+        <span>Temp</span>
+        <span>Temp</span>
+    </div>
+
+</div>
+
