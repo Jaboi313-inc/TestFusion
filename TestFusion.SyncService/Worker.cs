@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using TestFusion.SyncService.Models;
+using TestFusion.SyncService.Services;
 
 namespace TestFusion.SyncService
 {
@@ -45,7 +46,7 @@ namespace TestFusion.SyncService
                 {
                     _logger.LogInformation("Starting PlaywrightService");
 
-                    await _playwrightService.Run();
+                    await _playwrightService.GetAllIDs();
 
                     _logger.LogInformation("PlaywrightService done");
                 }

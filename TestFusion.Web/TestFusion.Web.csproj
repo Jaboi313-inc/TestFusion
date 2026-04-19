@@ -16,4 +16,10 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TestFusion.Core\TestFusion.Core.csproj" />
+    <ProjectReference Include="..\TestFusion.Data\TestFusion.Data.csproj" />
+    <ProjectReference Include="..\TestFusion.SyncService\TestFusion.SyncService.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using TestFusion.SyncService.Models;
 
-namespace TestFusion.SyncService
+namespace TestFusion.SyncService.Services
 {
     public class JSONService
     {
