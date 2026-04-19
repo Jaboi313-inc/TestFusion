@@ -1,8 +1,4 @@
-﻿body {
-    font-family: Arial, sans-serif;
-}
-
-#top-bar {
+﻿#top-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -22,11 +18,6 @@
     align-items: center;
     padding: 10px;
     border-bottom: 1px solid #ccc;
-}
-
-.header {
-    font-weight: bold;
-    background-color: #f0f0f0;
 }
 
 .btn {
