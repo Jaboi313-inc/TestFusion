@@ -1,0 +1,14 @@
+﻿@model GeneratedModel
+
+@{
+    ViewData["Title"] = "Gegenereerde analyse";
+}
+
+<h2>Geselecteerde IDs</h2>
+
+<ul>
+    @foreach (var id in Model.SelectedIds)
+    {
+        <li>@id</li>
+    }
+</ul>

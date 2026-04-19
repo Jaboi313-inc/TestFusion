@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewData["Title"] = "Analyse overzicht";
+}
+
+@model List<TestListItemModel>
+
+<link rel="stylesheet" href="~/css/site.css" />
+<link rel="stylesheet" href="~/css/analysis.css" />
+
+<form asp-controller="Analysis" asp-action="Generate" method="post">
+
+    <div id="top-bar">
+        <h2>Testresultaten overzicht</h2>
+
+        <button type="submit" class="btn">
+            Genereer analyse
+        </button>
+    </div>
+
+    <div class="list">
+
+        <div class="list-row header">
+            <span></span>
+            <span>Verstuiver #</span>
+            <span>Merk</span>
+            <span>Type</span>
+            <span>Datum, Tijd</span>
+        </div>
+
+        @foreach (var item in Model)
+        {
+            <div class="list-row">
+                <input type="checkbox" name="selectedIds" value="@item.Id">
+                <span>@item.PartNumber</span>
+                <span>@item.PartBrand</span>
+                <span>@item.PartType</span>
+                <span>@item.DateTime.ToString("dd-MM-yyyy HH:mm")</span>
+            </div>
+        }
+
+    </div>
+
+</form>
+
