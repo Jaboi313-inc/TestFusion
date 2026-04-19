@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TestFusion.Core.Interfaces;
+using TestFusion.SyncService.Models;
+using TestFusion.SyncService.Services;
 using TestFusion.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);

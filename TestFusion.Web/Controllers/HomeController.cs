@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using TestFusion.Web.Models;
+using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models;
 
 namespace TestFusion.Web.Controllers
 {

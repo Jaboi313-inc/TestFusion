@@ -1,4 +1,4 @@
-﻿namespace TestFusion.Web.Models
+﻿namespace TestFusion.Core.Models
 {
     public class GeneratedModel
     {
