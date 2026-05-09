@@ -17,6 +17,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSingleton<JSONService>();
 builder.Services.AddScoped<IPlaywrightInterface, PlaywrightService>();
 
 builder.Services.Configure<SiteSettings>(

@@ -12,16 +12,18 @@ public class PlaywrightService : IPlaywrightInterface
     private readonly ILogger<PlaywrightService> _logger;
     private readonly SiteSettings _siteSettings;
     private readonly AuthSettings _authSettings;
+    private readonly JSONService _jsonService;
 
     public PlaywrightService(
         ILogger<PlaywrightService> logger,
         IOptions<SiteSettings> siteSettings,
         IOptions<AuthSettings> authSettings,
+        JSONService jsonService)
     {
         _logger = logger;
         _siteSettings = siteSettings.Value;
         _authSettings = authSettings.Value;
-
+        _jsonService = jsonService;
     }
 
     public async Task<List<string>> GetAllIDs()
@@ -102,6 +104,8 @@ public class PlaywrightService : IPlaywrightInterface
             );
 
             _logger.LogInformation("SUCCES: Retrieved data for ID: {id}", id);
+
+            return _jsonService.ConvertToTestListItem(json);
         }
         catch (Exception ex)
         {
