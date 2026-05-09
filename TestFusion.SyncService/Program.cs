@@ -1,37 +1,24 @@
 using TestFusion.Core.Interfaces;
+using TestFusion.SyncService;
 using TestFusion.SyncService.Models;
 using TestFusion.SyncService.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = Host.CreateApplicationBuilder(args);
 
-#region CONFIG
 builder.Services.Configure<SiteSettings>(
     builder.Configuration.GetSection("SiteSettings"));
 
 builder.Services.Configure<AuthSettings>(
-    builder.Configuration.GetSection("Auth"));
+    builder.Configuration.GetSection("AuthSettings"));
 
 builder.Services.Configure<Intervals>(
     builder.Configuration.GetSection("Intervals"));
-#endregion
 
-#region SERVICES
-builder.Services.AddScoped<IPlaywrightInterface, PlaywrightService>();
 builder.Services.AddSingleton<JSONService>();
-#endregion
 
-#region API
-var app = builder.Build();
+builder.Services.AddSingleton<IPlaywrightInterface, PlaywrightService>();
 
-app.MapGet("/analysis", async (IPlaywrightInterface service) =>
-{
-    return await service.GetAllIDs();
-});
+builder.Services.AddHostedService<Worker>();
 
-app.MapGet("/analysis/{id}", async (IPlaywrightInterface service, string id) =>
-{
-    return await service.GetDataForId(id);
-});
-#endregion
-
-app.Run();
+var host = builder.Build();
+host.Run();

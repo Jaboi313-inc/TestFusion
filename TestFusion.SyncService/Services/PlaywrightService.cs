@@ -1,26 +1,27 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
+using System.Collections;
 using System.Text.Json;
-using TestFusion.Core.Models;
 using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models;
 using TestFusion.SyncService.Models;
+using TestFusion.SyncService.Services;
 
 public class PlaywrightService : IPlaywrightInterface
 {
     private readonly ILogger<PlaywrightService> _logger;
     private readonly SiteSettings _siteSettings;
-    private readonly AuthSettings _auth;
+    private readonly AuthSettings _authSettings;
 
     public PlaywrightService(
         ILogger<PlaywrightService> logger,
         IOptions<SiteSettings> siteSettings,
-        IOptions<AuthSettings> auth)
+        IOptions<AuthSettings> authSettings,
     {
         _logger = logger;
         _siteSettings = siteSettings.Value;
-        _auth = auth.Value;
+        _authSettings = authSettings.Value;
 
-        _logger.LogInformation("CTOR instance {Hash}", GetHashCode());
     }
 
     public async Task<List<string>> GetAllIDs()
@@ -31,8 +32,6 @@ public class PlaywrightService : IPlaywrightInterface
         try
         {
             var page = await browser.NewPageAsync();
-
-            _logger.LogInformation("BaseUrl from config: {BaseUrl}", _siteSettings.BaseUrl);
 
             await GoToSite(page);
             await Login(page);
@@ -70,22 +69,20 @@ public class PlaywrightService : IPlaywrightInterface
 
         try
         {
-
             var page = await browser.NewPageAsync();
 
-            await GoToSite(page);
-            await Login(page);
-
             var url = _siteSettings.ReportUrl?.Replace("{id}", id);
-
-            _logger.LogInformation("Navigating to URL: '{Url}'", url);
-
-            if (string.IsNullOrWhiteSpace(url))
-                throw new Exception("ReportUrl became empty!");
-
             await page.GotoAsync(url);
 
-            await page.WaitForFunctionAsync("() => window.appdatam && window.appdatam._id");
+            if (await page.Locator("#btn-login").IsVisibleAsync())
+            {
+                await Login(page);
+            }
+
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            await page.WaitForFunctionAsync(
+                "() => window.appdatam && window.appdatam._id");
 
             var json = await page.EvaluateAsync<string>(
                 "() => JSON.stringify(window.appdatam)"
@@ -102,18 +99,22 @@ public class PlaywrightService : IPlaywrightInterface
     private async Task GoToSite(IPage page)
     {
         _logger.LogInformation("GoToSite instance {Hash}", GetHashCode());
-        _logger.LogInformation("GO TO SITE BaseUrl = '{BaseUrl}'", _siteSettings.BaseUrl ?? "<null>");
 
-        if (string.IsNullOrWhiteSpace(_siteSettings.BaseUrl))
-            throw new Exception("BaseUrl is EMPTY in THIS instance");
+        await page.GotoAsync(_siteSettings.BaseUrl, new()
+        {
+            WaitUntil = WaitUntilState.NetworkIdle
+        });
 
         await page.GotoAsync(_siteSettings.BaseUrl);
     }
 
     private async Task Login(IPage page)
     {
-        await page.Locator("#email").FillAsync(_auth.Email);
-        await page.Locator("#password").FillAsync(_auth.Password);
+        _logger.LogInformation("STATUS: Logging in to site");
+
+        await page.Locator("#email").FillAsync(_authSettings.Email);
+        await page.Locator("#password").FillAsync(_authSettings.Password);
+
         await page.Locator("#btn-login").ClickAsync();
     }
 }
