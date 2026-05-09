@@ -26,6 +26,8 @@ public class PlaywrightService : IPlaywrightInterface
 
     public async Task<List<string>> GetAllIDs()
     {
+        _logger.LogInformation("STATUS: Retrieving all IDs");
+
         using var playwright = await Playwright.CreateAsync();
         var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
 
@@ -54,16 +56,27 @@ public class PlaywrightService : IPlaywrightInterface
                     ids.Add(id);
             }
 
+            _logger.LogInformation("SUCCES: Retrieved IDs: \n{Ids}", string.Join("\n", ids));
+
             return ids;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ERROR: Retrieving ID's");
+            throw;
         }
         finally
         {
             await browser.CloseAsync();
+            _logger.LogInformation("FINALLY: Browser closed");
+            _logger.LogInformation("STATUS: Finished retrieving IDs");
         }
     }
 
     public async Task<TestListItemModel> GetDataForId(string id)
     {
+        _logger.LogInformation("STATUS: Retrieving data for ID: {id}", id);
+
         using var playwright = await Playwright.CreateAsync();
         var browser = await playwright.Chromium.LaunchAsync(new() { Headless = false });
 
@@ -88,24 +101,31 @@ public class PlaywrightService : IPlaywrightInterface
                 "() => JSON.stringify(window.appdatam)"
             );
 
-            return JsonSerializer.Deserialize<TestListItemModel>(json);
+            _logger.LogInformation("SUCCES: Retrieved data for ID: {id}", id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ERROR: Retrieving data for ID: {id}", id);
+            throw;
         }
         finally
         {
             await browser.CloseAsync();
+            _logger.LogInformation("FINALLY: Browser closed");
+            _logger.LogInformation("STATUS: Finished retrieving data for ID: {id}", id);
         }
     }
 
     private async Task GoToSite(IPage page)
     {
-        _logger.LogInformation("GoToSite instance {Hash}", GetHashCode());
+        _logger.LogInformation("STATUS: Navigating to site");
 
         await page.GotoAsync(_siteSettings.BaseUrl, new()
         {
             WaitUntil = WaitUntilState.NetworkIdle
         });
 
-        await page.GotoAsync(_siteSettings.BaseUrl);
+        _logger.LogInformation("STATUS: Navigated to site");
     }
 
     private async Task Login(IPage page)
@@ -116,5 +136,7 @@ public class PlaywrightService : IPlaywrightInterface
         await page.Locator("#password").FillAsync(_authSettings.Password);
 
         await page.Locator("#btn-login").ClickAsync();
+
+        _logger.LogInformation("STATUS: Logged in");
     }
 }
