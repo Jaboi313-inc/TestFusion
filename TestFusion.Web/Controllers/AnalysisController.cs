@@ -21,11 +21,12 @@ namespace TestFusion.Web.Controllers
 
             var item = await _playwrightInterface.GetDataForId(ids.FirstOrDefault());
 
-            var semaphore = new SemaphoreSlim(1); // Limit to # of concurrent tasks
+            var semaphore = new SemaphoreSlim(2); // Limit to # of concurrent tasks
 
-            var tasks = ids.Take(5).Select(async id =>
+            var tasks = ids.Take(10).Select(async id =>
             {
                 await semaphore.WaitAsync();
+
                 try
                 {
                     return await _playwrightInterface.GetDataForId(id);
