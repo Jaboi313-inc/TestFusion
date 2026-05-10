@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
+using TestFusion.Core.Interfaces;
 using TestFusion.SyncService.Models;
-using TestFusion.SyncService.Services;
 
 namespace TestFusion.SyncService
 {
@@ -8,12 +8,12 @@ namespace TestFusion.SyncService
     {
         private readonly ILogger<Worker> _logger;
         private readonly Intervals _intervals;
-        private readonly PlaywrightService _playwrightService;
+        private readonly IPlaywrightInterface _playwrightService;
 
         public Worker(
             ILogger<Worker> logger,
             IOptions<Intervals> intervals,
-            PlaywrightService playwrightService)
+            IPlaywrightInterface playwrightService)
         {
             _logger = logger;
             _intervals = intervals.Value;
@@ -23,9 +23,8 @@ namespace TestFusion.SyncService
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var workerLoop = RunWorkerLoop(stoppingToken);
-            var playwrightLoop = RunPlaywrightLoop(stoppingToken);
 
-            await Task.WhenAll(workerLoop, playwrightLoop);
+            await workerLoop;
         }
 
         private async Task RunWorkerLoop(CancellationToken stoppingToken)
@@ -47,13 +46,13 @@ namespace TestFusion.SyncService
                     _logger.LogInformation("Starting PlaywrightService");
 
                     await _playwrightService.GetAllIDs();
-
-                    _logger.LogInformation("PlaywrightService done");
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while running PlaywrightService");
                 }
+
+                _logger.LogInformation("PlaywrightService done");
 
                 await Task.Delay(_intervals.PlaywrightInterval, stoppingToken);
             }

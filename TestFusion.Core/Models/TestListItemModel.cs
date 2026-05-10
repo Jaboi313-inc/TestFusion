@@ -1,4 +1,4 @@
-﻿namespace TestFusion.Core.Models
+﻿ namespace TestFusion.Core.Models
 {
     public class TestListItemModel
     {

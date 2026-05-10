@@ -17,6 +17,15 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSingleton<JSONService>();
+builder.Services.AddScoped<IPlaywrightInterface, PlaywrightService>();
+
+builder.Services.Configure<SiteSettings>(
+    builder.Configuration.GetSection("SiteSettings"));
+
+builder.Services.Configure<AuthSettings>(
+    builder.Configuration.GetSection("AuthSettings"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

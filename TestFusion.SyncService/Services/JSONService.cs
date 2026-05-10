@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using TestFusion.Core.Models;
 using TestFusion.SyncService.Models;
 
 namespace TestFusion.SyncService.Services
@@ -68,6 +70,28 @@ namespace TestFusion.SyncService.Services
             }
 
             return jsonFile;
+        }
+
+        public TestListItemModel ConvertToTestListItem(string json)
+        {
+            var simple = ConvertToSimpleJSON(json);
+
+            return new TestListItemModel
+            {
+                Id = simple._id,
+                PartNumber = simple.actuator_code,
+                PartBrand = simple.actuator_Brand,
+                PartType = simple.actuator_type,
+
+                DateTime = DateTime.TryParseExact(
+                    simple.datetime,
+                    "dd/MM/yyyy HH:mm:ss",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var dt)
+                    ? dt
+                    : DateTime.MinValue
+            };
         }
     }
 }
