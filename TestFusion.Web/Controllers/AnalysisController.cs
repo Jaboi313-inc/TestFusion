@@ -3,43 +3,31 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models;
+using TestFusion.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace TestFusion.Web.Controllers
 {
     public class AnalysisController : Controller
     {
         private readonly IPlaywrightInterface _playwrightInterface;
+        private readonly AppDbContext _db;
 
-        public AnalysisController(IPlaywrightInterface playwrightInterface)
+        public AnalysisController(IPlaywrightInterface playwrightInterface, AppDbContext db)
         {
             _playwrightInterface = playwrightInterface;
+            _db = db;
         }
 
         public async Task<IActionResult> Index()
         {
-            var ids = await _playwrightInterface.GetAllIDs();
+            var items = await _db.TestItems
+                .OrderByDescending(x => x.DateTime)
+                .Take(50)
+                .ToListAsync();
 
-            var item = await _playwrightInterface.GetDataForId(ids.FirstOrDefault());
-
-            var semaphore = new SemaphoreSlim(2); // Limit to # of concurrent tasks
-
-            var tasks = ids.Take(10).Select(async id =>
-            {
-                await semaphore.WaitAsync();
-
-                try
-                {
-                    return await _playwrightInterface.GetDataForId(id);
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
-
-            var items = await Task.WhenAll(tasks);
-
-            return View(items.ToList());
+            return View(items);
+        }
 
             /*
             var debugJson = JsonSerializer.Serialize(
@@ -64,8 +52,7 @@ namespace TestFusion.Web.Controllers
 
             return View(items.ToList());
             */
-        }
-
+        
         [HttpPost]
         public IActionResult Generate(List<string> selectedIds)
         {
