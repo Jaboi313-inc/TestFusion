@@ -10,13 +10,22 @@ namespace TestFusion.Web.Controllers
 {
     public class AnalysisController : Controller
     {
-        private readonly IPlaywrightInterface _playwrightInterface;
+        private readonly IPlaywright _playwrightInterface;
         private readonly AppDbContext _db;
+        private readonly ISyncService _sync;
 
-        public AnalysisController(IPlaywrightInterface playwrightInterface, AppDbContext db)
+        public AnalysisController(IPlaywright playwrightInterface, AppDbContext db, ISyncService sync)
         {
             _playwrightInterface = playwrightInterface;
             _db = db;
+            _sync = sync;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Refresh()
+        {
+            await _sync.RunSync();
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> Index()

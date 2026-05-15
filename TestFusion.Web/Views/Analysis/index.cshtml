@@ -8,6 +8,13 @@
 <link rel="stylesheet" href="~/css/site.css" />
 <link rel="stylesheet" href="~/css/analysis.css" />
 
+
+<form asp-controller="Analysis" asp-action="Refresh" method="post">
+    <button type="submit" class="btn">
+        Refresh
+    </button>
+</form>
+
 <form asp-controller="Analysis" asp-action="Generate" method="post">
 
     <div id="top-bar">
