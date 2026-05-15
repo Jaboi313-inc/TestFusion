@@ -82,15 +82,7 @@ namespace TestFusion.SyncService.Services
                 PartNumber = simple.actuator_code,
                 PartBrand = simple.actuator_Brand,
                 PartType = simple.actuator_type,
-
-                DateTime = DateTime.TryParseExact(
-                    simple.datetime,
-                    "dd/MM/yyyy HH:mm:ss",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out var dt)
-                    ? dt
-                    : DateTime.MinValue
+                DateTime = DateTimeOffset.Parse(simple.datetime).ToUniversalTime()
             };
         }
     }
