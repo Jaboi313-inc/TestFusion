@@ -5,7 +5,7 @@ using TestFusion.Core.Models;
 
 namespace TestFusion.Core.Interfaces
 {
-    public interface IPlaywrightInterface
+    public interface IPlaywright
     {
         Task<List<string>> GetAllIDs();
         Task<TestListItemModel> GetDataForId(string id);
