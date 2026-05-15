@@ -1,11 +1,18 @@
-﻿ namespace TestFusion.Core.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TestFusion.Core.Models
 {
     public class TestListItemModel
     {
-        public string Id { get; set; }
-        public string PartNumber { get; set; }
-        public string PartBrand { get; set; }
-        public string PartType { get; set; }
-        public DateTime DateTime { get; set; }
+        [Key]
+        public string Id { get; set; } = default!;
+
+        public string PartNumber { get; set; } = default!;
+
+        public string PartBrand { get; set; } = default!;
+
+        public string PartType { get; set; } = default!;
+
+        public DateTimeOffset  DateTime { get; set; }
     }
 }
