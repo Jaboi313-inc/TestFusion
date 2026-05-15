@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
+using TestFusion.Data;
 using TestFusion.SyncService;
 using TestFusion.SyncService.Models;
 using TestFusion.SyncService.Services;
@@ -19,6 +21,10 @@ builder.Services.AddSingleton<JSONService>();
 builder.Services.AddSingleton<IPlaywrightInterface, PlaywrightService>();
 
 builder.Services.AddHostedService<Worker>();
+
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("PostGresConnection")));
 
 var host = builder.Build();
 host.Run();
