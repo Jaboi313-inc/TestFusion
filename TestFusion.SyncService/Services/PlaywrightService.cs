@@ -7,14 +7,14 @@ using TestFusion.Core.Models;
 using TestFusion.SyncService.Models;
 using TestFusion.SyncService.Services;
 
-public class PlaywrightService : IPlaywrightInterface
+public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 {
     private readonly ILogger<PlaywrightService> _logger;
     private readonly SiteSettings _siteSettings;
     private readonly AuthSettings _authSettings;
     private readonly JSONService _jsonService;
 
-    private IPlaywright? _playwright;
+    private Microsoft.Playwright.IPlaywright? _playwright;
     private IBrowserContext? _context;
 
     private readonly SemaphoreSlim _browserLock = new(1, 1);
