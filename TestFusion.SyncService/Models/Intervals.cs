@@ -6,7 +6,7 @@ namespace TestFusion.SyncService.Models
 {
     public class Intervals
     {
-        public TimeSpan PlaywrightInterval { get; set; }
+        public TimeSpan DatafetchingInterval { get; set; }
         public TimeSpan WorkerHeartbeatInterval { get; set; }
     }
 }
