@@ -17,8 +17,8 @@ builder.Services.Configure<Intervals>(
     builder.Configuration.GetSection("Intervals"));
 
 builder.Services.AddSingleton<JSONService>();
-
-builder.Services.AddSingleton<IPlaywrightInterface, PlaywrightService>();
+builder.Services.AddScoped<IPlaywright, PlaywrightService>();
+builder.Services.AddScoped<ISyncService, SyncService>();
 
 builder.Services.AddHostedService<Worker>();
 

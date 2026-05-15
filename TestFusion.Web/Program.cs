@@ -8,27 +8,41 @@ using TestFusion.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+var postgresConnection = builder.Configuration.GetConnectionString("PostGresConnection")
+    ?? throw new InvalidOperationException("Connection string 'PostGresConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("PostGresConnection")));
+    options.UseNpgsql(postgresConnection));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 builder.Services.AddSingleton<JSONService>();
-builder.Services.AddScoped<IPlaywrightInterface, PlaywrightService>();
+builder.Services.AddSingleton<IPlaywright, PlaywrightService>();
+builder.Services.AddScoped<ISyncService, SyncService>();
 
 builder.Services.Configure<SiteSettings>(
     builder.Configuration.GetSection("SiteSettings"));
 
 builder.Services.Configure<AuthSettings>(
     builder.Configuration.GetSection("AuthSettings"));
+
+builder.Services.Configure<Intervals>(
+    builder.Configuration.GetSection("Intervals"));
 
 var app = builder.Build();
 
@@ -47,6 +61,7 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
