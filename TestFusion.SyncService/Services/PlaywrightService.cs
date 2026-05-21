@@ -3,18 +3,18 @@ using Microsoft.Playwright;
 using System.Collections;
 using System.Text.Json;
 using TestFusion.Core.Interfaces;
-using TestFusion.Core.Models;
+using TestFusion.Core.Models.WebModels;
 using TestFusion.SyncService.Models;
 using TestFusion.SyncService.Services;
 
-public class PlaywrightService : IPlaywrightInterface
+public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 {
     private readonly ILogger<PlaywrightService> _logger;
     private readonly SiteSettings _siteSettings;
     private readonly AuthSettings _authSettings;
     private readonly JSONService _jsonService;
 
-    private IPlaywright? _playwright;
+    private Microsoft.Playwright.IPlaywright? _playwright;
     private IBrowserContext? _context;
 
     private readonly SemaphoreSlim _browserLock = new(1, 1);
@@ -106,6 +106,12 @@ public class PlaywrightService : IPlaywrightInterface
                 "() => JSON.stringify(window.appdatam)");
 
             _logger.LogInformation("SUCCESS: Retrieved data for ID: {Id}", id);
+
+            //_logger.LogInformation("RAW JSON: {Json}", json);
+
+            //_logger.LogInformation(JsonSerializer.Serialize(_jsonService.ConvertToTestResultModel(json), new JsonSerializerOptions{WriteIndented = true}));
+
+            //File.WriteAllText($"testresult_{DateTime.Now:yyyyMMdd_HHmmss}_{id}.json", JsonSerializer.Serialize(_jsonService.ConvertToTestResultModel(json), new JsonSerializerOptions{ WriteIndented = true}));
 
             return _jsonService.ConvertToTestListItem(json);
         }

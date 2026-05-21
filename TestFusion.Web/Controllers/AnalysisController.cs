@@ -2,44 +2,41 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using TestFusion.Core.Interfaces;
-using TestFusion.Core.Models;
+using TestFusion.Core.Models.WebModels;
+using TestFusion.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace TestFusion.Web.Controllers
 {
     public class AnalysisController : Controller
     {
-        private readonly IPlaywrightInterface _playwrightInterface;
+        private readonly IPlaywright _playwrightInterface;
+        private readonly AppDbContext _db;
+        private readonly ISyncService _sync;
 
-        public AnalysisController(IPlaywrightInterface playwrightInterface)
+        public AnalysisController(IPlaywright playwrightInterface, AppDbContext db, ISyncService sync)
         {
             _playwrightInterface = playwrightInterface;
+            _db = db;
+            _sync = sync;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Refresh()
+        {
+            await _sync.RunSync();
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> Index()
         {
-            var ids = await _playwrightInterface.GetAllIDs();
+            var items = await _db.TestItems
+                .OrderByDescending(x => x.DateTime)
+                .Take(50)
+                .ToListAsync();
 
-            var item = await _playwrightInterface.GetDataForId(ids.FirstOrDefault());
-
-            var semaphore = new SemaphoreSlim(2); // Limit to # of concurrent tasks
-
-            var tasks = ids.Take(10).Select(async id =>
-            {
-                await semaphore.WaitAsync();
-
-                try
-                {
-                    return await _playwrightInterface.GetDataForId(id);
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
-
-            var items = await Task.WhenAll(tasks);
-
-            return View(items.ToList());
+            return View(items);
+        }
 
             /*
             var debugJson = JsonSerializer.Serialize(
@@ -64,8 +61,7 @@ namespace TestFusion.Web.Controllers
 
             return View(items.ToList());
             */
-        }
-
+        
         [HttpPost]
         public IActionResult Generate(List<string> selectedIds)
         {

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TestFusion.Core.Models;
+using TestFusion.Core.Models.WebModels;
 
 namespace TestFusion.Core.Interfaces
 {
-    public interface IPlaywrightInterface
+    public interface IPlaywright
     {
         Task<List<string>> GetAllIDs();
         Task<TestListItemModel> GetDataForId(string id);

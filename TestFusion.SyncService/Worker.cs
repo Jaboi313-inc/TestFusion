@@ -2,60 +2,51 @@ using Microsoft.Extensions.Options;
 using TestFusion.Core.Interfaces;
 using TestFusion.SyncService.Models;
 
-namespace TestFusion.SyncService
+public class Worker : BackgroundService
 {
-    public class Worker : BackgroundService
+    private readonly ILogger<Worker> _logger;
+    private readonly Intervals _intervals;
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    public Worker(
+        ILogger<Worker> logger,
+        IOptions<Intervals> intervals,
+        IServiceScopeFactory scopeFactory)
     {
-        private readonly ILogger<Worker> _logger;
-        private readonly Intervals _intervals;
-        private readonly IPlaywrightInterface _playwrightService;
+        _logger = logger;
+        _intervals = intervals.Value;
+        _scopeFactory = scopeFactory;
+    }
 
-        public Worker(
-            ILogger<Worker> logger,
-            IOptions<Intervals> intervals,
-            IPlaywrightInterface playwrightService)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var workerLoop = RunWorkerLoop(stoppingToken);
+        var dataLoop = RunDataFetchingLoop(stoppingToken);
+
+        await Task.WhenAll(workerLoop, dataLoop);
+    }
+
+    private async Task RunWorkerLoop(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _logger = logger;
-            _intervals = intervals.Value;
-            _playwrightService = playwrightService;
+            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+
+            await Task.Delay(_intervals.WorkerHeartbeatInterval, stoppingToken);
         }
+    }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    private async Task RunDataFetchingLoop(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
         {
-            var workerLoop = RunWorkerLoop(stoppingToken);
+            using var scope = _scopeFactory.CreateScope();
 
-            await workerLoop;
-        }
+            var syncService = scope.ServiceProvider.GetRequiredService<ISyncService>();
 
-        private async Task RunWorkerLoop(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+            await syncService.RunSync(stoppingToken);
 
-                await Task.Delay(_intervals.WorkerHeartbeatInterval, stoppingToken);
-            }
-        }
-
-        private async Task RunPlaywrightLoop(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                try
-                {
-                    _logger.LogInformation("Starting PlaywrightService");
-
-                    await _playwrightService.GetAllIDs();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error while running PlaywrightService");
-                }
-
-                _logger.LogInformation("PlaywrightService done");
-
-                await Task.Delay(_intervals.PlaywrightInterval, stoppingToken);
-            }
+            await Task.Delay(_intervals.DatafetchingInterval, stoppingToken);
         }
     }
 }
