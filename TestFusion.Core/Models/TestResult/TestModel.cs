@@ -7,9 +7,9 @@ namespace TestFusion.Core.Models.TestResult
     {
         public string TestName { get; set; } = default!;
         public int TestStatus { get; set; } = default!;
-        public string TestTime { get; set; } = default!;
+        public int TestTime { get; set; } = default!;
         public string TestType { get; set; } = default!;
-        public string TestResponseTime { get; set; } = default!;
+        public int TestResponseTime { get; set; } = default!;
 
         public List<SubTestModel> SubTests { get; set; } = new();
 

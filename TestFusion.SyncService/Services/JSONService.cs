@@ -3,6 +3,7 @@
 using System.Text.Json;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
+using TestFusion.Core.Helpers;
 using TestFusion.SyncService.Models;
 
 namespace TestFusion.SyncService.Services
@@ -128,16 +129,19 @@ namespace TestFusion.SyncService.Services
 
         private static string GetFirstResult(JsonElement rspResults)
         {
+            if (rspResults.ValueKind != JsonValueKind.Object)
+                return null;
+
             if (!rspResults.TryGetProperty("dataArray", out var arr))
-                return "--";
+                return null;
 
             foreach (var item in arr.EnumerateArray())
             {
                 if (item.TryGetProperty("result", out var r))
-                    return r.GetString() ?? "--";
+                    return r.GetString() ?? null;
             }
 
-            return "--";
+            return null;
         }
 
         private static List<decimal> ParseResults(string? input)
@@ -202,10 +206,10 @@ namespace TestFusion.SyncService.Services
                         {
                             TestName = GetString(testData, "test_name"),
                             TestStatus = GetInt(testData, "status"),
-                            TestTime = GetString(item, "test_time"),
+                            TestTime = 0,
 
                             TestType = "",
-                            TestResponseTime = "",
+                            TestResponseTime = 0,
 
                             SubTests = new List<SubTestModel>()
                         };
@@ -221,9 +225,9 @@ namespace TestFusion.SyncService.Services
                     {
                         TestName = GetString(testData, "test_name"),
                         TestStatus = GetInt(testData, "status"),
-                        TestTime = GetString(item, "test_time"),
+                        TestTime = FromStringHelper.ToInt(GetString(item, "test_time")),
                         TestType = GetString(rspResults, "type"),
-                        TestResponseTime = GetFirstResult(rspResults),
+                        TestResponseTime = FromStringHelper.ToInt(GetFirstResult(rspResults)),
 
                         SubTests = new List<SubTestModel>()
                     };                    
@@ -231,7 +235,7 @@ namespace TestFusion.SyncService.Services
                     jsonFile.Tests.Add(test);
 
                     item.TryGetProperty("TestLimits", out var limits);
-                    item.TryGetProperty("TestResults", out var results);                    
+                    item.TryGetProperty("TestResults", out var results);
 
                     var resultLookup = new Dictionary<string, JsonElement>();
 
@@ -239,32 +243,38 @@ namespace TestFusion.SyncService.Services
                     {
                         foreach (var r in results.EnumerateArray())
                         {
-                            var pos = GetString(r, "tank_position");
-                            if (!string.IsNullOrEmpty(pos))
-                                resultLookup[pos] = r;
+                            var run = FromStringHelper.ToInt(GetString(r, "tank_position"));
+                            var sub = GetInt(r, "postion");
+
+                            var key = $"{run}_{sub}";
+                            resultLookup[key] = r;
                         }
                     }
 
                     foreach (var limit in limits.EnumerateArray())
                     {
-                        var position = GetInt(limit, "tank_position");
+                        int subIndex = GetInt(limit, "tank_position");
 
-                        resultLookup.TryGetValue(position.ToString(), out var res);
+                        int runIndex = (subIndex - 1) * 4;
+
+                        var key = $"{runIndex}_{subIndex}";
+
+                        resultLookup.TryGetValue(key, out var res);
 
                         var sub = new SubTestModel
                         {
                             TankName = GetString(limit, "tank_name"),
                             TankPosition = GetInt(limit, "tank_position"),
 
-                            Min = GetString(limit, "min_green"),
-                            Max = GetString(limit, "max_green"),
+                            Min = FromStringHelper.ToDecimal(GetString(limit, "min_green")),
+                            Max = FromStringHelper.ToDecimal(GetString(limit, "max_green")),
 
-                            BlueMin = GetString(limit, "min_blue"),
-                            BlueMax = GetString(limit, "max_blue"),
-                            YellowMin = GetString(limit, "min_yellow"),
-                            YellowMax = GetString(limit, "max_yellow"),
+                            BlueMin = FromStringHelper.ToDecimal(GetString(limit, "min_blue")),
+                            BlueMax = FromStringHelper.ToDecimal(GetString(limit, "max_blue")),
+                            YellowMin = FromStringHelper.ToDecimal(GetString(limit, "min_yellow")),
+                            YellowMax = FromStringHelper.ToDecimal(GetString(limit, "max_yellow")),
 
-                            TolBlue = GetString(limit, "tol_blue"),
+                            TolBlue = FromStringHelper.ToDecimal(GetString(limit, "tol_blue")),
 
                             ProcentMax = GetString(limit, "max_green_label"),
                             ProcentMin = GetString(limit, "min_green_label"),
@@ -273,7 +283,7 @@ namespace TestFusion.SyncService.Services
                             ResultAverage = GetString(res, "AvrResult"),
                             ResultMin = GetString(res, "MinResult"),
                             ResultMax = GetString(res, "MaxResult"),
-                            ResultColor = GetString(res, "result_color"),
+                            ResultColor = FromStringHelper.ToInt(GetString(res, "result_color")),
 
                             Results = ParseResults(GetString(res, "results")),
                         };
