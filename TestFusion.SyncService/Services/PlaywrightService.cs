@@ -107,6 +107,12 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
             _logger.LogInformation("SUCCESS: Retrieved data for ID: {Id}", id);
 
+            //_logger.LogInformation("RAW JSON: {Json}", json);
+
+            //_logger.LogInformation(JsonSerializer.Serialize(_jsonService.ConvertToTestResultModel(json), new JsonSerializerOptions{WriteIndented = true}));
+
+            //File.WriteAllText($"testresult_{DateTime.Now:yyyyMMdd_HHmmss}_{id}.json", JsonSerializer.Serialize(_jsonService.ConvertToTestResultModel(json), new JsonSerializerOptions{ WriteIndented = true}));
+
             return _jsonService.ConvertToTestListItem(json);
         }
         catch (Exception ex)
