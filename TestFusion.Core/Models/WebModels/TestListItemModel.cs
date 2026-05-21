@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TestFusion.Core.Models
+namespace TestFusion.Core.Models.WebModels
 {
     public class TestListItemModel
     {

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using TestFusion.Core.Models;
+using TestFusion.Core.Models.TestResult;
+using TestFusion.Core.Models.WebModels;
 using TestFusion.SyncService.Models;
 
 namespace TestFusion.SyncService.Services

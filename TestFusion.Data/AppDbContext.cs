@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TestFusion.Core.Models;
+using TestFusion.Core.Models.WebModels;
 
 namespace TestFusion.Data;
 
