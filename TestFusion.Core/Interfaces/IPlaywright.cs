@@ -8,6 +8,6 @@ namespace TestFusion.Core.Interfaces
     public interface IPlaywright
     {
         Task<List<string>> GetAllIDs();
-        Task<TestListItemModel> GetDataForId(string id);
+        Task<string> GetDataForId(string id);
     }
 }
