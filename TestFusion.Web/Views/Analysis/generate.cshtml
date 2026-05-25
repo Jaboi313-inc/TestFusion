@@ -14,80 +14,91 @@
 
 <h2 class="mb-4">Vergelijking verstuivers</h2>
 
-<div class="table-responsive">
-    <table class="table table-bordered table-striped">
+<table class="table table-bordered table-striped">
 
-        <thead>
-            <tr>
-                <th>Test</th>
+    <thead>
+        <tr>
+            <th>Test / Tank</th>
 
-                @foreach (var injector in Model.Injectors)
-                {
-                    <th>
-                        <div><strong>@injector.Data.PartNumber</strong></div>
-                        <div>@injector.Data.PartBrand</div>
-                        <div>@injector.Data.PartType</div>
-                        <div>@injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")</div>
-                    </th>
-                }
-            </tr>
-        </thead>
-
-        <tbody>
-
-            @foreach (var masterTest in Model.AllTests)
+            @foreach (var injector in Model.Injectors)
             {
-                <tr>
+                <th>
+                    <div><strong>@injector.Data.PartNumber</strong></div>
+                    <div>@injector.Data.PartBrand</div>
+                    <div>@injector.Data.PartType</div>
+                    <div>@injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")</div>
+                </th>
+            }
+        </tr>
+    </thead>
 
+    <tbody>
+
+        @foreach (var test in Model.AllTests)
+        {
+            var normalizedTest = NormalizeTestName(test.TestName);
+
+            var tankSubData = Model.Injectors
+                .First()
+                .Data.Tests
+                .Where(t => NormalizeTestName(t.TestName) == normalizedTest)
+                .SelectMany(t => t.SubTests)
+                .ToList();
+
+            <!-- TEST HEADER -->
+            <tr class="test-header">
+                <td colspan="@(Model.Injectors.Count + 1)">
+                    <div>
+                        <strong>@normalizedTest</strong>
+                    </div>
+                    
+                    
+                </td>
+            </tr>
+
+            foreach (var tank in tankSubData)
+            {
+                <tr class="tank-row">
+
+                    <!-- LEFT SIDE (TANK INFO) -->
                     <td>
-                        <strong>@NormalizeTestName(masterTest.TestName)</strong>
+                        @tank.TankName<br />
+                        <small>Min: @tank.Min</small><br />
+                        <small>Max: @tank.Max</small>
                     </td>
 
+                    <!-- INJECTOR COLUMNS -->
                     @foreach (var injector in Model.Injectors)
                     {
-                        var cell = injector.NormalizedTests
-                            .FirstOrDefault(x => NormalizeTestName(x.TestName)
-                                              == NormalizeTestName(masterTest.TestName));
+                        var sub = injector.Data.Tests
+                            .Where(t => NormalizeTestName(t.TestName) == normalizedTest)
+                            .SelectMany(t => t.SubTests)
+                            .FirstOrDefault(s => s.TankName == tank.TankName);
 
                         <td>
-
-                            @if (cell == null || !cell.Exists)
+                            @if (sub == null)
                             {
                                 <span>-</span>
                             }
-                            else if (cell.IsSkipped)
-                            {
-                                <span>Skipped</span>
-                            }
                             else
                             {
-                                <div><strong>Tijd:</strong> @cell.Time s</div>
-                                <div><strong>Response:</strong> @cell.Response</div>
+                                <div>
+                                    <strong>Results:</strong>
+                                    @string.Join(", ", sub.Results)
+                                </div>
 
-                                @if (cell.SubTests.Any())
-                                {
-                                    @foreach (var sub in cell.SubTests)
-                                    {
-                                        <div class="mb-2 p-2 border rounded">
-                                            <div><strong>@sub.TankName</strong></div>
-                                            <div>Min: @sub.Min</div>
-                                            <div>Max: @sub.Max</div>
-                                            <div>Avg: @sub.ResultAverage</div>
-                                            <div>Min Result: @sub.ResultMin</div>
-                                            <div>Max Result: @sub.ResultMax</div>
-                                            <div>Results: @string.Join(", ", sub.Results)</div>
-                                        </div>
-                                    }
-                                }
+                                <div>
+                                    <strong>Avg:</strong>
+                                    @sub.ResultAverage
+                                </div>
                             }
-
                         </td>
                     }
 
                 </tr>
             }
+        }
 
-        </tbody>
+    </tbody>
 
-    </table>
-</div>
+</table>

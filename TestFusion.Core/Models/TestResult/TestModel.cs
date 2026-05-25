@@ -8,6 +8,7 @@ namespace TestFusion.Core.Models.TestResult
         public int TestId { get; set; } = default!;
         public string TestName { get; set; } = default!;
         public int TestStatus { get; set; } = default!;
+        public int TestOrder { get; set; } = default!;
         public int TestTime { get; set; } = default!;
         public string TestType { get; set; } = default!;
         public int TestResponseTime { get; set; } = default!;

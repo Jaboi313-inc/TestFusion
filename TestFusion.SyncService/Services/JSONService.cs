@@ -3,8 +3,8 @@ using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using TestFusion.Core.Helpers;
+using TestFusion.Core.Models;
 using TestFusion.Core.Models.TestResult;
-using TestFusion.Core.Models.WebModels;
 using TestFusion.SyncService.Models;
 
 namespace TestFusion.SyncService.Services
@@ -157,6 +157,7 @@ namespace TestFusion.SyncService.Services
                             TestId = GetInt(testData, "test_id"),
                             TestName = GetString(testData, "test_name"),
                             TestStatus = GetInt(testData, "status"),
+                            TestOrder = GetInt(testData, "test_order"),
                             TestTime = 0,
 
                             TestType = "",
@@ -177,6 +178,7 @@ namespace TestFusion.SyncService.Services
                         TestId = GetInt(testData, "test_id"),
                         TestName = GetString(testData, "test_name"),
                         TestStatus = GetInt(testData, "status"),
+                        TestOrder = GetInt(testData, "test_order"),
                         TestTime = FromStringHelper.ToInt(GetString(item, "test_time")),
                         TestType = GetString(rspResults, "type"),
                         TestResponseTime = FromStringHelper.ToInt(GetFirstResult(rspResults)),

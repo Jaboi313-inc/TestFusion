@@ -2,7 +2,6 @@
 using System.Text.Json;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models;
-using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
 using TestFusion.SyncService.Services;
 

@@ -34,18 +34,41 @@
     background-color: #218838;
 }
 
-td {
+/* ruimte boven de eerste test */
+tbody::before {
+    content: "";
+    display: block;
+    height: 40px;
+}
+
+/* TEST HEADER */
+.test-header td {
+    background: #f3f4f6;
+    font-weight: bold;
+    border-top: 3px solid #111;
+    border-bottom: 1px solid #d1d5db;
+    padding: 12px 10px; /* meer hoogte */
+}
+
+/* tank rows */
+.tank-row td {
+    border-bottom: 1px solid #e5e7eb;
     vertical-align: top;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding: 10px 10px; /* meer spacing */
 }
 
-.cell-block {
-    border-top: 1px solid #ddd;
-    margin-top: 8px;
-    padding-top: 8px;
+/* laatste tank iets dikker afscheiden */
+.tank-row:last-of-type td {
+    border-bottom: 3px solid #111;
 }
 
-.table tbody td {
-    border-bottom: 1px solid #dee2e6 !important;
+/* algemene tabel spacing */
+table.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+table.table td,
+table.table th {
+    vertical-align: top;
 }

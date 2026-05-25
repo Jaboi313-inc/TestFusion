@@ -6,6 +6,7 @@ using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TestFusion.Web.Controllers
 {
@@ -72,28 +73,45 @@ namespace TestFusion.Web.Controllers
             var allTests = injectors
                 .SelectMany(x => x.Data.Tests)
                 .GroupBy(x => NormalizeTestName(x.TestName))
-                .Select(g => g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First())
-                .OrderBy(x => NormalizeTestName(x.TestName))
+                .Select(g =>
+                {
+                    var firstValid = g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First();
+
+                    return new TestModel
+                    {
+                        TestId = firstValid.TestId,
+                        TestName = NormalizeTestName(firstValid.TestName),
+                        TestOrder = firstValid.TestOrder,
+                        TestStatus = firstValid.TestStatus,
+                        TestTime = firstValid.TestTime,
+                        TestResponseTime = firstValid.TestResponseTime,
+                        SubTests = firstValid.SubTests ?? new()
+                    };
+                })
+                .OrderBy(x => x.TestOrder)
                 .ToList();
 
             foreach (var injector in injectors)
             {
                 injector.NormalizedTests = injector.Data.Tests
                     .GroupBy(x => NormalizeTestName(x.TestName))
-                    .Select(g => g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First())
-                    .Select(test => new TestCellModel
+                    .Select(g =>
                     {
-                        TestId = test.TestId,
-                        TestName = test.TestName,
+                        var firstValid = g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First();
 
-                        Exists = true,
-                        IsSkipped = test.TestStatus == 1,
-
-                        Status = test.TestStatus,
-                        Time = test.TestTime,
-                        Response = test.TestResponseTime.ToString(),
-                        SubTests = test.SubTests ?? new()
+                        return new TestCellModel
+                        {
+                            TestId = firstValid.TestId,
+                            TestName = NormalizeTestName(firstValid.TestName),
+                            Exists = true,
+                            IsSkipped = firstValid.TestStatus == 1,
+                            Status = firstValid.TestStatus,
+                            Time = firstValid.TestTime,
+                            Response = firstValid.TestResponseTime.ToString(),
+                            SubTests = firstValid.SubTests ?? new()
+                        };
                     })
+                    .OrderBy(x => x.TestName)
                     .ToList();
             }
 
