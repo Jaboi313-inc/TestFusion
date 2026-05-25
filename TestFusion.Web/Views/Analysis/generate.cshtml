@@ -45,7 +45,7 @@
                 .SelectMany(t => t.SubTests)
                 .ToList();
 
-            <!-- TEST HEADER -->
+            <!-- header -->
             <tr class="test-header">
                 <td colspan="@(Model.Injectors.Count + 1)">
                     <div>
@@ -60,14 +60,20 @@
             {
                 <tr class="tank-row">
 
-                    <!-- LEFT SIDE (TANK INFO) -->
-                    <td>
+                    <!-- left side -->
+                    <td class="tank-column">
+                        @{
+                            var average = (tank.Min + tank.Max) / 2;
+                            var tolerance = average - tank.Min;
+                        }
+
                         @tank.TankName<br />
                         <small>Min: @tank.Min</small><br />
-                        <small>Max: @tank.Max</small>
+                        <small>Max: @tank.Max</small><br />
+                        <small>Limiet: @average +/- @tolerance</small>
                     </td>
 
-                    <!-- INJECTOR COLUMNS -->
+                    <!-- injector columns -->
                     @foreach (var injector in Model.Injectors)
                     {
                         var sub = injector.Data.Tests
@@ -75,7 +81,7 @@
                             .SelectMany(t => t.SubTests)
                             .FirstOrDefault(s => s.TankName == tank.TankName);
 
-                        <td>
+                        <td class="result-@(sub?.ResultColor ?? 0)">
                             @if (sub == null)
                             {
                                 <span>-</span>
@@ -88,8 +94,18 @@
                                 </div>
 
                                 <div>
+                                    <strong>Min:</strong>
+                                    @sub.ResultMin
+                                </div>
+
+                                <div>
                                     <strong>Avg:</strong>
                                     @sub.ResultAverage
+                                </div>
+
+                                <div>
+                                    <strong>Max:</strong>
+                                    @sub.ResultMax
                                 </div>
                             }
                         </td>

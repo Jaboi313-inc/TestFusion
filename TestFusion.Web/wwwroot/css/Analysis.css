@@ -34,35 +34,41 @@
     background-color: #218838;
 }
 
-/* ruimte boven de eerste test */
+/* spacing above first test */
 tbody::before {
     content: "";
     display: block;
     height: 40px;
 }
 
-/* TEST HEADER */
+/* test headers */
 .test-header td {
-    background: #f3f4f6;
+    background: #e6e6e6;
     font-weight: bold;
     border-top: 3px solid #111;
     border-bottom: 1px solid #d1d5db;
-    padding: 12px 10px; /* meer hoogte */
+    padding: 12px 10px;
 }
 
 /* tank rows */
 .tank-row td {
     border-bottom: 1px solid #e5e7eb;
     vertical-align: top;
-    padding: 10px 10px; /* meer spacing */
+    padding: 10px 10px;
 }
 
-/* laatste tank iets dikker afscheiden */
+/* tank column */
+.tank-column {
+    min-width: 150px;
+    width: 10%;
+}
+
+/* line after last tank */
 .tank-row:last-of-type td {
     border-bottom: 3px solid #111;
 }
 
-/* algemene tabel spacing */
+/* genaral spacing */
 table.table {
     border-collapse: separate;
     border-spacing: 0;
@@ -71,4 +77,31 @@ table.table {
 table.table td,
 table.table th {
     vertical-align: top;
+}
+
+/* colors */
+.result-1 {
+    background-color: red;
+}
+
+.result-2 {
+    background-color: red;
+}
+
+.result-3 {
+    background-color: red;
+}
+
+.result-4 {
+    background-color: red;
+}
+
+.result-5 {
+    background-color: #0000ff;
+    color: #ffffff;
+}
+
+.result-6 {
+    background-color: #00ab4f;
+    color: #ffffff;
 }
