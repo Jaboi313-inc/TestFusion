@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace TestFusion.Web.Controllers
 {
@@ -35,13 +36,71 @@ namespace TestFusion.Web.Controllers
 
             return View(items);
         }
-        
-        [HttpPost]
-        public IActionResult Generate(List<string> selectedIds)
+
+        private static string NormalizeTestName(string name)
         {
+            return name.Replace(" : SKIPPED", "").Trim();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Generate(List<string> selectedIds)
+        {
+            var jsons = await _db.StoredJsons
+                .Where(x => selectedIds.Contains(x.Id))
+                .ToListAsync();
+
+            var injectors = jsons
+                .Select(x => new TestResultViewModel
+                {
+                    Data = JsonSerializer.Deserialize<TestResultModel>(x.Json)!
+                })
+                .ToList();
+
+            // Check if all injectors have the same part number
+            var partNumbers = injectors
+                .Select(x => x.Data.PartNumber)
+                .Distinct()
+                .ToList();
+
+            if (partNumbers.Count > 1)
+            {
+                TempData["Error"] = "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
+                return RedirectToAction("Index");
+            }
+            //
+
+            var allTests = injectors
+                .SelectMany(x => x.Data.Tests)
+                .GroupBy(x => NormalizeTestName(x.TestName))
+                .Select(g => g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First())
+                .OrderBy(x => NormalizeTestName(x.TestName))
+                .ToList();
+
+            foreach (var injector in injectors)
+            {
+                injector.NormalizedTests = injector.Data.Tests
+                    .GroupBy(x => NormalizeTestName(x.TestName))
+                    .Select(g => g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First())
+                    .Select(test => new TestCellModel
+                    {
+                        TestId = test.TestId,
+                        TestName = test.TestName,
+
+                        Exists = true,
+                        IsSkipped = test.TestStatus == 1,
+
+                        Status = test.TestStatus,
+                        Time = test.TestTime,
+                        Response = test.TestResponseTime.ToString(),
+                        SubTests = test.SubTests ?? new()
+                    })
+                    .ToList();
+            }
+
             var model = new GeneratedModel
             {
-                SelectedIds = selectedIds
+                Injectors = injectors,
+                AllTests = allTests
             };
 
             return View(model);

@@ -33,3 +33,19 @@
 .btn:hover {
     background-color: #218838;
 }
+
+td {
+    vertical-align: top;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.cell-block {
+    border-top: 1px solid #ddd;
+    margin-top: 8px;
+    padding-top: 8px;
+}
+
+.table tbody td {
+    border-bottom: 1px solid #dee2e6 !important;
+}

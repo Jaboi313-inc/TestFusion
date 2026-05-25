@@ -4,11 +4,90 @@
     ViewData["Title"] = "Gegenereerde analyse";
 }
 
-<h2>Geselecteerde IDs</h2>
+@functions {
+    public string NormalizeTestName(string name)
+        => name.Replace(" : SKIPPED", "").Trim();
+}
 
-<ul>
-    @foreach (var id in Model.SelectedIds)
-    {
-        <li>@id</li>
-    }
-</ul>
+<link rel="stylesheet" href="~/css/site.css" />
+<link rel="stylesheet" href="~/css/analysis.css" />
+
+<h2 class="mb-4">Vergelijking verstuivers</h2>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+
+        <thead>
+            <tr>
+                <th>Test</th>
+
+                @foreach (var injector in Model.Injectors)
+                {
+                    <th>
+                        <div><strong>@injector.Data.PartNumber</strong></div>
+                        <div>@injector.Data.PartBrand</div>
+                        <div>@injector.Data.PartType</div>
+                        <div>@injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")</div>
+                    </th>
+                }
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var masterTest in Model.AllTests)
+            {
+                <tr>
+
+                    <td>
+                        <strong>@NormalizeTestName(masterTest.TestName)</strong>
+                    </td>
+
+                    @foreach (var injector in Model.Injectors)
+                    {
+                        var cell = injector.NormalizedTests
+                            .FirstOrDefault(x => NormalizeTestName(x.TestName)
+                                              == NormalizeTestName(masterTest.TestName));
+
+                        <td>
+
+                            @if (cell == null || !cell.Exists)
+                            {
+                                <span>-</span>
+                            }
+                            else if (cell.IsSkipped)
+                            {
+                                <span>Skipped</span>
+                            }
+                            else
+                            {
+                                <div><strong>Tijd:</strong> @cell.Time s</div>
+                                <div><strong>Response:</strong> @cell.Response</div>
+
+                                @if (cell.SubTests.Any())
+                                {
+                                    @foreach (var sub in cell.SubTests)
+                                    {
+                                        <div class="mb-2 p-2 border rounded">
+                                            <div><strong>@sub.TankName</strong></div>
+                                            <div>Min: @sub.Min</div>
+                                            <div>Max: @sub.Max</div>
+                                            <div>Avg: @sub.ResultAverage</div>
+                                            <div>Min Result: @sub.ResultMin</div>
+                                            <div>Max Result: @sub.ResultMax</div>
+                                            <div>Results: @string.Join(", ", sub.Results)</div>
+                                        </div>
+                                    }
+                                }
+                            }
+
+                        </td>
+                    }
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+</div>
