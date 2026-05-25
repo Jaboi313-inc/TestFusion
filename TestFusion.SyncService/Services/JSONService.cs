@@ -154,6 +154,7 @@ namespace TestFusion.SyncService.Services
                     {
                         var alteredTest = new TestModel
                         {
+                            TestId = GetInt(testData, "test_id"),
                             TestName = GetString(testData, "test_name"),
                             TestStatus = GetInt(testData, "status"),
                             TestTime = 0,
@@ -173,6 +174,7 @@ namespace TestFusion.SyncService.Services
 
                     var test = new TestModel
                     {
+                        TestId = GetInt(testData, "test_id"),
                         TestName = GetString(testData, "test_name"),
                         TestStatus = GetInt(testData, "status"),
                         TestTime = FromStringHelper.ToInt(GetString(item, "test_time")),
