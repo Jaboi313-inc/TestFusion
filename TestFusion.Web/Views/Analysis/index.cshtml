@@ -3,7 +3,7 @@
     ViewData["Title"] = "Analyse overzicht";
 }
 
-@model List<TestFusion.Core.Models.WebModels.TestListItemModel>
+@model List<TestFusion.Core.Models.TestListItemModel>
 
 <link rel="stylesheet" href="~/css/site.css" />
 <link rel="stylesheet" href="~/css/analysis.css" />
@@ -38,7 +38,7 @@
         @foreach (var item in Model)
         {
             <div class="list-row">
-                <input type="checkbox" name="selectedIds" value="@item.Id">
+                <input type="checkbox" name="selectedIds" value="@item.Id" data-partnumber="@item.PartNumber">
                 <span>@item.PartNumber</span>
                 <span>@item.PartBrand</span>
                 <span>@item.PartType</span>
@@ -49,4 +49,38 @@
     </div>
 
 </form>
+
+<script>
+    let selectedPartNumber = null;
+
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedIds"]');
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function () {
+
+            const partNumber = this.dataset.partnumber;
+
+            if (this.checked) {
+
+                if (!selectedPartNumber) {
+                    selectedPartNumber = partNumber;
+                    return;
+                }
+
+                if (partNumber !== selectedPartNumber) {
+                    alert("Je kunt alleen verstuivers met dezelfde onderdeel nummer selecteren.");
+                    this.checked = false;
+                }
+
+            } else {
+
+                const anyChecked = Array.from(checkboxes).some(x => x.checked);
+
+                if (!anyChecked) {
+                    selectedPartNumber = null;
+                }
+            }
+        });
+    });
+</script>
 

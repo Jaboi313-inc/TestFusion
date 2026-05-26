@@ -4,11 +4,166 @@
     ViewData["Title"] = "Gegenereerde analyse";
 }
 
-<h2>Geselecteerde IDs</h2>
+@functions {
+    public string NormalizeTestName(string name)
+        => name.Replace(" : SKIPPED", "").Trim();
+}
 
-<ul>
-    @foreach (var id in Model.SelectedIds)
-    {
-        <li>@id</li>
-    }
-</ul>
+<link rel="stylesheet" href="~/css/site.css" />
+<link rel="stylesheet" href="~/css/analysis.css" />
+
+<h2 class="mb-4">Vergelijking verstuivers</h2>
+
+<table class="table table-bordered table-striped">
+
+    <thead>
+        <tr class="info-row">
+            <th class="info-column">
+                <strong>Verstuiver:</strong>
+                <div>Nummer: @Model.Injectors.FirstOrDefault().Data.PartNumber</div>
+                <div>Merk: @Model.Injectors.FirstOrDefault().Data.PartBrand</div>
+                <div>Type: @Model.Injectors.FirstOrDefault().Data.PartType</div><br />
+            </th>
+            <th class="info-column">
+                <strong>Klant:</strong>
+                <div>Naam: @Model.Injectors.FirstOrDefault().Data.CustomerName</div>
+                @if (@Model.Injectors.FirstOrDefault().Data.CustomerPhone != "")
+                {
+                    <div>Tel: @Model.Injectors.FirstOrDefault().Data.CustomerPhone</div>
+                }
+                @if (@Model.Injectors.FirstOrDefault().Data.CustomerMail != "")
+                {
+                    <div>Mail: @Model.Injectors.FirstOrDefault().Data.CustomerMail</div>
+                }
+                @if (@Model.Injectors.FirstOrDefault().Data.CustomerNotes != "")
+                {
+                    <div>Notitie: @Model.Injectors.FirstOrDefault().Data.CustomerNotes</div>
+                }
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <div></div><br />
+                <div>Datum en tijd van testen:</div>
+            </th>
+
+
+            @foreach (var injector in Model.Injectors)
+            {
+                <th>
+                    <div></div><br />
+                    
+                    <div>@injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")</div><br />
+
+                    @if (@injector.Data.TestNotes != "")
+                    {
+                    <strong>Notitie:</strong><br />
+                    <small>@Html.Raw(injector.Data.TestNotes)</small>
+                    }
+                </th>
+            }
+        </tr>
+        <tr>
+            <th>
+                <div></div><br />
+                Test / Tank
+                <div></div><br />
+            </th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var test in Model.AllTests)
+        {
+            var normalizedTest = NormalizeTestName(test.TestName);
+
+            var tankSubData = Model.Injectors
+                .First()
+                .Data.Tests
+                .Where(t => NormalizeTestName(t.TestName) == normalizedTest)
+                .SelectMany(t => t.SubTests)
+                .ToList();
+
+            <!-- header -->
+            <tr class="test-header">
+                <td colspan="@(Model.Injectors.Count + 1)">
+                    <div>
+                        <strong>@normalizedTest</strong><br />
+                        <small>Response time: @test.TestResponseTime s</small><br />
+                        <small>Test type: @test.TestType</small>
+                    </div>
+                    
+                    
+                </td>
+            </tr>
+
+            foreach (var tank in tankSubData)
+            {
+                <tr class="tank-row">
+
+                    <!-- left side -->
+                    <td>
+                        @{
+                            var average = (tank.Min + tank.Max) / 2;
+                            var tolerance = average - tank.Min;
+                        }
+
+                        @tank.TankName<br />
+                        <small>Min: @tank.Min</small><br />
+                        <small>Max: @tank.Max</small><br />
+                        <small>Limiet: @average +/- @tolerance</small>
+                    </td>
+
+                    <!-- injector columns -->
+                    @foreach (var injector in Model.Injectors)
+                    {
+                        var sub = injector.Data.Tests
+                            .Where(t => NormalizeTestName(t.TestName) == normalizedTest)
+                            .SelectMany(t => t.SubTests)
+                            .FirstOrDefault(s => s.TankName == tank.TankName);
+                        
+
+                        <td class="result-@(sub?.ResultColor ?? 0)">
+                            @if (sub == null)
+                            {
+                                <strong>Skipped</strong>
+                            }
+                            else
+                            {
+                                var results = sub.Results;
+
+                                var ResultMinCalculated = results.Min().ToString();
+                                var ResultAverageCalculated = results.Average().ToString("0.0");
+                                var ResultMaxCalculated = results.Max().ToString();
+
+                                <div>
+                                    <strong>Min:</strong>
+                                    @ResultMinCalculated @sub.ResultMin
+                                </div>
+
+                                <div>
+                                    <strong>Avg:</strong>
+                                    @ResultAverageCalculated @sub.ResultAverage
+                                </div>
+
+                                <div>
+                                    <strong>Max:</strong>
+                                    @ResultMaxCalculated @sub.ResultMax
+                                </div><br />
+
+                                <div>
+                                    <strong>Results:</strong>
+                                    @string.Join(" | ", sub.Results)
+                                </div>
+                            }
+                        </td>
+                    }
+
+                </tr>
+            }
+        }
+
+    </tbody>
+
+</table>

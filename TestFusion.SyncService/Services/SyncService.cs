@@ -1,18 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models;
 using TestFusion.Data;
+using TestFusion.SyncService.Services;
 
 public class SyncService : ISyncService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<SyncService> _logger;
+    private readonly JSONService _jsonService;
 
     public SyncService(
         IServiceScopeFactory scopeFactory,
-        ILogger<SyncService> logger)
+        ILogger<SyncService> logger,
+        JSONService jsonService)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _jsonService = jsonService;
     }
 
     public async Task RunSync(CancellationToken ct = default)
@@ -44,12 +50,28 @@ public class SyncService : ISyncService
             _logger.LogInformation("STATUS: New items to fetch: {count}", newIds.ToList().Count);
             _logger.LogInformation("STATUS: New items actually going to be fetched: {count}", limitedIds.Count);
 
-            var newItems = await Task.WhenAll(
+            var jsonResults = await Task.WhenAll(
                 limitedIds.Select(id => playwright.GetDataForId(id))
             );
 
-            // 5. opslaan
-            db.TestItems.AddRange(newItems);
+            var listItems = new List<TestListItemModel>();
+            var storedJsons = new List<StoredJsonModel>();
+
+            foreach (var json in jsonResults)
+            {
+                var testResultModel = _jsonService.ConvertToTestResultModel(json);
+
+                listItems.Add(_jsonService.ConvertToTestListModel(testResultModel));
+
+                storedJsons.Add(new StoredJsonModel
+                {
+                    Id = testResultModel.Id,
+                    Json = _jsonService.ConvertToJson(testResultModel)
+                });
+            }
+
+            db.TestItems.AddRange(listItems);
+            db.StoredJsons.AddRange(storedJsons);
 
             await db.SaveChangesAsync(ct);
 

@@ -3,6 +3,7 @@ using Microsoft.Playwright;
 using System.Collections;
 using System.Text.Json;
 using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.SyncService.Models;
 using TestFusion.SyncService.Services;
@@ -82,7 +83,7 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
         }
     }
 
-    public async Task<TestListItemModel> GetDataForId(string id)
+    public async Task<string> GetDataForId(string id)
     {
         _logger.LogInformation("STATUS: Retrieving data for ID: {Id}", id);
 
@@ -111,9 +112,9 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
             //_logger.LogInformation(JsonSerializer.Serialize(_jsonService.ConvertToTestResultModel(json), new JsonSerializerOptions{WriteIndented = true}));
 
-            //File.WriteAllText($"testresult_{DateTime.Now:yyyyMMdd_HHmmss}_{id}.json", JsonSerializer.Serialize(_jsonService.ConvertToTestResultModel(json), new JsonSerializerOptions{ WriteIndented = true}));
+            //File.WriteAllText($"testresult_{DateTime.Now:yyyyMMdd_HHmmss}_{id}.json", _jsonService.ConvertToJson(_jsonService.ConvertToTestResultModel(json), prettyJson: true, useUnicodeSymbols: false));
 
-            return _jsonService.ConvertToTestListItem(json);
+            return json;
         }
         catch (Exception ex)
         {
