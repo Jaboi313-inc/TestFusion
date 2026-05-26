@@ -17,18 +17,58 @@
 <table class="table table-bordered table-striped">
 
     <thead>
+        <tr class="info-row">
+            <th class="info-column">
+                <strong>Verstuiver:</strong>
+                <div>Nummer: @Model.Injectors.FirstOrDefault().Data.PartNumber</div>
+                <div>Merk: @Model.Injectors.FirstOrDefault().Data.PartBrand</div>
+                <div>Type: @Model.Injectors.FirstOrDefault().Data.PartType</div><br />
+            </th>
+            <th class="info-column">
+                <strong>Klant:</strong>
+                <div>Naam: @Model.Injectors.FirstOrDefault().Data.CustomerName</div>
+                @if (@Model.Injectors.FirstOrDefault().Data.CustomerPhone != "")
+                {
+                    <div>Tel: @Model.Injectors.FirstOrDefault().Data.CustomerPhone</div>
+                }
+                @if (@Model.Injectors.FirstOrDefault().Data.CustomerMail != "")
+                {
+                    <div>Mail: @Model.Injectors.FirstOrDefault().Data.CustomerMail</div>
+                }
+                @if (@Model.Injectors.FirstOrDefault().Data.CustomerNotes != "")
+                {
+                    <div>Notitie: @Model.Injectors.FirstOrDefault().Data.CustomerNotes</div>
+                }
+            </th>
+        </tr>
         <tr>
-            <th>Test / Tank</th>
+            <th>
+                <div></div><br />
+                <div>Datum en tijd van testen:</div>
+            </th>
+
 
             @foreach (var injector in Model.Injectors)
             {
                 <th>
-                    <div><strong>@injector.Data.PartNumber</strong></div>
-                    <div>@injector.Data.PartBrand</div>
-                    <div>@injector.Data.PartType</div>
-                    <div>@injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")</div>
+                    <div></div><br />
+                    
+                    <div>@injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")</div><br />
+
+                    @if (@injector.Data.TestNotes != "")
+                    {
+                    <strong>Notitie:</strong><br />
+                    <small>@Html.Raw(injector.Data.TestNotes)</small>
+                    }
                 </th>
             }
+        </tr>
+        <tr>
+            <th>
+                <div></div><br />
+                Test / Tank
+                <div></div><br />
+            </th>
         </tr>
     </thead>
 
@@ -63,7 +103,7 @@
                 <tr class="tank-row">
 
                     <!-- left side -->
-                    <td class="tank-column">
+                    <td>
                         @{
                             var average = (tank.Min + tank.Max) / 2;
                             var tolerance = average - tank.Min;
@@ -82,20 +122,21 @@
                             .Where(t => NormalizeTestName(t.TestName) == normalizedTest)
                             .SelectMany(t => t.SubTests)
                             .FirstOrDefault(s => s.TankName == tank.TankName);
-
-                        var results = sub.Results; 
-
-                        var ResultMinCalculated = results.Min().ToString();
-                        var ResultAverageCalculated = results.Average().ToString("0.0");
-                        var ResultMaxCalculated = results.Max().ToString();
+                        
 
                         <td class="result-@(sub?.ResultColor ?? 0)">
                             @if (sub == null)
                             {
-                                <span>-</span>
+                                <strong>Skipped</strong>
                             }
                             else
                             {
+                                var results = sub.Results;
+
+                                var ResultMinCalculated = results.Min().ToString();
+                                var ResultAverageCalculated = results.Average().ToString("0.0");
+                                var ResultMaxCalculated = results.Max().ToString();
+
                                 <div>
                                     <strong>Min:</strong>
                                     @ResultMinCalculated @sub.ResultMin

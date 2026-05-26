@@ -34,11 +34,14 @@
     background-color: #218838;
 }
 
-/* spacing above first test */
-tbody::before {
-    content: "";
-    display: block;
-    height: 40px;
+.info-row {
+}
+
+.info-column {
+    text-align: justify;
+    padding-left: 100px;
+    border-top: 3px solid #111;
+    border-bottom: 3px solid #111;
 }
 
 /* test headers */
@@ -57,12 +60,6 @@ tbody::before {
     padding: 10px 10px;
 }
 
-/* tank column */
-.tank-column {
-    min-width: 150px;
-    width: 10%;
-}
-
 /* line after last tank */
 .tank-row:last-of-type td {
     border-bottom: 3px solid #111;
@@ -77,6 +74,10 @@ table.table {
 table.table td,
 table.table th {
     vertical-align: top;
+    min-width: 150px;
+    width: 10%;
+    min-height: 50px;
+    height: 5%;
 }
 
 /* colors */
