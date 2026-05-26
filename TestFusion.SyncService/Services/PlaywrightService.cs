@@ -112,7 +112,7 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
             //_logger.LogInformation(JsonSerializer.Serialize(_jsonService.ConvertToTestResultModel(json), new JsonSerializerOptions{WriteIndented = true}));
 
-            //File.WriteAllText($"testresult_{DateTime.Now:yyyyMMdd_HHmmss}_{id}.json", JsonSerializer.Serialize(_jsonService.ConvertToTestResultJson(json), new JsonSerializerOptions{ WriteIndented = true}));
+            //File.WriteAllText($"testresult_{DateTime.Now:yyyyMMdd_HHmmss}_{id}.json", _jsonService.ConvertToJson(_jsonService.ConvertToTestResultModel(json), prettyJson: true, useUnicodeSymbols: false));
 
             return json;
         }
