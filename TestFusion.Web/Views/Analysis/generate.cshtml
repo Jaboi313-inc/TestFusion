@@ -49,7 +49,9 @@
             <tr class="test-header">
                 <td colspan="@(Model.Injectors.Count + 1)">
                     <div>
-                        <strong>@normalizedTest</strong>
+                        <strong>@normalizedTest</strong><br />
+                        <small>Response time: @test.TestResponseTime s</small><br />
+                        <small>Test type: @test.TestType</small>
                     </div>
                     
                     
@@ -81,6 +83,12 @@
                             .SelectMany(t => t.SubTests)
                             .FirstOrDefault(s => s.TankName == tank.TankName);
 
+                        var results = sub.Results; 
+
+                        var ResultMinCalculated = results.Min().ToString();
+                        var ResultAverageCalculated = results.Average().ToString("0.0");
+                        var ResultMaxCalculated = results.Max().ToString();
+
                         <td class="result-@(sub?.ResultColor ?? 0)">
                             @if (sub == null)
                             {
@@ -89,23 +97,23 @@
                             else
                             {
                                 <div>
-                                    <strong>Results:</strong>
-                                    @string.Join(", ", sub.Results)
-                                </div>
-
-                                <div>
                                     <strong>Min:</strong>
-                                    @sub.ResultMin
+                                    @ResultMinCalculated @sub.ResultMin
                                 </div>
 
                                 <div>
                                     <strong>Avg:</strong>
-                                    @sub.ResultAverage
+                                    @ResultAverageCalculated @sub.ResultAverage
                                 </div>
 
                                 <div>
                                     <strong>Max:</strong>
-                                    @sub.ResultMax
+                                    @ResultMaxCalculated @sub.ResultMax
+                                </div><br />
+
+                                <div>
+                                    <strong>Results:</strong>
+                                    @string.Join(" | ", sub.Results)
                                 </div>
                             }
                         </td>

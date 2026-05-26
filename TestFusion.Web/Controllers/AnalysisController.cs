@@ -84,6 +84,7 @@ namespace TestFusion.Web.Controllers
                         TestOrder = firstValid.TestOrder,
                         TestStatus = firstValid.TestStatus,
                         TestTime = firstValid.TestTime,
+                        TestType = firstValid.TestType,
                         TestResponseTime = firstValid.TestResponseTime,
                         SubTests = firstValid.SubTests ?? new()
                     };
