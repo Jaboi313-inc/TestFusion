@@ -82,19 +82,23 @@ table.table th {
 
 /* colors */
 .result-1 {
-    background-color: red;
+    background-color: #ff331c;
+    color: #ffffff;
 }
 
 .result-2 {
-    background-color: red;
+    background-color: #ff331c;
+    color: #ffffff;
 }
 
 .result-3 {
-    background-color: red;
+    background-color: #ff331c;
+    color: #ffffff;
 }
 
 .result-4 {
-    background-color: red;
+    background-color: #ff331c;
+    color: #ffffff;
 }
 
 .result-5 {
@@ -104,5 +108,15 @@ table.table th {
 
 .result-6 {
     background-color: #00ab4f;
+    color: #ffffff;
+}
+
+.result-7 {
+    background-color: #ff331c;
+    color: #ffffff;
+}
+
+.result-8 {
+    background-color: #ff331c;
     color: #ffffff;
 }
