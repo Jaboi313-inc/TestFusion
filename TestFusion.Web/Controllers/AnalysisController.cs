@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
-using static System.Net.Mime.MediaTypeNames;
+using TestFusion.Web.Services;
 
 namespace TestFusion.Web.Controllers
 {
@@ -15,7 +14,9 @@ namespace TestFusion.Web.Controllers
         private readonly AppDbContext _db;
         private readonly ISyncService _sync;
 
-        public AnalysisController(AppDbContext db, ISyncService sync)
+        public AnalysisController(
+            AppDbContext db,
+            ISyncService sync)
         {
             _db = db;
             _sync = sync;
@@ -38,18 +39,54 @@ namespace TestFusion.Web.Controllers
             return View(items);
         }
 
-        private static string NormalizeTestName(string name)
-        {
-            return name.Replace(" : SKIPPED", "").Trim();
-        }
-
         [HttpPost]
         public async Task<IActionResult> Generate(List<string> selectedIds)
         {
+            var model = await BuildGeneratedModel(selectedIds);
+
+            if (model == null)
+            {
+                TempData["Error"] =
+                    "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
+
+                return RedirectToAction("Index");
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GeneratePdf(List<string> selectedIds)
+        {
+            var model = await BuildGeneratedModel(selectedIds);
+
+            if (model == null)
+            {
+                TempData["Error"] =
+                    "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
+
+                return RedirectToAction("Index");
+            }
+
+            byte[] pdf = PDFService.Generate(model);
+
+            return File(
+                pdf,
+                "application/pdf",
+                $"Analyse-{DateTime.Now:yyyy-MM-dd-HHmm}.pdf"
+            );
+        }
+
+        private async Task<GeneratedModel?> BuildGeneratedModel(
+            List<string> selectedIds)
+        {
+            // Get JSON from db
             var jsons = await _db.StoredJsons
                 .Where(x => selectedIds.Contains(x.Id))
                 .ToListAsync();
 
+
+            // JSON -> TestResultModel
             var injectors = jsons
                 .Select(x => new TestResultViewModel
                 {
@@ -65,10 +102,8 @@ namespace TestFusion.Web.Controllers
 
             if (partNumbers.Count > 1)
             {
-                TempData["Error"] = "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
-                return RedirectToAction("Index");
+                return null;
             }
-            //
 
             var allTests = injectors
                 .SelectMany(x => x.Data.Tests)
@@ -116,13 +151,19 @@ namespace TestFusion.Web.Controllers
                     .ToList();
             }
 
-            var model = new GeneratedModel
+            return new GeneratedModel
             {
                 Injectors = injectors,
-                AllTests = allTests
+                AllTests = allTests,
+                SelectedIds = selectedIds
             };
+        }
 
-            return View(model);
+        private static string NormalizeTestName(string name)
+        {
+            return name
+                .Replace(" : SKIPPED", "")
+                .Trim();
         }
     }
 }
