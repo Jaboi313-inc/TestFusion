@@ -82,33 +82,38 @@ table.table th {
 
 /* colors */
 .result-1 {
-    background-color: #ff331c;
-    color: #ffffff;
+    background-color: #FF331C; /* Red */
+    color: #FFFFFF; /* White text */
 }
 
 .result-2 {
-    background-color: #ff331c;
-    color: #ffffff;
+    background-color: #FF331C; /* Red */
+    color: #FFFFFF; /* White text */
 }
 
 .result-3 {
-    background-color: #ff331c;
-    color: #ffffff;
+    background-color: #FF331C; /* Red */
+    color: #FFFFFF; /* White text */
 }
 
 .result-4 {
-    background-color: #ff331c;
-    color: #ffffff;
+    background-color: #FF331C; /* Red */
+    color: #FFFFFF; /* White text */
 }
 
 .result-5 {
-    background-color: #0000ff;
-    color: #ffffff;
+    background-color: #0000FF; /* Blue */
+    color: #FFFFFF; /* White text */
 }
 
 .result-6 {
-    background-color: #00ab4f;
-    color: #ffffff;
+    background-color: #00AB4F; /* Green */
+    color: #FFFFFF; /* White text */
+}
+
+.result-8 {
+    background-color: #FF331C; /* Red */
+    color: #FFFFFF; /* White text */
 }
 
 .result-7 {
