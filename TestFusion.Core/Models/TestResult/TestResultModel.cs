@@ -16,6 +16,7 @@
         public string CustomerNotes { get; set; } = default!;
 
         public string TestNotes { get; set; } = default!;
+        public string InjectorSerialNumber { get; set; } = default!;
 
         public List<TestModel> Tests { get; set; } = new();
     }

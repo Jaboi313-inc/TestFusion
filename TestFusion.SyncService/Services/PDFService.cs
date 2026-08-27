@@ -1,13 +1,14 @@
 ﻿using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using TestFusion.Core.Enums;
 using TestFusion.Core.Models.WebModels;
 
 namespace TestFusion.Web.Services;
 
 public static class PDFService
 {
-    public static byte[] Generate(GeneratedModel model)
+    public static byte[] Generate(GeneratedModel model, PdfLayoutModeEnum layoutMode)
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
@@ -33,9 +34,40 @@ public static class PDFService
 
                         CreateGeneralInfo(column, model);
 
-                        foreach (var test in model.AllTests)
+                        for (int i = 0; i < model.AllTests.Count; i++)
                         {
-                            CreateTest(column, model, test);
+                            var test = model.AllTests[i];
+
+                            switch (layoutMode)
+                            {
+                                case PdfLayoutModeEnum.Compact:
+                                    column.Item()
+                                        .Element(container =>
+                                            CreateTest(container, model, test));
+                                    break;
+
+                                case PdfLayoutModeEnum.KeepTestTogether:
+                                    column.Item()
+                                        .PreventPageBreak()
+                                        .Element(container =>
+                                            CreateTest(container, model, test));
+                                    break;
+
+                                case PdfLayoutModeEnum.OneTestPerPage:
+                                    column.Item()
+                                        .PageBreak();
+
+                                    column.Item()
+                                        .Element(container =>
+                                            CreateTest(container, model, test));
+                                    break;
+
+                                default:
+                                    column.Item()
+                                        .Element(container =>
+                                            CreateTest(container, model, test));
+                                    break;
+                            }
                         }
                     });
 
@@ -123,17 +155,21 @@ public static class PDFService
                     columns.ConstantColumn(130);
 
                     foreach (var injector in model.Injectors)
-                    {
                         columns.RelativeColumn();
-                    }
                 });
 
+                // Linker kolom (zoals HTML)
                 table.Cell()
                     .Border(1)
                     .Padding(5)
-                    .Text("Datum en tijd van testen:")
-                    .Bold();
+                    .Column(cell =>
+                    {
+                        cell.Item().Text("Datum en tijd van testen:");
+                        cell.Item().PaddingTop(8).Text("Verstuiver nummer:");
+                        cell.Item().PaddingTop(8).Text("Notitie:");
+                    });
 
+                // Injector kolommen
                 foreach (var injector in model.Injectors)
                 {
                     table.Cell()
@@ -141,197 +177,201 @@ public static class PDFService
                         .Padding(5)
                         .Column(cell =>
                         {
+                            // Datum
                             cell.Item()
-                                .Text(
-                                    injector.Data.TimeOffTesting
-                                        .ToString("dd-MM-yyyy HH:mm")
-                                );
+                                .Text(injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm"));
 
-                            if (!string.IsNullOrWhiteSpace(injector.Data.TestNotes))
-                            {
-                                cell.Item()
-                                    .PaddingTop(4)
-                                    .Text("Notitie:")
-                                    .Bold();
+                            // Serienummer
+                            cell.Item()
+                                .PaddingTop(8)
+                                .Text(string.IsNullOrWhiteSpace(injector.Data.InjectorSerialNumber)
+                                    ? "-"
+                                    : injector.Data.InjectorSerialNumber);
 
-                                cell.Item()
-                                    .Text(RemoveHtml(injector.Data.TestNotes));
-                            }
+                            // Notitie
+                            cell.Item()
+                                .PaddingTop(8)
+                                .Text(string.IsNullOrWhiteSpace(injector.Data.TestNotes)
+                                    ? "-"
+                                    : RemoveHtml(injector.Data.TestNotes));
                         });
                 }
             });
     }
 
     private static void CreateTest(
-        ColumnDescriptor column,
+        IContainer container,
         GeneratedModel model,
         TestFusion.Core.Models.TestResult.TestModel test)
     {
-        string normalizedTest = NormalizeTestName(test.TestName);
-
-        var tankSubData = model.Injectors
-            .First()
-            .Data.Tests
-            .Where(t =>
-                NormalizeTestName(t.TestName) == normalizedTest)
-            .SelectMany(t => t.SubTests)
-            .ToList();
-
-        column.Item()
-            .PaddingTop(5)
-            .Border(1)
-            .Background(Colors.Grey.Lighten3)
-            .Padding(6)
-            .Column(header =>
-            {
-                header.Item()
-                    .Text(normalizedTest)
-                    .Bold()
-                    .FontSize(10);
-
-                header.Item()
-                    .Text($"Response time: {test.TestResponseTime} s");
-
-                header.Item()
-                    .Text($"Test type: {test.TestType}");
-            });
-
-        foreach (var tank in tankSubData)
+        container.Column(column =>
         {
+            string normalizedTest = NormalizeTestName(test.TestName);
+
+            var tankSubData = model.Injectors
+                .First()
+                .Data.Tests
+                .Where(t =>
+                    NormalizeTestName(t.TestName) == normalizedTest)
+                .SelectMany(t => t.SubTests)
+                .ToList();
+
             column.Item()
-                .Table(table =>
+                .PaddingTop(5)
+                .Border(1)
+                .Background(Colors.Grey.Lighten3)
+                .Padding(6)
+                .Column(header =>
                 {
-                    table.ColumnsDefinition(columns =>
+                    header.Item()
+                        .Text(normalizedTest)
+                        .Bold()
+                        .FontSize(10);
+
+                    header.Item()
+                        .Text($"Response time: {test.TestResponseTime} s");
+
+                    header.Item()
+                        .Text($"Test type: {test.TestType}");
+                });
+
+            foreach (var tank in tankSubData)
+            {
+                column.Item()
+                    .Table(table =>
                     {
-                        columns.ConstantColumn(130);
-
-                        foreach (var injector in model.Injectors)
+                        table.ColumnsDefinition(columns =>
                         {
-                            columns.RelativeColumn();
-                        }
-                    });
+                            columns.ConstantColumn(130);
 
-                    decimal average = (tank.Min + tank.Max) / 2;
-                    decimal tolerance = average - tank.Min;
-
-                    table.Cell()
-                        .Border(1)
-                        .Padding(5)
-                        .Column(cell =>
-                        {
-                            cell.Item()
-                                .Text(tank.TankName)
-                                .Bold();
-
-                            cell.Item()
-                                .Text($"Min: {tank.Min}");
-
-                            cell.Item()
-                                .Text($"Max: {tank.Max}");
-
-                            cell.Item()
-                                .Text($"Limiet: {average} +/- {tolerance}");
+                            foreach (var injector in model.Injectors)
+                            {
+                                columns.RelativeColumn();
+                            }
                         });
 
-                    foreach (var injector in model.Injectors)
-                    {
-                        var sub = injector.Data.Tests
-                            .Where(t =>
-                                NormalizeTestName(t.TestName) == normalizedTest)
-                            .SelectMany(t => t.SubTests)
-                            .FirstOrDefault(s =>
-                                s.TankName == tank.TankName);
+                        decimal average = (tank.Min + tank.Max) / 2;
+                        decimal tolerance = average - tank.Min;
 
                         table.Cell()
                             .Border(1)
-                            .Background(
-                                sub == null
-                                    ? Colors.Grey.Lighten4
-                                    : GetResultBackgroundColor(sub.ResultColor)
-                            )
-                            .DefaultTextStyle(style =>
-                                style.FontColor(
-                                    sub == null
-                                        ? "#000000"
-                                        : GetResultTextColor(sub.ResultColor)
-                                )
-                            )
-                            .Padding(6)
-                            .Element(cell =>
+                            .Padding(5)
+                            .Column(cell =>
                             {
-                                if (sub == null)
-                                {
-                                    cell.Text("Skipped")
-                                        .Bold();
+                                cell.Item()
+                                    .Text(tank.TankName)
+                                    .Bold();
 
-                                    return;
-                                }
+                                cell.Item()
+                                    .Text($"Min: {tank.Min}");
 
-                                if (sub.Results == null ||
-                                    sub.Results.Count == 0)
-                                {
-                                    cell.Text("Geen resultaten");
-                                    return;
-                                }
+                                cell.Item()
+                                    .Text($"Max: {tank.Max}");
 
-                                decimal resultMin =
-                                    sub.Results.Min();
-
-                                decimal resultAverage =
-                                    sub.Results.Average();
-
-                                decimal resultMax =
-                                    sub.Results.Max();
-
-                                cell.Column(result =>
-                                {
-                                    result.Item()
-                                        .Text(text =>
-                                        {
-                                            text.Span("Min: ")
-                                                .Bold();
-
-                                            text.Span(
-                                                $"{resultMin} {sub.ResultMin}");
-                                        });
-
-                                    result.Item()
-                                        .Text(text =>
-                                        {
-                                            text.Span("Avg: ")
-                                                .Bold();
-
-                                            text.Span(
-                                                $"{resultAverage:0.0} {sub.ResultAverage}");
-                                        });
-
-                                    result.Item()
-                                        .Text(text =>
-                                        {
-                                            text.Span("Max: ")
-                                                .Bold();
-
-                                            text.Span(
-                                                $"{resultMax} {sub.ResultMax}");
-                                        });
-
-                                    result.Item()
-                                        .PaddingTop(5)
-                                        .Text(text =>
-                                        {
-                                            text.Span("Results: ")
-                                                .Bold();
-
-                                            text.Span(
-                                                string.Join(
-                                                    " | ",
-                                                    sub.Results));
-                                        });
-                                });
+                                cell.Item()
+                                    .Text($"Limiet: {average} +/- {tolerance}");
                             });
-                    }
-                });
-        }
+
+                        foreach (var injector in model.Injectors)
+                        {
+                            var sub = injector.Data.Tests
+                                .Where(t =>
+                                    NormalizeTestName(t.TestName) == normalizedTest)
+                                .SelectMany(t => t.SubTests)
+                                .FirstOrDefault(s =>
+                                    s.TankName == tank.TankName);
+
+                            table.Cell()
+                                .Border(1)
+                                .Background(
+                                    sub == null
+                                        ? Colors.Grey.Lighten4
+                                        : GetResultBackgroundColor(sub.ResultColor)
+                                )
+                                .DefaultTextStyle(style =>
+                                    style.FontColor(
+                                        sub == null
+                                            ? "#000000"
+                                            : GetResultTextColor(sub.ResultColor)
+                                    )
+                                )
+                                .Padding(6)
+                                .Element(cell =>
+                                {
+                                    if (sub == null)
+                                    {
+                                        cell.Text("Skipped")
+                                            .Bold();
+
+                                        return;
+                                    }
+
+                                    if (sub.Results == null ||
+                                        sub.Results.Count == 0)
+                                    {
+                                        cell.Text("Geen resultaten");
+                                        return;
+                                    }
+
+                                    decimal resultMin =
+                                        sub.Results.Min();
+
+                                    decimal resultAverage =
+                                        sub.Results.Average();
+
+                                    decimal resultMax =
+                                        sub.Results.Max();
+
+                                    cell.Column(result =>
+                                    {
+                                        result.Item()
+                                            .Text(text =>
+                                            {
+                                                text.Span("Min: ")
+                                                    .Bold();
+
+                                                text.Span(
+                                                    $"{resultMin} {sub.ResultMin}");
+                                            });
+
+                                        result.Item()
+                                            .Text(text =>
+                                            {
+                                                text.Span("Avg: ")
+                                                    .Bold();
+
+                                                text.Span(
+                                                    $"{resultAverage:0.0} {sub.ResultAverage}");
+                                            });
+
+                                        result.Item()
+                                            .Text(text =>
+                                            {
+                                                text.Span("Max: ")
+                                                    .Bold();
+
+                                                text.Span(
+                                                    $"{resultMax} {sub.ResultMax}");
+                                            });
+
+                                        result.Item()
+                                            .PaddingTop(5)
+                                            .Text(text =>
+                                            {
+                                                text.Span("Results: ")
+                                                    .Bold();
+
+                                                text.Span(
+                                                    string.Join(
+                                                        " | ",
+                                                        sub.Results));
+                                            });
+                                    });
+                                });
+                        }
+                    });
+            }
+        });
     }
 
     private static string NormalizeTestName(string name)

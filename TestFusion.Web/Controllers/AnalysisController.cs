@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using TestFusion.Core.Enums;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
@@ -56,7 +57,7 @@ namespace TestFusion.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GeneratePdf(List<string> selectedIds)
+        public async Task<IActionResult> GeneratePdf(List<string> selectedIds, PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact)
         {
             var model = await BuildGeneratedModel(selectedIds);
 
@@ -68,7 +69,10 @@ namespace TestFusion.Web.Controllers
                 return RedirectToAction("Index");
             }
 
-            byte[] pdf = PDFService.Generate(model);
+            byte[] pdf = PDFService.Generate(
+                model,
+                layoutMode
+            );
 
             return File(
                 pdf,

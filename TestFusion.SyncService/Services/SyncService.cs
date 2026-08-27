@@ -59,6 +59,7 @@ public class SyncService : ISyncService
 
             foreach (var json in jsonResults)
             {
+                //_logger.LogInformation("DEBUG: Json: {json}", json);
                 var testResultModel = _jsonService.ConvertToTestResultModel(json);
 
                 listItems.Add(_jsonService.ConvertToTestListModel(testResultModel));
