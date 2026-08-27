@@ -54,11 +54,8 @@ public static class PDFService
                                     break;
 
                                 case PdfLayoutModeEnum.OneTestPerPage:
-                                    if (i > 0)
-                                    {
-                                        column.Item()
-                                            .PageBreak();
-                                    }
+                                    column.Item()
+                                        .PageBreak();
 
                                     column.Item()
                                         .Element(container =>
