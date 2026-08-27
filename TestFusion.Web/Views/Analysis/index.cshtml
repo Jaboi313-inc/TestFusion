@@ -9,23 +9,25 @@
 <link rel="stylesheet" href="~/css/analysis.css" />
 
 
-<form asp-controller="Analysis" asp-action="Refresh" method="post">
-    <button type="submit" class="btn">
-        Refresh
-    </button>
-</form>
+<div class="main-body">
+    <form asp-controller="Analysis" asp-action="Refresh" method="post">
+        <button type="submit" class="btn">
+            Refresh
+        </button>
+    </form>
+</div>
 
 <form asp-controller="Analysis" asp-action="Generate" method="post">
 
     <div id="top-bar">
         <h2>Testresultaten overzicht</h2>
 
-        <button type="submit" class="btn">
+        <button type="submit" class="main-body btn">
             Genereer analyse
         </button>
     </div>
 
-    <div class="list">
+    <div class="list main-body">
 
         <div class="list-row header">
             <span></span>

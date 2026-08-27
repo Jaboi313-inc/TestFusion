@@ -6,6 +6,12 @@
     padding: 20px;
 }
 
+.main-body {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 20px;
+}
+
 .list {
     display: flex;
     flex-direction: column;
@@ -35,13 +41,17 @@
 }
 
 .info-row {
+    text-align: justify;
 }
 
 .info-column {
     text-align: justify;
-    padding-left: 100px;
     border-top: 3px solid #111;
     border-bottom: 3px solid #111;
+}
+
+.injector-info {
+    text-align: justify;
 }
 
 /* test headers */
@@ -111,17 +121,12 @@ table.table th {
     color: #FFFFFF; /* White text */
 }
 
-.result-8 {
+.result-7 {
     background-color: #FF331C; /* Red */
     color: #FFFFFF; /* White text */
 }
 
-.result-7 {
-    background-color: #ff331c;
-    color: #ffffff;
-}
-
 .result-8 {
-    background-color: #ff331c;
-    color: #ffffff;
+    background-color: #FF331C; /* Red */
+    color: #FFFFFF; /* White text */
 }

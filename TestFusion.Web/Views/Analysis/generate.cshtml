@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="~/css/analysis.css" />
 
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 main-body">
 
     <h2 class="mb-0">
         Vergelijking verstuivers
@@ -21,7 +21,8 @@
 
     <form asp-controller="Analysis"
           asp-action="GeneratePdf"
-          method="post">
+          method="post"
+          class="d-flex align-items-center gap-2">
 
         @foreach (var id in Model.SelectedIds)
         {
@@ -29,6 +30,23 @@
                    name="selectedIds"
                    value="@id" />
         }
+
+        <select name="layoutMode"
+                class="form-select">
+
+            <option value="Compact">
+                Zoveel mogelijk op één pagina
+            </option>
+
+            <option value="KeepTestTogether">
+                Test naar nieuwe pagina als deze niet past
+            </option>
+
+            <option value="OneTestPerPage">
+                Elke test op aparte pagina
+            </option>
+
+        </select>
 
         <button type="submit"
                 class="btn btn-primary">
@@ -40,27 +58,33 @@
 </div>
 
 
-<table class="table table-bordered table-striped">
+<table class="table table-bordered table-striped main-body">
 
     <thead>
         <tr class="info-row">
             <th class="info-column">
                 <strong>Verstuiver:</strong>
 
-                <div>
+                <br />
+
+                <small>
                     Nummer:
                     @Model.Injectors.FirstOrDefault()?.Data.PartNumber
-                </div>
+                </small>
 
-                <div>
+                <br />
+
+                <small>
                     Merk:
                     @Model.Injectors.FirstOrDefault()?.Data.PartBrand
-                </div>
+                </small>
 
-                <div>
+                <br />
+
+                <small>
                     Type:
                     @Model.Injectors.FirstOrDefault()?.Data.PartType
-                </div>
+                </small>
 
                 <br />
 
@@ -68,72 +92,99 @@
             <th class="info-column">
                 <strong>Klant:</strong>
 
-                <div>
+                <br />
+
+                <small>
                     Naam:
                     @Model.Injectors.FirstOrDefault()?.Data.CustomerName
-                </div>
+                </small>
+
+                <br />
 
 
                 @if (!string.IsNullOrWhiteSpace(
                     Model.Injectors.FirstOrDefault()?.Data.CustomerPhone))
                 {
-                    <div>
+                    <small>
                         Tel:
                         @Model.Injectors.FirstOrDefault()?.Data.CustomerPhone
-                    </div>
+                    </small>
                 }
+
+                <br />
 
 
                 @if (!string.IsNullOrWhiteSpace(
                     Model.Injectors.FirstOrDefault()?.Data.CustomerMail))
                 {
-                    <div>
+                    <small>
                         Mail:
                         @Model.Injectors.FirstOrDefault()?.Data.CustomerMail
-                    </div>
+                    </small>
                 }
+
+                <br />
 
 
                 @if (!string.IsNullOrWhiteSpace(
                     Model.Injectors.FirstOrDefault()?.Data.CustomerNotes))
                 {
-                    <div>
+                    <small>
                         Notitie:
                         @Model.Injectors.FirstOrDefault()?.Data.CustomerNotes
-                    </div>
+                    </small>
                 }
+
+                <br />
             </th>
         </tr>
         <tr>
-            <th>
+            <th class="info-row">
                 <br />
 
-                <div>
+                <small>
                     Datum en tijd van testen:
-                </div>
+                </small>
+
+                <br />
+
+                <small>
+                    Verstuiver nummer:
+                </small>
+
+                <br />
+
+                <small>
+                    Notitie:
+                </small>
             </th>
 
 
             @foreach (var injector in Model.Injectors)
             {
-                <th>
+                <th class="injector-info">
 
                     <br />
 
-                    <div>
+                    <small>
                         @(injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm"))
-                    </div>
+                    </small>
 
+                    <br />
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        injector.Data.InjectorSerialNumber))
+                    {
+                        <small>
+                            @injector.Data.InjectorSerialNumber
+                        </small>
+                    }
                     <br />
 
 
                     @if (!string.IsNullOrWhiteSpace(
                         injector.Data.TestNotes))
                     {
-                        <strong>Notitie:</strong>
-
-                        <br />
-
                         <small>
                             @Html.Raw(injector.Data.TestNotes)
                         </small>
@@ -145,10 +196,10 @@
             <th>
 
                 <br />
-
-                Test / Tank
-
                 <br />
+                <div class="info-row">
+                    Test / Tank
+                </div>
 
             </th>
         </tr>
