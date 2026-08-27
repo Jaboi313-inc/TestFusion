@@ -120,6 +120,22 @@ namespace TestFusion.SyncService.Services
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
 
+            string? injectorSerialNumber = null;
+
+            if (root.TryGetProperty("SlotsData", out var slotsData) &&
+                slotsData.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var slot in slotsData.EnumerateArray())
+                {
+                    if (slot.TryGetProperty("sn", out var snElement) &&
+                        snElement.ValueKind != JsonValueKind.Null)
+                    {
+                        injectorSerialNumber = snElement.GetString();
+                        break;
+                    }
+                }
+            }
+
             var testResultModel = new TestResultModel
             {
                 Id = GetString(root, "_id"),
@@ -135,13 +151,14 @@ namespace TestFusion.SyncService.Services
                 CustomerNotes = GetString(root, "customer_notes"),
 
                 TestNotes = GetString(root, "notes"),
+                InjectorSerialNumber = injectorSerialNumber,
 
                 Tests = new List<TestModel>()
             };
 
-            var pages = root.GetProperty("TestsDataPages");
+            var testDataPages = root.GetProperty("TestsDataPages");
 
-            foreach (var page in pages.EnumerateArray())
+            foreach (var page in testDataPages.EnumerateArray())
             {
                 if (!page.TryGetProperty("TestData", out var testDataArray))
                     continue;
