@@ -1,8 +1,85 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Analyse overzicht";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@model List<TestFusion.Core.Models.TestListItemModel>
+
+<link rel="stylesheet" href="~/css/site.css" />
+<link rel="stylesheet" href="~/css/analysis.css" />
+
+
+<form asp-controller="Home" asp-action="Refresh" method="post">
+    <button type="submit" class="btn">
+        Refresh
+    </button>
+</form>
+
+<form asp-controller="Analysis" asp-action="Index" method="post">
+
+    <div id="top-bar">
+        <h2>Testresultaten overzicht</h2>
+
+        <button type="submit" class="btn">
+            Genereer analyse
+        </button>
+    </div>
+
+    <div class="list">
+
+        <div class="list-row header">
+            <span></span>
+            <span>Verstuiver #</span>
+            <span>Merk</span>
+            <span>Type</span>
+            <span>Datum, Tijd</span>
+        </div>
+
+        @foreach (var item in Model)
+        {
+            <div class="list-row">
+                <input type="checkbox" name="selectedIds" value="@item.Id" data-partnumber="@item.PartNumber">
+                <span>@item.PartNumber</span>
+                <span>@item.PartBrand</span>
+                <span>@item.PartType</span>
+                <span>@item.DateTime.ToString("dd-MM-yyyy HH:mm")</span>
+            </div>
+        }
+
+    </div>
+
+</form>
+
+<script>
+    let selectedPartNumber = null;
+
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedIds"]');
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+
+            const partNumber = this.dataset.partnumber;
+
+            if (this.checked) {
+
+                if (!selectedPartNumber) {
+                    selectedPartNumber = partNumber;
+                    return;
+                }
+
+                if (partNumber !== selectedPartNumber) {
+                    alert("Je kunt alleen verstuivers met dezelfde onderdeel nummer selecteren.");
+                    this.checked = false;
+                }
+
+            } else {
+
+                const anyChecked = Array.from(checkboxes).some(x => x.checked);
+
+                if (!anyChecked) {
+                    selectedPartNumber = null;
+                }
+            }
+        });
+    });
+</script>
+

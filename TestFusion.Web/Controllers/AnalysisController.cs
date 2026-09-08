@@ -24,24 +24,7 @@ namespace TestFusion.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Refresh()
-        {
-            await _sync.RunSync();
-            return RedirectToAction("Index");
-        }
-
-        public async Task<IActionResult> Index()
-        {
-            var items = await _db.TestItems
-                .OrderByDescending(x => x.DateTime)
-                .Take(50)
-                .ToListAsync();
-
-            return View(items);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Generate(List<string> selectedIds)
+        public async Task<IActionResult> Index(List<string> selectedIds)
         {
             var model = await BuildGeneratedModel(selectedIds);
 
@@ -50,7 +33,7 @@ namespace TestFusion.Web.Controllers
                 TempData["Error"] =
                     "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Home");
             }
 
             return View(model);
@@ -66,7 +49,7 @@ namespace TestFusion.Web.Controllers
                 TempData["Error"] =
                     "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Home");
             }
 
             byte[] pdf = PDFService.Generate(

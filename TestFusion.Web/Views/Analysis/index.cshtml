@@ -1,88 +1,388 @@
-﻿
+﻿@model TestFusion.Core.Models.WebModels.GeneratedModel
+
 @{
-    ViewData["Title"] = "Analyse overzicht";
+    ViewData["Title"] = "Gegenereerde analyse";
 }
 
-@model List<TestFusion.Core.Models.TestListItemModel>
+@functions {
+    public string NormalizeTestName(string name)
+        => name.Replace(" : SKIPPED", "").Trim();
+}
 
 <link rel="stylesheet" href="~/css/site.css" />
 <link rel="stylesheet" href="~/css/analysis.css" />
 
 
-<div class="main-body">
-    <form asp-controller="Analysis" asp-action="Refresh" method="post">
-        <button type="submit" class="btn">
-            Refresh
-        </button>
-    </form>
-</div>
+<div class="d-flex justify-content-between align-items-center mb-4 main-body">
 
-<form asp-controller="Analysis" asp-action="Generate" method="post">
+    <h2 class="mb-0">
+        Vergelijking verstuivers
+    </h2>
 
-    <div id="top-bar">
-        <h2>Testresultaten overzicht</h2>
+    <form asp-controller="Analysis"
+          asp-action="GeneratePdf"
+          method="post"
+          class="d-flex align-items-center gap-2">
 
-        <button type="submit" class="main-body btn">
-            Genereer analyse
-        </button>
-    </div>
-
-    <div class="list main-body">
-
-        <div class="list-row header">
-            <span></span>
-            <span>Verstuiver #</span>
-            <span>Merk</span>
-            <span>Type</span>
-            <span>Datum, Tijd</span>
-        </div>
-
-        @foreach (var item in Model)
+        @foreach (var id in Model.SelectedIds)
         {
-            <div class="list-row">
-                <input type="checkbox" name="selectedIds" value="@item.Id" data-partnumber="@item.PartNumber">
-                <span>@item.PartNumber</span>
-                <span>@item.PartBrand</span>
-                <span>@item.PartType</span>
-                <span>@item.DateTime.ToString("dd-MM-yyyy HH:mm")</span>
-            </div>
+            <input type="hidden"
+                   name="selectedIds"
+                   value="@id" />
         }
 
-    </div>
+        <select name="layoutMode"
+                class="form-select">
 
-</form>
+            <option value="Compact">
+                Zoveel mogelijk op één pagina
+            </option>
 
-<script>
-    let selectedPartNumber = null;
+            <option value="KeepTestTogether">
+                Test naar nieuwe pagina als deze niet past
+            </option>
 
-    const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedIds"]');
+            <option value="OneTestPerPage">
+                Elke test op aparte pagina
+            </option>
 
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', function () {
+        </select>
 
-            const partNumber = this.dataset.partnumber;
+        <button type="submit"
+                class="btn btn-primary">
+            PDF downloaden
+        </button>
 
-            if (this.checked) {
+    </form>
 
-                if (!selectedPartNumber) {
-                    selectedPartNumber = partNumber;
-                    return;
+</div>
+
+
+<table class="table table-bordered table-striped main-body">
+
+    <thead>
+        <tr class="info-row">
+            <th class="info-column">
+                <strong>Verstuiver:</strong>
+
+                <br />
+
+                <small>
+                    Nummer:
+                    @Model.Injectors.FirstOrDefault()?.Data.PartNumber
+                </small>
+
+                <br />
+
+                <small>
+                    Merk:
+                    @Model.Injectors.FirstOrDefault()?.Data.PartBrand
+                </small>
+
+                <br />
+
+                <small>
+                    Type:
+                    @Model.Injectors.FirstOrDefault()?.Data.PartType
+                </small>
+
+                <br />
+
+            </th>
+            <th class="info-column">
+                <strong>Klant:</strong>
+
+                <br />
+
+                <small>
+                    Naam:
+                    @Model.Injectors.FirstOrDefault()?.Data.CustomerName
+                </small>
+
+                <br />
+
+
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.Injectors.FirstOrDefault()?.Data.CustomerPhone))
+                {
+                    <small>
+                        Tel:
+                        @Model.Injectors.FirstOrDefault()?.Data.CustomerPhone
+                    </small>
                 }
 
-                if (partNumber !== selectedPartNumber) {
-                    alert("Je kunt alleen verstuivers met dezelfde onderdeel nummer selecteren.");
-                    this.checked = false;
+                <br />
+
+
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.Injectors.FirstOrDefault()?.Data.CustomerMail))
+                {
+                    <small>
+                        Mail:
+                        @Model.Injectors.FirstOrDefault()?.Data.CustomerMail
+                    </small>
                 }
 
-            } else {
+                <br />
 
-                const anyChecked = Array.from(checkboxes).some(x => x.checked);
 
-                if (!anyChecked) {
-                    selectedPartNumber = null;
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.Injectors.FirstOrDefault()?.Data.CustomerNotes))
+                {
+                    <small>
+                        Notitie:
+                        @Model.Injectors.FirstOrDefault()?.Data.CustomerNotes
+                    </small>
                 }
+
+                <br />
+            </th>
+        </tr>
+        <tr>
+            <th class="info-row">
+                <br />
+
+                <small>
+                    Datum en tijd van testen:
+                </small>
+
+                <br />
+
+                <small>
+                    Verstuiver nummer:
+                </small>
+
+                <br />
+
+                <small>
+                    Notitie:
+                </small>
+            </th>
+
+
+            @foreach (var injector in Model.Injectors)
+            {
+                <th class="injector-info">
+
+                    <br />
+
+                    <small>
+                        @(injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm"))
+                    </small>
+
+                    <br />
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        injector.Data.InjectorSerialNumber))
+                    {
+                        <small>
+                            @injector.Data.InjectorSerialNumber
+                        </small>
+                    }
+                    <br />
+
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        injector.Data.TestNotes))
+                    {
+                        <small>
+                            @Html.Raw(injector.Data.TestNotes)
+                        </small>
+                    }
+                </th>
             }
-        });
-    });
-</script>
+        </tr>
+        <tr>
+            <th>
 
+                <br />
+                <br />
+                <div class="info-row">
+                    Test / Tank
+                </div>
+
+            </th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var test in Model.AllTests)
+        {
+            var normalizedTest =
+                NormalizeTestName(test.TestName);
+
+            var tankSubData = Model.Injectors
+                .First()
+                .Data.Tests
+                .Where(t =>
+                    NormalizeTestName(t.TestName)
+                    == normalizedTest)
+                .SelectMany(t => t.SubTests)
+                .ToList();
+
+            <!-- header -->
+            <tr class="test-header">
+                <td colspan="@(Model.Injectors.Count + 1)">
+                    <div>
+
+                        <strong>
+                            @normalizedTest
+                        </strong>
+
+                        <br />
+
+                        <small>
+                            Response time:
+                            @test.TestResponseTime s
+                        </small>
+
+                        <br />
+
+                        <small>
+                            Test type:
+                            @test.TestType
+                        </small>
+
+                    </div>
+
+                </td>
+            </tr>
+
+            foreach (var tank in tankSubData)
+            {
+                <tr class="tank-row">
+
+                    <!-- left side -->
+                    <td>
+                        @{
+                            var average =
+                                (tank.Min + tank.Max) / 2;
+
+                            var tolerance =
+                                average - tank.Min;
+                        }
+
+
+                        @tank.TankName
+
+                        <br />
+
+                        <small>
+                            Min: @tank.Min
+                        </small>
+
+                        <br />
+
+                        <small>
+                            Max: @tank.Max
+                        </small>
+
+                        <br />
+
+                        <small>
+                            Limiet:
+                            @average +/- @tolerance
+                        </small>
+
+                    </td>
+
+                    <!-- injector columns -->
+                    @foreach (var injector in Model.Injectors)
+                    {
+                        var sub = injector.Data.Tests
+                            .Where(t =>
+                                NormalizeTestName(t.TestName)
+                                == normalizedTest)
+                            .SelectMany(t => t.SubTests)
+                            .FirstOrDefault(s =>
+                                s.TankName == tank.TankName);
+
+
+                        <td class="result-@(sub?.ResultColor ?? 0)">
+                            @if (sub == null)
+                            {
+                                <strong>
+                                    Skipped
+                                </strong>
+                            }
+                            else if (sub.Results == null ||
+                                     sub.Results.Count == 0)
+                            {
+                                <strong>
+                                    Geen resultaten
+                                </strong>
+                            }
+                            else
+                            {
+                                var results = sub.Results;
+
+                                var resultMinCalculated =
+                                    results.Min();
+
+                                var resultAverageCalculated =
+                                    results.Average();
+
+                                var resultMaxCalculated =
+                                    results.Max();
+
+
+                                <div>
+
+                                    <strong>
+                                        Min:
+                                    </strong>
+
+                                    @resultMinCalculated
+                                    @sub.ResultMin
+
+                                </div>
+
+                                <div>
+
+                                    <strong>
+                                        Avg:
+                                    </strong>
+
+                                    @resultAverageCalculated.ToString("0.0")
+                                    @sub.ResultAverage
+
+                                </div>
+
+                                <div>
+
+                                    <strong>
+                                        Max:
+                                    </strong>
+
+                                    @resultMaxCalculated
+                                    @sub.ResultMax
+
+                                </div>
+
+
+                                <br />
+
+
+                                <div>
+
+                                    <strong>
+                                        Results:
+                                    </strong>
+
+                                    @string.Join(
+                                        " | ",
+                                        sub.Results)
+
+                                </div>
+                            }
+                        </td>
+                    }
+
+                </tr>
+            }
+        }
+
+    </tbody>
+
+</table>

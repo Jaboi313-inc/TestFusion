@@ -1,27 +1,39 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using TestFusion.Web.Models;
+using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
-using TestFusion.Core.Models;
+using TestFusion.Data;
 
 namespace TestFusion.Web.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _db;
+        private readonly ISyncService _sync;
+
+        public HomeController(
+            AppDbContext db,
+            ISyncService sync)
         {
-            return View();
+            _db = db;
+            _sync = sync;
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var items = await _db.TestItems
+                .OrderByDescending(x => x.DateTime)
+                .Take(50)
+                .ToListAsync();
+
+            return View(items);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpPost]
+        public async Task<IActionResult> Refresh()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            await _sync.RunSync();
+
+            return RedirectToAction("Index");
         }
     }
 }
