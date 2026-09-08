@@ -8,20 +8,37 @@
 <link rel="stylesheet" href="~/css/analysis.css" />
 
 
-<form asp-controller="Home" asp-action="Refresh" method="post">
-    <button type="submit" class="btn">
-        Refresh
-    </button>
-</form>
+<form id="refresh-form" asp-controller="Home" asp-action="Refresh" method="post"></form>
 
 <form asp-controller="Analysis" asp-action="Index" method="post">
 
     <div id="top-bar">
-        <h2>Testresultaten overzicht</h2>
 
-        <button type="submit" class="btn">
-            Genereer analyse
-        </button>
+        <div class="top-bar-left">
+            <h2>Testresultaten overzicht</h2>
+
+            <button type="submit"
+                    form="refresh-form"
+                    class="btn">
+                Refresh
+            </button>
+        </div>
+
+        <div class="top-bar-right">
+            <button type="button"
+                    id="clear-selected"
+                    class="btn">
+                Clear selected
+            </button>
+
+            <button type="submit"
+                    id="generate-analysis"
+                    class="btn"
+                    disabled>
+                Genereer analyse
+            </button>
+        </div>
+
     </div>
 
     <div class="list">
@@ -52,34 +69,84 @@
 <script>
     let selectedPartNumber = null;
 
-    const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedIds"]');
+    const checkboxes = document.querySelectorAll(
+        'input[type="checkbox"][name="selectedIds"]'
+    );
+
+    const clearSelectedButton =
+        document.getElementById('clear-selected');
+
+    const generateAnalysisButton =
+        document.getElementById('generate-analysis');
+
+
+    function updateSelection() {
+
+        const selected = Array.from(checkboxes)
+            .filter(cb => cb.checked);
+
+        if (selected.length === 0) {
+            selectedPartNumber = null;
+            generateAnalysisButton.disabled = true;
+            return;
+        }
+
+        const partNumbers = [
+            ...new Set(
+                selected.map(cb => cb.dataset.partnumber)
+            )
+        ];
+
+        if (partNumbers.length !== 1) {
+            generateAnalysisButton.disabled = true;
+            return;
+        }
+
+        selectedPartNumber = partNumbers[0];
+
+        generateAnalysisButton.disabled = false;
+    }
+
 
     checkboxes.forEach(cb => {
+
         cb.addEventListener('change', function() {
 
             const partNumber = this.dataset.partnumber;
 
             if (this.checked) {
 
-                if (!selectedPartNumber) {
-                    selectedPartNumber = partNumber;
-                    return;
-                }
+                const selected = Array.from(checkboxes)
+                    .filter(cb => cb.checked);
 
-                if (partNumber !== selectedPartNumber) {
-                    alert("Je kunt alleen verstuivers met dezelfde onderdeel nummer selecteren.");
+                const differentPartNumber = selected.some(
+                    cb => cb.dataset.partnumber !== partNumber
+                );
+
+                if (differentPartNumber) {
+
+                    alert(
+                        "Je kunt alleen verstuivers met hetzelfde onderdeelnummer selecteren."
+                    );
+
                     this.checked = false;
                 }
-
-            } else {
-
-                const anyChecked = Array.from(checkboxes).some(x => x.checked);
-
-                if (!anyChecked) {
-                    selectedPartNumber = null;
-                }
             }
+
+            updateSelection();
         });
     });
+
+
+    clearSelectedButton.addEventListener('click', function() {
+
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+        });
+
+        updateSelection();
+    });
+
+    updateSelection();
 </script>
 

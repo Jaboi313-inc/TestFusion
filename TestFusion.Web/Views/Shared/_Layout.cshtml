@@ -11,11 +11,15 @@
 <body>
     <header>
         <nav class="nav-bar">
-            <a id="nav-home">
+            <a id="nav-home"
+               asp-controller="Home"
+               asp-action="Index">
                 TestFusion
             </a>
 
-            <a id="nav-settings" href="Settings">
+            <a id="nav-settings"
+               asp-controller="Settings"
+               asp-action="Index">
                 Settings
             </a>
         </nav>

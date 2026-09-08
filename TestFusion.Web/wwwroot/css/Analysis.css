@@ -2,8 +2,27 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 40px;
     padding: 20px;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#top-bar h2 {
+    margin: 0;
+}
+
+#top-bar .btn {
+    margin-bottom: 0;
 }
 
 .main-body {
@@ -26,6 +45,18 @@
     border-bottom: 1px solid #ccc;
 }
 
+.list-row {
+    transition: background-color 0.2s ease;
+}
+
+    .list-row:has(input[type="checkbox"]:checked) {
+        background-color: #d8d8d8;
+}
+
+.list-row:not(.header):hover {
+    background-color: #e5e5e5;
+}
+
 .btn {
     display: inline-block;
     padding: 10px 15px;
@@ -38,6 +69,13 @@
 
 .btn:hover {
     background-color: #218838;
+}
+
+.btn:disabled {
+    background-color: #d8d8d8;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .info-row {
@@ -54,7 +92,6 @@
     text-align: justify;
 }
 
-/* test headers */
 .test-header td {
     background: #e6e6e6;
     font-weight: bold;
@@ -63,7 +100,6 @@
     padding: 12px 10px;
 }
 
-/* tank rows */
 .tank-row td {
     border-bottom: 1px solid #e5e7eb;
     vertical-align: top;
@@ -75,7 +111,6 @@
     border-bottom: 3px solid #111;
 }
 
-/* genaral spacing */
 table.table {
     border-collapse: separate;
     border-spacing: 0;
