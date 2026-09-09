@@ -26,8 +26,14 @@ header {
     transition: background-color 0.2s ease;
 }
 
-#nav-home:hover {
-    background-color: #d8d8d8;
+    #nav-home:hover {
+        background-color: #d8d8d8;
+    }
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 #nav-settings {
@@ -38,6 +44,27 @@ header {
     transition: background-color 0.2s ease;
 }
 
-#nav-settings:hover {
-    background-color: #d8d8d8;
+    #nav-settings:hover {
+        background-color: #d8d8d8;
+    }
+
+.language-select {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: transparent;
+    color: black;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
+
+    .language-select:hover {
+        background-color: #d8d8d8;
+    }
+
+    .language-select:focus {
+        outline: none;
+        background-color: #d8d8d8;
+    }

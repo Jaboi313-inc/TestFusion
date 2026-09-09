@@ -17,11 +17,19 @@
                 TestFusion
             </a>
 
-            <a id="nav-settings"
-               asp-controller="Settings"
-               asp-action="Index">
-                Settings
-            </a>
+            <div class="nav-right">
+                <a id="nav-settings"
+                   asp-controller="Settings"
+                   asp-action="Index">
+                    Settings
+                </a>
+
+                <select id="language-select"
+                        class="language-select">
+                    <option value="nl">NL</option>
+                    <option value="en">EN</option>
+                </select>
+            </div>
         </nav>
     </header>
 
