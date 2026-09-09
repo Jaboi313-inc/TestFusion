@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
 using TestFusion.SyncService.Models;
@@ -9,10 +11,14 @@ using TestFusion.Web.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    ?? throw new InvalidOperationException(
+        "Connection string 'DefaultConnection' not found."
+    );
 
 var postgresConnection = builder.Configuration.GetConnectionString("PostGresConnection")
-    ?? throw new InvalidOperationException("Connection string 'PostGresConnection' not found.");
+    ?? throw new InvalidOperationException(
+        "Connection string 'PostGresConnection' not found."
+    );
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -28,12 +34,24 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddControllersWithViews();
+
+builder.Services.AddLocalization(options =>
+{
+    options.ResourcesPath = "Resources";
+});
+
+builder.Services
+    .AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
+
 builder.Services.AddRazorPages();
+
 
 builder.Services.AddSingleton<JSONService>();
 builder.Services.AddSingleton<IPlaywright, PlaywrightService>();
 builder.Services.AddScoped<ISyncService, SyncService>();
+
 
 builder.Services.Configure<SiteSettings>(
     builder.Configuration.GetSection("SiteSettings"));
@@ -44,9 +62,9 @@ builder.Services.Configure<AuthSettings>(
 builder.Services.Configure<Intervals>(
     builder.Configuration.GetSection("Intervals"));
 
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -54,11 +72,28 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+var supportedCultures = new[]
+{
+    new CultureInfo("nl-NL"),
+    new CultureInfo("en-US")
+};
+
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("nl-NL"),
+
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+
+app.UseRequestLocalization(localizationOptions);
+
+
 app.UseHttpsRedirection();
+
 app.UseRouting();
 
 app.UseAuthentication();
@@ -68,8 +103,9 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+)
+.WithStaticAssets();
 
 app.MapRazorPages()
    .WithStaticAssets();

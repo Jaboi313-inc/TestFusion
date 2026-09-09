@@ -1,5 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@inject IStringLocalizer<SharedResource> Localizer
+
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,21 +19,45 @@
             <a id="nav-home"
                asp-controller="Home"
                asp-action="Index">
-                TestFusion
+                @Localizer["AppName"]
             </a>
 
             <div class="nav-right">
+
                 <a id="nav-settings"
                    asp-controller="Settings"
                    asp-action="Index">
-                    Settings
+                    @Localizer["Settings"]
                 </a>
 
-                <select id="language-select"
-                        class="language-select">
-                    <option value="nl">NL</option>
-                    <option value="en">EN</option>
-                </select>
+                <form asp-controller="Language"
+                      asp-action="SetLanguage"
+                      method="post"
+                      id="language-form">
+
+                    <input type="hidden"
+                           name="returnUrl"
+                           value="@Context.Request.Path@Context.Request.QueryString" />
+
+                    <select name="culture"
+                            class="language-select"
+                            onchange="this.form.submit()">
+
+                        @if (CultureInfo.CurrentUICulture.Name.StartsWith("nl"))
+                        {
+                            <option value="nl-NL" selected>NL</option>
+                            <option value="en-US">EN</option>
+                        }
+                        else
+                        {
+                            <option value="nl-NL">NL</option>
+                            <option value="en-US" selected>EN</option>
+                        }
+
+                    </select>
+
+                </form>
+
             </div>
         </nav>
     </header>
