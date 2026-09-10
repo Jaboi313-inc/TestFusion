@@ -231,4 +231,10 @@
   <data name="TestResults" xml:space="preserve">
     <value>All results</value>
   </data>
+  <data name="SecondIndicator" xml:space="preserve">
+    <value>s</value>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
 </root>

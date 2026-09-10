@@ -7,6 +7,10 @@
 
 @{
     ViewData["Title"] = Localizer["PageTitelAnalysis"];
+
+    var selectedLayoutMode =
+        Context.Request.Query["layoutMode"].FirstOrDefault()
+        ?? "Compact";
 }
 
 @functions {
@@ -20,7 +24,9 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4 main-body">
 
-    <h2 class="mb-0">@Localizer["InjectorComparison"]</h2>
+    <h2 class="mb-0">
+        @Localizer["InjectorComparison"]
+    </h2>
 
     <form asp-controller="Analysis"
           asp-action="GeneratePdf"
@@ -35,19 +41,47 @@
         }
 
         <select name="layoutMode"
+                id="layoutMode"
                 class="form-select">
 
-            <option value="Compact">
-                @Localizer["PDFOptionCompact"]
-            </option>
+            @if (selectedLayoutMode == "Compact")
+            {
+                <option value="Compact" selected>
+                    @Localizer["PDFOptionCompact"]
+                </option>
+            }
+            else
+            {
+                <option value="Compact">
+                    @Localizer["PDFOptionCompact"]
+                </option>
+            }
 
-            <option value="KeepTestTogether">
-                @Localizer["PDFOptionKeepTestTogether"]
-            </option>
+            @if (selectedLayoutMode == "KeepTestTogether")
+            {
+                <option value="KeepTestTogether" selected>
+                    @Localizer["PDFOptionKeepTestTogether"]
+                </option>
+            }
+            else
+            {
+                <option value="KeepTestTogether">
+                    @Localizer["PDFOptionKeepTestTogether"]
+                </option>
+            }
 
-            <option value="OneTestPerPage">
-                @Localizer["PDFOptionOneTestPerPage"]
-            </option>
+            @if (selectedLayoutMode == "OneTestPerPage")
+            {
+                <option value="OneTestPerPage" selected>
+                    @Localizer["PDFOptionOneTestPerPage"]
+                </option>
+            }
+            else
+            {
+                <option value="OneTestPerPage">
+                    @Localizer["PDFOptionOneTestPerPage"]
+                </option>
+            }
 
         </select>
 
@@ -64,9 +98,15 @@
 <table class="table table-bordered table-striped main-body">
 
     <thead>
+
+        <!-- General information -->
         <tr class="info-row">
+
             <th class="info-column">
-                <strong>@Localizer["Injector"]:</strong>
+
+                <strong>
+                    @Localizer["Injector"]:
+                </strong>
 
                 <br />
 
@@ -92,8 +132,13 @@
                 <br />
 
             </th>
+
+
             <th class="info-column">
-                <strong>@Localizer["Customer"]:</strong>
+
+                <strong>
+                    @Localizer["Customer"]:
+                </strong>
 
                 <br />
 
@@ -103,7 +148,6 @@
                 </small>
 
                 <br />
-
 
                 @if (!string.IsNullOrWhiteSpace(
                     Model.Injectors.FirstOrDefault()?.Data.CustomerPhone))
@@ -116,7 +160,6 @@
 
                 <br />
 
-
                 @if (!string.IsNullOrWhiteSpace(
                     Model.Injectors.FirstOrDefault()?.Data.CustomerMail))
                 {
@@ -128,7 +171,6 @@
 
                 <br />
 
-
                 @if (!string.IsNullOrWhiteSpace(
                     Model.Injectors.FirstOrDefault()?.Data.CustomerNotes))
                 {
@@ -139,10 +181,17 @@
                 }
 
                 <br />
+
             </th>
+
         </tr>
+
+
+        <!-- Injector information -->
         <tr>
+
             <th class="info-row">
+
                 <br />
 
                 <small>
@@ -160,6 +209,7 @@
                 <small>
                     @Localizer["InjectorNote"]:
                 </small>
+
             </th>
 
 
@@ -170,7 +220,7 @@
                     <br />
 
                     <small>
-                        @(injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm"))
+                        @injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")
                     </small>
 
                     <br />
@@ -182,8 +232,8 @@
                             @injector.Data.InjectorSerialNumber
                         </small>
                     }
-                    <br />
 
+                    <br />
 
                     @if (!string.IsNullOrWhiteSpace(
                         injector.Data.TestNotes))
@@ -192,21 +242,31 @@
                             @Html.Raw(injector.Data.TestNotes)
                         </small>
                     }
+
                 </th>
             }
+
         </tr>
+
+
+        <!-- Test / tank header -->
         <tr>
+
             <th>
 
                 <br />
                 <br />
+
                 <div class="info-row">
                     @Localizer["TestTestNameAndTank"]
                 </div>
 
             </th>
+
         </tr>
+
     </thead>
+
 
     <tbody>
 
@@ -215,18 +275,39 @@
             var normalizedTest =
                 NormalizeTestName(test.TestName);
 
-            var tankSubData = Model.Injectors
-                .First()
-                .Data.Tests
-                .Where(t =>
-                    NormalizeTestName(t.TestName)
-                    == normalizedTest)
-                .SelectMany(t => t.SubTests)
+
+            var injectorTests = Model.Injectors
+                .Select(injector =>
+                    injector.NormalizedTests
+                        .FirstOrDefault(t =>
+                            NormalizeTestName(t.TestName)
+                            == normalizedTest))
                 .ToList();
 
-            <!-- header -->
+
+            var hasAnyNonSkippedTest =
+                injectorTests.Any(t =>
+                    t != null &&
+                    !t.IsSkipped);
+
+            var tankSubData = Model.Injectors
+                .SelectMany(injector =>
+                    injector.Data.Tests)
+                .Where(t =>
+                    NormalizeTestName(t.TestName)
+                    == normalizedTest &&
+                    t.TestStatus != 1)
+                .SelectMany(t => t.SubTests)
+                .GroupBy(t => t.TankName)
+                .Select(g => g.First())
+                .ToList();
+
+
+            <!-- Test header -->
             <tr class="test-header">
+
                 <td colspan="@(Model.Injectors.Count + 1)">
+
                     <div>
 
                         <strong>
@@ -236,156 +317,306 @@
                         <br />
 
                         <small>
-                            @Localizer["TestResponseTime"]:
-                            @test.TestResponseTime s
-                        </small>
-
-                        <br />
-
-                        <small>
                             @Localizer["TestType"]:
-                            @test.TestType
+                            @(string.IsNullOrWhiteSpace(test.TestType)
+                                ? "-"
+                                : test.TestType)
                         </small>
 
                     </div>
 
                 </td>
+
             </tr>
 
-            foreach (var tank in tankSubData)
+
+            @if (hasAnyNonSkippedTest)
             {
                 <tr class="tank-row">
 
-                    <!-- left side -->
                     <td>
-                        @{
-                            var average =
-                                (tank.Min + tank.Max) / 2;
-
-                            var tolerance =
-                                average - tank.Min;
-                        }
-
-
-                        @tank.TankName
-
-                        <br />
 
                         <small>
-                            @Localizer["TestMin"]: @tank.Min
-                        </small>
-
-                        <br />
-
-                        <small>
-                            @Localizer["TestMax"]: @tank.Max
-                        </small>
-
-                        <br />
-
-                        <small>
-                            @Localizer["TestLimit"]:
-                            @average +/- @tolerance
+                            @Localizer["TestResponseTime"]:
                         </small>
 
                     </td>
 
-                    <!-- injector columns -->
-                    @foreach (var injector in Model.Injectors)
+
+                    @for (var i = 0;
+                          i < injectorTests.Count;
+                          i++)
                     {
-                        var sub = injector.Data.Tests
-                            .Where(t =>
-                                NormalizeTestName(t.TestName)
-                                == normalizedTest)
-                            .SelectMany(t => t.SubTests)
-                            .FirstOrDefault(s =>
-                                s.TankName == tank.TankName);
+                        var injectorTest =
+                            injectorTests[i];
 
+                        if (injectorTest == null ||
+                            injectorTest.IsSkipped)
+                        {
+                            <td>-</td>
+                        }
+                        else
+                        {
+                            <td>
+                                @injectorTest.Response @Localizer["SecondIndicator"]
+                            </td>
+                        }
+                    }
 
-                        <td class="result-@(sub?.ResultColor ?? 0)">
-                            @if (sub == null)
-                            {
-                                <strong>
-                                    @Localizer["TestSkipped"]
-                                </strong>
-                            }
-                            else if (sub.Results == null ||
-                                     sub.Results.Count == 0)
-                            {
-                                <strong>
-                                    @Localizer["TestNoResults"]
-                                </strong>
-                            }
-                            else
-                            {
-                                var results = sub.Results;
+                </tr>
+            }
+            else
+            {
+                <tr class="skipped-row">
 
-                                var resultMinCalculated =
-                                    results.Min();
+                    <td></td>
 
-                                var resultAverageCalculated =
-                                    results.Average();
+                    @for (var i = 0;
+                          i < Model.Injectors.Count;
+                          i++)
+                    {
+                        <td class="skipped-cell">
 
-                                var resultMaxCalculated =
-                                    results.Max();
+                            <strong>
+                                @Localizer["TestSkipped"]
+                            </strong>
 
-
-                                <div>
-
-                                    <strong>
-                                        @Localizer["TestMin"]:
-                                    </strong>
-
-                                    @resultMinCalculated
-                                    @sub.ResultMin
-
-                                </div>
-
-                                <div>
-
-                                    <strong>
-                                        @Localizer["TestAvg"]:
-                                    </strong>
-
-                                    @resultAverageCalculated.ToString("0.0")
-                                    @sub.ResultAverage
-
-                                </div>
-
-                                <div>
-
-                                    <strong>
-                                        @Localizer["TestMax"]:
-                                    </strong>
-
-                                    @resultMaxCalculated
-                                    @sub.ResultMax
-
-                                </div>
-
-
-                                <br />
-
-
-                                <div>
-
-                                    <strong>
-                                        @Localizer["TestResults"]:
-                                    </strong>
-
-                                    @string.Join(
-                                        " | ",
-                                        sub.Results)
-
-                                </div>
-                            }
                         </td>
                     }
 
                 </tr>
+            }
+
+
+            @if (hasAnyNonSkippedTest)
+            {
+                <!-- Tank / result rows -->
+                @foreach (var tank in tankSubData)
+                {
+                    <tr class="tank-row">
+
+                        <!-- Tank information -->
+                        <td>
+
+                            @{
+                                var average =
+                                    (tank.Min + tank.Max) / 2;
+
+                                var tolerance =
+                                    average - tank.Min;
+                            }
+
+                            @tank.TankName
+
+                            <br />
+
+                            <small>
+                                @Localizer["TestMin"]:
+                                @tank.Min
+                            </small>
+
+                            <br />
+
+                            <small>
+                                @Localizer["TestMax"]:
+                                @tank.Max
+                            </small>
+
+                            <br />
+
+                            <small>
+                                @Localizer["TestLimit"]:
+                                @average +/- @tolerance
+                            </small>
+
+                        </td>
+
+
+                        <!-- Injector results -->
+                        @foreach (var injector in Model.Injectors)
+                        {
+                            var injectorTest =
+                                injector.NormalizedTests
+                                    .FirstOrDefault(t =>
+                                        NormalizeTestName(t.TestName)
+                                        == normalizedTest);
+
+
+                            var sub = injector.Data.Tests
+                                .Where(t =>
+                                    NormalizeTestName(t.TestName)
+                                    == normalizedTest)
+                                .SelectMany(t => t.SubTests)
+                                .FirstOrDefault(s =>
+                                    s.TankName == tank.TankName);
+
+
+                            if (injectorTest == null ||
+                                injectorTest.IsSkipped)
+                            {
+                                <td class="skipped-cell">
+
+                                    <div class="skipped-content">
+
+                                        <strong>
+                                            @Localizer["TestSkipped"]
+                                        </strong>
+
+                                    </div>
+
+                                </td>
+                            }
+                            else if (sub == null)
+                            {
+                                <td class="skipped-cell">
+
+                                    <div class="skipped-content">
+
+                                        <strong>
+                                            @Localizer["TestSkipped"]
+                                        </strong>
+
+                                    </div>
+
+                                </td>
+                            }
+                            else
+                            {
+                                <td class="result-@sub.ResultColor">
+
+                                    @if (sub.Results == null ||
+                                         sub.Results.Count == 0)
+                                    {
+                                        <strong>
+                                            @Localizer["TestNoResults"]
+                                        </strong>
+                                    }
+                                    else
+                                    {
+                                        var results =
+                                            sub.Results;
+
+                                        var resultMinCalculated =
+                                            results.Min();
+
+                                        var resultAverageCalculated =
+                                            results.Average();
+
+                                        var resultMaxCalculated =
+                                            results.Max();
+
+
+                                        <div>
+
+                                            <strong>
+                                                @Localizer["TestMin"]:
+                                            </strong>
+
+                                            @resultMinCalculated
+                                            @sub.ResultMin
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                @Localizer["TestAvg"]:
+                                            </strong>
+
+                                            @resultAverageCalculated.ToString("0.0")
+                                            @sub.ResultAverage
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                @Localizer["TestMax"]:
+                                            </strong>
+
+                                            @resultMaxCalculated
+                                            @sub.ResultMax
+
+                                        </div>
+
+
+                                        <br />
+
+
+                                        <div>
+
+                                            <strong>
+                                                @Localizer["TestResults"]:
+                                            </strong>
+
+                                            @string.Join(
+                                                " | ",
+                                                sub.Results
+                                            )
+
+                                        </div>
+                                    }
+                                </td>
+                            }
+                        }
+
+                    </tr>
+                }
             }
         }
 
     </tbody>
 
 </table>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const layoutSelect =
+            document.getElementById("layoutMode");
+
+        if (!layoutSelect) {
+            return;
+        }
+
+        const storageKey = "analysisPdfLayoutMode";
+
+        const savedLayout =
+            sessionStorage.getItem(storageKey);
+
+        if (savedLayout) {
+
+            const optionExists =
+                Array.from(layoutSelect.options)
+                    .some(option =>
+                        option.value === savedLayout);
+
+            if (optionExists) {
+                layoutSelect.value = savedLayout;
+            }
+        }
+
+        layoutSelect.addEventListener("change", function () {
+
+            sessionStorage.setItem(
+                storageKey,
+                layoutSelect.value
+            );
+
+            const url =
+                new URL(window.location.href);
+
+            url.searchParams.set(
+                "layoutMode",
+                layoutSelect.value
+            );
+
+            window.history.replaceState(
+                {},
+                "",
+                url
+            );
+        });
+
+    });
+</script>

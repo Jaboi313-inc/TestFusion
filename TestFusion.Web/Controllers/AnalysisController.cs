@@ -3,13 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TestFusion.Core.Enums;
 using TestFusion.Core.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using System.Text.Json;
 using TestFusion.Core;
-using TestFusion.Core.Enums;
-using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
@@ -83,10 +78,10 @@ namespace TestFusion.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            byte[] pdf = PDFService.Generate(
+            var pdf = PDFService.Generate(
                 model,
-                layoutMode
-            );
+                layoutMode,
+                _localizer);
 
             return File(
                 pdf,

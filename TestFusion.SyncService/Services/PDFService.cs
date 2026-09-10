@@ -1,6 +1,8 @@
-﻿using QuestPDF.Fluent;
+﻿using Microsoft.Extensions.Localization;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using TestFusion.Core;
 using TestFusion.Core.Enums;
 using TestFusion.Core.Models.WebModels;
 
@@ -8,7 +10,10 @@ namespace TestFusion.Web.Services;
 
 public static class PDFService
 {
-    public static byte[] Generate(GeneratedModel model, PdfLayoutModeEnum layoutMode)
+    public static byte[] Generate(
+        GeneratedModel model,
+        PdfLayoutModeEnum layoutMode,
+        IStringLocalizer<SharedResource> localizer)
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
@@ -22,7 +27,7 @@ public static class PDFService
                 page.DefaultTextStyle(x => x.FontSize(8));
 
                 page.Header()
-                    .Text("Vergelijking verstuivers")
+                    .Text(localizer["InjectorComparison"])
                     .FontSize(18)
                     .Bold();
 
@@ -32,7 +37,10 @@ public static class PDFService
                     {
                         column.Spacing(8);
 
-                        CreateGeneralInfo(column, model);
+                        CreateGeneralInfo(
+                            column,
+                            model,
+                            localizer);
 
                         for (int i = 0; i < model.AllTests.Count; i++)
                         {
@@ -41,43 +49,75 @@ public static class PDFService
                             switch (layoutMode)
                             {
                                 case PdfLayoutModeEnum.Compact:
+
                                     column.Item()
                                         .Element(container =>
-                                            CreateTest(container, model, test));
+                                            CreateTest(
+                                                container,
+                                                model,
+                                                test,
+                                                localizer));
+
                                     break;
 
+
                                 case PdfLayoutModeEnum.KeepTestTogether:
+
                                     column.Item()
                                         .PreventPageBreak()
                                         .Element(container =>
-                                            CreateTest(container, model, test));
+                                            CreateTest(
+                                                container,
+                                                model,
+                                                test,
+                                                localizer));
+
                                     break;
 
+
                                 case PdfLayoutModeEnum.OneTestPerPage:
+
                                     column.Item()
                                         .PageBreak();
 
                                     column.Item()
                                         .Element(container =>
-                                            CreateTest(container, model, test));
+                                            CreateTest(
+                                                container,
+                                                model,
+                                                test,
+                                                localizer));
+
                                     break;
 
+
                                 default:
+
                                     column.Item()
                                         .Element(container =>
-                                            CreateTest(container, model, test));
+                                            CreateTest(
+                                                container,
+                                                model,
+                                                test,
+                                                localizer));
+
                                     break;
                             }
                         }
                     });
 
+
                 page.Footer()
                     .AlignCenter()
                     .Text(text =>
                     {
-                        text.Span("Pagina ");
+                        text.Span(
+                            localizer["Page"] + " ");
+
                         text.CurrentPageNumber();
+
                         text.Span(" / ");
+
                         text.TotalPages();
                     });
             });
@@ -85,67 +125,110 @@ public static class PDFService
         .GeneratePdf();
     }
 
+
+
     private static void CreateGeneralInfo(
         ColumnDescriptor column,
-        GeneratedModel model)
+        GeneratedModel model,
+        IStringLocalizer<SharedResource> localizer)
     {
-        var firstInjector = model.Injectors.FirstOrDefault();
+        var firstInjector =
+            model.Injectors.FirstOrDefault();
 
         if (firstInjector == null)
             return;
 
+
+        // General injector/customer information
         column.Item()
             .Border(1)
             .Padding(8)
             .Row(row =>
             {
+                /*
+                 * Injector
+                 */
                 row.RelativeItem()
                     .Column(info =>
                     {
                         info.Item()
-                            .Text("Verstuiver:")
+                            .Text(
+                                localizer["Injector"] + ":")
                             .Bold();
 
-                        info.Item()
-                            .Text($"Nummer: {firstInjector.Data.PartNumber}");
 
                         info.Item()
-                            .Text($"Merk: {firstInjector.Data.PartBrand}");
+                            .Text(
+                                $"{localizer["InjectorPartNumber"]}: " +
+                                $"{firstInjector.Data.PartNumber}");
+
 
                         info.Item()
-                            .Text($"Type: {firstInjector.Data.PartType}");
+                            .Text(
+                                $"{localizer["InjectorBrand"]}: " +
+                                $"{firstInjector.Data.PartBrand}");
+
+
+                        info.Item()
+                            .Text(
+                                $"{localizer["InjectorType"]}: " +
+                                $"{firstInjector.Data.PartType}");
                     });
 
+
+                /*
+                 * Customer
+                 */
                 row.RelativeItem()
                     .Column(info =>
                     {
                         info.Item()
-                            .Text("Klant:")
+                            .Text(
+                                localizer["Customer"] + ":")
                             .Bold();
 
+
                         info.Item()
-                            .Text($"Naam: {firstInjector.Data.CustomerName}");
+                            .Text(
+                                $"{localizer["CustomerName"]}: " +
+                                $"{firstInjector.Data.CustomerName}");
 
-                        if (!string.IsNullOrWhiteSpace(firstInjector.Data.CustomerPhone))
+
+                        if (!string.IsNullOrWhiteSpace(
+                            firstInjector.Data.CustomerPhone))
                         {
                             info.Item()
-                                .Text($"Tel: {firstInjector.Data.CustomerPhone}");
+                                .Text(
+                                    $"{localizer["CustomerPhoneNumber"]}: " +
+                                    $"{firstInjector.Data.CustomerPhone}");
                         }
 
-                        if (!string.IsNullOrWhiteSpace(firstInjector.Data.CustomerMail))
+
+                        if (!string.IsNullOrWhiteSpace(
+                            firstInjector.Data.CustomerMail))
                         {
                             info.Item()
-                                .Text($"Mail: {firstInjector.Data.CustomerMail}");
+                                .Text(
+                                    $"{localizer["CustomerMail"]}: " +
+                                    $"{firstInjector.Data.CustomerMail}");
                         }
 
-                        if (!string.IsNullOrWhiteSpace(firstInjector.Data.CustomerNotes))
+
+                        if (!string.IsNullOrWhiteSpace(
+                            firstInjector.Data.CustomerNotes))
                         {
                             info.Item()
-                                .Text($"Notitie: {firstInjector.Data.CustomerNotes}");
+                                .Text(
+                                    $"{localizer["CustomerNote"]}: " +
+                                    $"{RemoveHtml(firstInjector.Data.CustomerNotes)}");
                         }
                     });
             });
 
+
+        /*
+         * Injector-specific information
+         */
         column.Item()
             .PaddingTop(5)
             .Table(table =>
@@ -155,21 +238,37 @@ public static class PDFService
                     columns.ConstantColumn(130);
 
                     foreach (var injector in model.Injectors)
+                    {
                         columns.RelativeColumn();
+                    }
                 });
 
-                // Linker kolom (zoals HTML)
+
+                // Left column
                 table.Cell()
                     .Border(1)
                     .Padding(5)
                     .Column(cell =>
                     {
-                        cell.Item().Text("Datum en tijd van testen:");
-                        cell.Item().PaddingTop(8).Text("Verstuiver nummer:");
-                        cell.Item().PaddingTop(8).Text("Notitie:");
+                        cell.Item()
+                            .Text(
+                                localizer["InjectorTimeOffTesting"] + ":");
+
+
+                        cell.Item()
+                            .PaddingTop(8)
+                            .Text(
+                                localizer["InjectorSerialNumber"] + ":");
+
+
+                        cell.Item()
+                            .PaddingTop(8)
+                            .Text(
+                                localizer["InjectorNote"] + ":");
                     });
 
-                // Injector kolommen
+
+                // Injector columns
                 foreach (var injector in model.Injectors)
                 {
                     table.Cell()
@@ -177,45 +276,84 @@ public static class PDFService
                         .Padding(5)
                         .Column(cell =>
                         {
-                            // Datum
+                            // Date/time
                             cell.Item()
-                                .Text(injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm"));
+                                .Text(
+                                    injector.Data.TimeOffTesting
+                                        .ToString("dd-MM-yyyy HH:mm"));
 
-                            // Serienummer
+
+                            // Serial number
                             cell.Item()
                                 .PaddingTop(8)
-                                .Text(string.IsNullOrWhiteSpace(injector.Data.InjectorSerialNumber)
-                                    ? "-"
-                                    : injector.Data.InjectorSerialNumber);
+                                .Text(
+                                    string.IsNullOrWhiteSpace(
+                                        injector.Data.InjectorSerialNumber)
+                                        ? "-"
+                                        : injector.Data.InjectorSerialNumber);
 
-                            // Notitie
+
+                            // Notes
                             cell.Item()
                                 .PaddingTop(8)
-                                .Text(string.IsNullOrWhiteSpace(injector.Data.TestNotes)
-                                    ? "-"
-                                    : RemoveHtml(injector.Data.TestNotes));
+                                .Text(
+                                    string.IsNullOrWhiteSpace(
+                                        injector.Data.TestNotes)
+                                        ? "-"
+                                        : RemoveHtml(
+                                            injector.Data.TestNotes));
                         });
                 }
             });
     }
 
+
+
     private static void CreateTest(
         IContainer container,
         GeneratedModel model,
-        TestFusion.Core.Models.TestResult.TestModel test)
+        TestFusion.Core.Models.TestResult.TestModel test,
+        IStringLocalizer<SharedResource> localizer)
     {
         container.Column(column =>
         {
-            string normalizedTest = NormalizeTestName(test.TestName);
+            string normalizedTest =
+                NormalizeTestName(test.TestName);
 
-            var tankSubData = model.Injectors
-                .First()
-                .Data.Tests
-                .Where(t =>
-                    NormalizeTestName(t.TestName) == normalizedTest)
-                .SelectMany(t => t.SubTests)
+
+            var injectorTests = model.Injectors
+                .Select(injector =>
+                    injector.NormalizedTests
+                        .FirstOrDefault(t =>
+                            NormalizeTestName(t.TestName)
+                            == normalizedTest))
                 .ToList();
 
+            bool hasAnyNonSkippedTest =
+                injectorTests.Any(t =>
+                    t != null &&
+                    !t.IsSkipped);
+
+            var tankSubData = model.Injectors
+                .SelectMany(injector =>
+                    injector.Data.Tests)
+                .Where(t =>
+                    NormalizeTestName(t.TestName)
+                    == normalizedTest &&
+                    t.TestStatus != 1)
+                .SelectMany(t =>
+                    t.SubTests ?? new())
+                .GroupBy(t =>
+                    t.TankName)
+                .Select(g =>
+                    g.First())
+                .ToList();
+
+
+
+            /*
+             * TEST HEADER
+             */
             column.Item()
                 .PaddingTop(5)
                 .Border(1)
@@ -228,13 +366,112 @@ public static class PDFService
                         .Bold()
                         .FontSize(10);
 
-                    header.Item()
-                        .Text($"Response time: {test.TestResponseTime} s");
 
                     header.Item()
-                        .Text($"Test type: {test.TestType}");
+                        .Text(
+                            $"{localizer["TestType"]}: " +
+                            $"{(string.IsNullOrWhiteSpace(test.TestType) ? "-" : test.TestType)}");
                 });
 
+            if (hasAnyNonSkippedTest)
+            {
+                column.Item()
+                    .Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(130);
+
+                            foreach (var injector in model.Injectors)
+                            {
+                                columns.RelativeColumn();
+                            }
+                        });
+
+
+                        table.Cell()
+                            .Border(1)
+                            .Padding(6)
+                            .Text(
+                                localizer["TestResponseTime"] + ":");
+
+
+                        for (int i = 0;
+                             i < injectorTests.Count;
+                             i++)
+                        {
+                            var injectorTest =
+                                injectorTests[i];
+
+
+                            table.Cell()
+                                .Border(1)
+                                .Padding(6)
+                                .AlignMiddle()
+                                .Element(cell =>
+                                {
+                                    if (injectorTest == null ||
+                                        injectorTest.IsSkipped)
+                                    {
+                                        cell.Text("-");
+                                    }
+                                    else
+                                    {
+                                        cell.Text(
+                                            $"{injectorTest.Response} " +
+                                            $"{localizer["SecondIndicator"]}");
+                                    }
+                                });
+                        }
+                    });
+            }
+            else
+            {
+
+                column.Item()
+                    .Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(130);
+
+                            foreach (var injector in model.Injectors)
+                            {
+                                columns.RelativeColumn();
+                            }
+                        });
+
+
+                        table.Cell()
+                            .Border(1)
+                            .Padding(12)
+                            .Text("");
+
+
+                        foreach (var injector in model.Injectors)
+                        {
+                            table.Cell()
+                                .Border(1)
+                                .Background(Colors.Grey.Lighten4)
+                                .MinHeight(45)
+                                .Padding(12)
+                                .AlignCenter()
+                                .AlignMiddle()
+                                .Text(
+                                    localizer["TestSkipped"])
+                                .Bold()
+                                .FontSize(9);
+                        }
+                    });
+
+                return;
+            }
+
+
+
+            /*
+             * TANK / RESULT ROWS
+             */
             foreach (var tank in tankSubData)
             {
                 column.Item()
@@ -250,9 +487,18 @@ public static class PDFService
                             }
                         });
 
-                        decimal average = (tank.Min + tank.Max) / 2;
-                        decimal tolerance = average - tank.Min;
 
+                        decimal average =
+                            (tank.Min + tank.Max) / 2;
+
+                        decimal tolerance =
+                            average - tank.Min;
+
+
+
+                        /*
+                         * Tank information
+                         */
                         table.Cell()
                             .Border(1)
                             .Padding(5)
@@ -263,55 +509,96 @@ public static class PDFService
                                     .Bold();
 
                                 cell.Item()
-                                    .Text($"Min: {tank.Min}");
+                                    .Text(
+                                        $"{localizer["TestMin"]}: " +
+                                        $"{tank.Min}");
+
 
                                 cell.Item()
-                                    .Text($"Max: {tank.Max}");
+                                    .Text(
+                                        $"{localizer["TestMax"]}: " +
+                                        $"{tank.Max}");
+
 
                                 cell.Item()
-                                    .Text($"Limiet: {average} +/- {tolerance}");
+                                    .Text(
+                                        $"{localizer["TestLimit"]}: " +
+                                        $"{average} +/- {tolerance}");
                             });
 
+
+                        /*
+                         * Injector result cells
+                         */
                         foreach (var injector in model.Injectors)
                         {
+                            var injectorTest =
+                                injector.NormalizedTests
+                                    .FirstOrDefault(t =>
+                                        NormalizeTestName(t.TestName)
+                                        == normalizedTest);
+
+
                             var sub = injector.Data.Tests
                                 .Where(t =>
-                                    NormalizeTestName(t.TestName) == normalizedTest)
-                                .SelectMany(t => t.SubTests)
+                                    NormalizeTestName(t.TestName)
+                                    == normalizedTest)
+                                .SelectMany(t =>
+                                    t.SubTests ?? new())
                                 .FirstOrDefault(s =>
-                                    s.TankName == tank.TankName);
+                                    s.TankName
+                                    == tank.TankName);
 
+
+                            /*
+                             * SKIPPED
+                             */
+                            if (injectorTest == null ||
+                                injectorTest.IsSkipped ||
+                                sub == null)
+                            {
+                                table.Cell()
+                                    .Border(1)
+                                    .Background(
+                                        Colors.Grey.Lighten4)
+                                    .MinHeight(45)
+                                    .Padding(12)
+                                    .AlignCenter()
+                                    .AlignMiddle()
+                                    .Text(
+                                        localizer["TestSkipped"])
+                                    .Bold()
+                                    .FontSize(9);
+
+                                continue;
+                            }
+
+
+
+                            /*
+                             * NORMAL RESULT CELL
+                             */
                             table.Cell()
                                 .Border(1)
                                 .Background(
-                                    sub == null
-                                        ? Colors.Grey.Lighten4
-                                        : GetResultBackgroundColor(sub.ResultColor)
-                                )
+                                    GetResultBackgroundColor(
+                                        sub.ResultColor))
                                 .DefaultTextStyle(style =>
                                     style.FontColor(
-                                        sub == null
-                                            ? "#000000"
-                                            : GetResultTextColor(sub.ResultColor)
-                                    )
-                                )
+                                        GetResultTextColor(
+                                            sub.ResultColor)))
                                 .Padding(6)
                                 .Element(cell =>
                                 {
-                                    if (sub == null)
-                                    {
-                                        cell.Text("Skipped")
-                                            .Bold();
-
-                                        return;
-                                    }
-
                                     if (sub.Results == null ||
                                         sub.Results.Count == 0)
                                     {
-                                        cell.Text("Geen resultaten");
+                                        cell.Text(
+                                            localizer["TestNoResults"]);
+
                                         return;
                                     }
+
 
                                     decimal resultMin =
                                         sub.Results.Min();
@@ -322,43 +609,58 @@ public static class PDFService
                                     decimal resultMax =
                                         sub.Results.Max();
 
+
                                     cell.Column(result =>
                                     {
                                         result.Item()
                                             .Text(text =>
                                             {
-                                                text.Span("Min: ")
+                                                text.Span(
+                                                        localizer["TestMin"]
+                                                        + ": ")
                                                     .Bold();
 
                                                 text.Span(
-                                                    $"{resultMin} {sub.ResultMin}");
+                                                    $"{resultMin} " +
+                                                    $"{sub.ResultMin}");
                                             });
+
 
                                         result.Item()
                                             .Text(text =>
                                             {
-                                                text.Span("Avg: ")
+                                                text.Span(
+                                                        localizer["TestAvg"]
+                                                        + ": ")
                                                     .Bold();
 
                                                 text.Span(
-                                                    $"{resultAverage:0.0} {sub.ResultAverage}");
+                                                    $"{resultAverage:0.0} " +
+                                                    $"{sub.ResultAverage}");
                                             });
+
 
                                         result.Item()
                                             .Text(text =>
                                             {
-                                                text.Span("Max: ")
+                                                text.Span(
+                                                        localizer["TestMax"]
+                                                        + ": ")
                                                     .Bold();
 
                                                 text.Span(
-                                                    $"{resultMax} {sub.ResultMax}");
+                                                    $"{resultMax} " +
+                                                    $"{sub.ResultMax}");
                                             });
+
 
                                         result.Item()
                                             .PaddingTop(5)
                                             .Text(text =>
                                             {
-                                                text.Span("Results: ")
+                                                text.Span(
+                                                        localizer["TestResults"]
+                                                        + ": ")
                                                     .Bold();
 
                                                 text.Span(
