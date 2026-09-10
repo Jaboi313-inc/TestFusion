@@ -53,19 +53,64 @@
 
     </div>
 
-    <div class="list">
+    <div class="list" id="test-results-list">
 
         <div class="list-row header">
-            <span></span>
-            <span>@Localizer["InjectorPartNumber"]</span>
-            <span>@Localizer["InjectorBrand"]</span>
-            <span>@Localizer["InjectorType"]</span>
-            <span>@Localizer["InjectorDateTime"]</span>
+
+            <span class="sort-reset-cell">
+                <button type="button"
+                        id="reset-sort"
+                        class="btn sort-reset-button"
+                        disabled>
+                    @Localizer["ButtonResetSorting"]
+                </button>
+            </span>
+
+            <span>
+                <button type="button"
+                        class="sort-button"
+                        data-sort="partnumber">
+                    @Localizer["InjectorPartNumber"]
+                    <span class="sort-indicator">↕</span>
+                </button>
+            </span>
+
+            <span>
+                <button type="button"
+                        class="sort-button"
+                        data-sort="brand">
+                    @Localizer["InjectorBrand"]
+                    <span class="sort-indicator">↕</span>
+                </button>
+            </span>
+
+            <span>
+                <button type="button"
+                        class="sort-button"
+                        data-sort="type">
+                    @Localizer["InjectorType"]
+                    <span class="sort-indicator">↕</span>
+                </button>
+            </span>
+
+            <span>
+                <button type="button"
+                        class="sort-button"
+                        data-sort="datetime">
+                    @Localizer["InjectorDateTime"]
+                    <span class="sort-indicator">↕</span>
+                </button>
+            </span>
+
         </div>
 
         @foreach (var item in Model)
         {
-            <div class="list-row">
+            <div class="list-row data-row"
+                 data-partnumber="@item.PartNumber"
+                 data-brand="@item.PartBrand"
+                 data-type="@item.PartType"
+                 data-datetime="@item.DateTime.ToUniversalTime().Ticks">
 
                 <span class="selection-cell">
 
@@ -84,7 +129,8 @@
                         </span>
 
                         <span class="select-all-total">
-                            @Localizer["Total"]: <span class="select-all-count">0</span>
+                            @Localizer["Total"]:
+                            <span class="select-all-count">0</span>
                         </span>
 
                     </button>
@@ -106,6 +152,10 @@
 <script>
     let selectedPartNumber = null;
 
+    let currentSortColumn = null;
+    let currentSortDirection = 'asc';
+
+
     const checkboxes = document.querySelectorAll(
         'input[type="checkbox"][name="selectedIds"]'
     );
@@ -119,17 +169,49 @@
     const generateAnalysisButton =
         document.getElementById('generate-analysis');
 
+    const sortButtons =
+        document.querySelectorAll('.sort-button');
+
+    const resetSortButton =
+        document.getElementById('reset-sort');
+
+    const testResultsList =
+        document.getElementById('test-results-list');
+
+
+    // Bewaar de originele volgorde zoals deze vanaf de server kwam
+    const originalRows =
+        Array.from(
+            testResultsList.querySelectorAll('.data-row')
+        );
+
+
+    function getCheckboxesInCurrentOrder() {
+
+        return Array.from(
+            document.querySelectorAll(
+                'input[type="checkbox"][name="selectedIds"]'
+            )
+        );
+    }
+
 
     function updateSelection() {
 
-        const selected = Array.from(checkboxes)
-            .filter(cb => cb.checked);
+        const currentCheckboxes =
+            getCheckboxesInCurrentOrder();
 
+        const selected =
+            currentCheckboxes.filter(cb => cb.checked);
+
+
+        // Verberg eerst alle select-all knoppen
         selectAllSameButtons.forEach(button => {
             button.style.display = 'none';
         });
 
 
+        // Niets geselecteerd
         if (selected.length === 0) {
 
             selectedPartNumber = null;
@@ -146,11 +228,14 @@
 
         const partNumbers = [
             ...new Set(
-                selected.map(cb => cb.dataset.partnumber)
+                selected.map(
+                    cb => cb.dataset.partnumber
+                )
             )
         ];
 
 
+        // Voor de zekerheid: meerdere verschillende partnummers
         if (partNumbers.length !== 1) {
 
             generateAnalysisButton.disabled = true;
@@ -159,21 +244,27 @@
         }
 
 
-        selectedPartNumber = partNumbers[0];
+        selectedPartNumber =
+            partNumbers[0];
 
         generateAnalysisButton.disabled = false;
 
+
         const samePartNumberCheckboxes =
-            Array.from(checkboxes)
-                .filter(cb =>
-                    cb.dataset.partnumber === selectedPartNumber
-                );
+            currentCheckboxes.filter(
+                cb =>
+                    cb.dataset.partnumber ===
+                    selectedPartNumber
+            );
+
 
         const allSelected =
             samePartNumberCheckboxes.every(
                 cb => cb.checked
             );
 
+
+        // Toon select-all bij de eerste geselecteerde rij
         if (!allSelected) {
 
             const firstSelected =
@@ -182,10 +273,12 @@
             const row =
                 firstSelected.closest('.list-row');
 
+
             if (row) {
 
                 const button =
                     row.querySelector('.select-all-same');
+
 
                 if (button) {
 
@@ -193,94 +286,403 @@
                         samePartNumberCheckboxes.length;
 
                     const countElement =
-                        button.querySelector('.select-all-count');
+                        button.querySelector(
+                            '.select-all-count'
+                        );
+
 
                     if (countElement) {
                         countElement.textContent = count;
                     }
 
-                    button.style.display = 'inline-flex';
+
+                    button.style.display =
+                        'inline-flex';
                 }
             }
         }
     }
 
-    checkboxes.forEach(cb => {
 
-        cb.addEventListener('change', function () {
+    function comparePartNumbers(valueA, valueB) {
 
-            const partNumber =
-                this.dataset.partnumber;
+        valueA =
+            (valueA ?? '')
+                .trim()
+                .toUpperCase();
 
-
-            if (this.checked) {
-
-                const selected =
-                    Array.from(checkboxes)
-                        .filter(cb => cb.checked);
-
-
-                const differentPartNumber =
-                    selected.some(
-                        cb =>
-                            cb.dataset.partnumber !== partNumber
-                    );
+        valueB =
+            (valueB ?? '')
+                .trim()
+                .toUpperCase();
 
 
-                if (differentPartNumber) {
+        function getCharacterGroup(character) {
 
-                    alert(
-                        @Html.Raw(
-                            System.Text.Json.JsonSerializer.Serialize(
-                                Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
-                            )
-                        )
-                    );
+            // Cijfers eerst
+            if (/[0-9]/.test(character)) {
+                return 0;
+            }
 
-                    this.checked = false;
-                }
+            // Daarna letters
+            if (/[A-Z]/.test(character)) {
+                return 1;
+            }
+
+            // Daarna overige tekens zoals . - /
+            return 2;
+        }
+
+
+        const maxLength =
+            Math.max(
+                valueA.length,
+                valueB.length
+            );
+
+
+        for (let i = 0; i < maxLength; i++) {
+
+            const charA =
+                valueA[i];
+
+            const charB =
+                valueB[i];
+
+
+            // Als beide tot hier gelijk zijn:
+            // kortste waarde eerst
+            if (charA === undefined) {
+                return -1;
+            }
+
+            if (charB === undefined) {
+                return 1;
             }
 
 
-            updateSelection();
+            if (charA === charB) {
+                continue;
+            }
+
+
+            const groupA =
+                getCharacterGroup(charA);
+
+            const groupB =
+                getCharacterGroup(charB);
+
+
+            // Cijfer < letter < overige tekens
+            if (groupA !== groupB) {
+                return groupA - groupB;
+            }
+
+
+            // Binnen dezelfde groep normaal vergelijken
+            if (charA < charB) {
+                return -1;
+            }
+
+            if (charA > charB) {
+                return 1;
+            }
+        }
+
+
+        return 0;
+    }
+
+
+    function sortRows(column) {
+
+        // Zelfde kolom opnieuw aangeklikt:
+        // wissel tussen oplopend en aflopend
+        if (currentSortColumn === column) {
+
+            currentSortDirection =
+                currentSortDirection === 'asc'
+                    ? 'desc'
+                    : 'asc';
+        }
+        else {
+
+            // Nieuwe kolom begint altijd oplopend
+            currentSortColumn = column;
+            currentSortDirection = 'asc';
+        }
+
+
+        const rows =
+            Array.from(
+                testResultsList.querySelectorAll(
+                    '.data-row'
+                )
+            );
+
+
+        rows.sort((a, b) => {
+
+            let comparison = 0;
+
+
+            // Datum numeriek sorteren
+            if (column === 'datetime') {
+
+                const valueA =
+                    Number(a.dataset.datetime);
+
+                const valueB =
+                    Number(b.dataset.datetime);
+
+                comparison =
+                    valueA - valueB;
+            }
+
+            // Part number krijgt eigen sorteerlogica
+            else if (column === 'partnumber') {
+
+                comparison =
+                    comparePartNumbers(
+                        a.dataset.partnumber,
+                        b.dataset.partnumber
+                    );
+            }
+
+            // Brand en type normaal alfabetisch sorteren
+            else {
+
+                const valueA =
+                    a.dataset[column] ?? '';
+
+                const valueB =
+                    b.dataset[column] ?? '';
+
+
+                comparison =
+                    valueA.localeCompare(
+                        valueB,
+                        undefined,
+                        {
+                            numeric: true,
+                            sensitivity: 'base'
+                        }
+                    );
+            }
+
+
+            return currentSortDirection === 'asc'
+                ? comparison
+                : -comparison;
         });
-    });
-
-    selectAllSameButtons.forEach(button => {
-
-        button.addEventListener('click', function () {
-
-            const partNumber =
-                this.dataset.partnumber;
 
 
-            checkboxes.forEach(cb => {
+        // Rijen opnieuw in de DOM plaatsen
+        rows.forEach(row => {
+            testResultsList.appendChild(row);
+        });
 
-                if (cb.dataset.partnumber === partNumber) {
-                    cb.checked = true;
+
+        // Resetknop activeren
+        resetSortButton.disabled = false;
+
+
+        updateSortIndicators();
+        updateSelection();
+    }
+
+
+    function resetSorting() {
+
+        // Originele servervolgorde herstellen
+        originalRows.forEach(row => {
+            testResultsList.appendChild(row);
+        });
+
+
+        currentSortColumn = null;
+        currentSortDirection = 'asc';
+
+
+        // Resetknop weer uitschakelen
+        resetSortButton.disabled = true;
+
+
+        updateSortIndicators();
+        updateSelection();
+    }
+
+
+    function updateSortIndicators() {
+
+        sortButtons.forEach(button => {
+
+            const indicator =
+                button.querySelector(
+                    '.sort-indicator'
+                );
+
+
+            if (!indicator) {
+                return;
+            }
+
+
+            // Niet actieve kolommen
+            if (
+                button.dataset.sort !==
+                currentSortColumn
+            ) {
+
+                indicator.textContent = '↕';
+
+                return;
+            }
+
+
+            // Actieve kolom
+            indicator.textContent =
+                currentSortDirection === 'asc'
+                    ? '▲'
+                    : '▼';
+        });
+    }
+
+
+    // Checkbox selectie
+    checkboxes.forEach(cb => {
+
+        cb.addEventListener(
+            'change',
+            function () {
+
+                const partNumber =
+                    this.dataset.partnumber;
+
+
+                if (this.checked) {
+
+                    const selected =
+                        getCheckboxesInCurrentOrder()
+                            .filter(cb => cb.checked);
+
+
+                    const differentPartNumber =
+                        selected.some(
+                            cb =>
+                                cb.dataset.partnumber !==
+                                partNumber
+                        );
+
+
+                    if (differentPartNumber) {
+
+                        alert(
+                            @Html.Raw(
+                                System.Text.Json.JsonSerializer.Serialize(
+                                    Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
+                                )
+                            )
+                        );
+
+                        this.checked = false;
+                    }
                 }
 
-            });
+
+                updateSelection();
+            }
+        );
+    });
+
+
+    // Selecteer alle met hetzelfde onderdeelnummer
+    selectAllSameButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                const partNumber =
+                    this.dataset.partnumber;
+
+
+                getCheckboxesInCurrentOrder()
+                    .forEach(cb => {
+
+                        if (
+                            cb.dataset.partnumber ===
+                            partNumber
+                        ) {
+
+                            cb.checked = true;
+                        }
+
+                    });
+
+
+                updateSelection();
+            }
+        );
+    });
+
+
+    // Sorteerknoppen
+    sortButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                sortRows(
+                    this.dataset.sort
+                );
+            }
+        );
+    });
+
+
+    // Sortering resetten
+    resetSortButton.addEventListener(
+        'click',
+        resetSorting
+    );
+
+
+    // Geselecteerde resultaten wissen
+    clearSelectedButton.addEventListener(
+        'click',
+        function () {
+
+            getCheckboxesInCurrentOrder()
+                .forEach(cb => {
+
+                    cb.checked = false;
+                });
 
 
             updateSelection();
-        });
-    });
-
-    clearSelectedButton.addEventListener('click', function () {
-
-        checkboxes.forEach(cb => {
-            cb.checked = false;
-        });
+        }
+    );
 
 
-        updateSelection();
-    });
-
+    // Beginstatus
     updateSelection();
+    updateSortIndicators();
 
+    resetSortButton.disabled = true;
+
+
+    // Herstel selectie bij browser back/forward
     window.addEventListener(
         'pageshow',
-        updateSelection
+        function () {
+
+            updateSelection();
+            updateSortIndicators();
+
+            resetSortButton.disabled =
+                currentSortColumn === null;
+        }
     );
 </script>

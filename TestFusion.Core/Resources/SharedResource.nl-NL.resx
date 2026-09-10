@@ -243,4 +243,7 @@
   <data name="Total" xml:space="preserve">
     <value>Totaal</value>
   </data>
+  <data name="ButtonResetSorting" xml:space="preserve">
+    <value>Sortering resetten</value>
+  </data>
 </root>
