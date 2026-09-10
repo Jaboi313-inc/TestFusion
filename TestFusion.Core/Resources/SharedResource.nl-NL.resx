@@ -120,7 +120,115 @@
   <data name="AppName" xml:space="preserve">
     <value>TestFusion</value>
   </data>
+  <data name="ButtonClearSelected" xml:space="preserve">
+    <value>De-selecteer geselecteerde</value>
+  </data>
+  <data name="ErrorDiffirentInjectorPartNumber" xml:space="preserve">
+    <value>Je kunt alleen verstuivers met hetzelfde onderdeelnummer selecteren</value>
+  </data>
+  <data name="ButtonGenerateAnalysis" xml:space="preserve">
+    <value>Genereer analyse</value>
+  </data>
+  <data name="InjectorBrand" xml:space="preserve">
+    <value>Merk</value>
+  </data>
+  <data name="InjectorComparison" xml:space="preserve">
+    <value>Vergelijking verstuivers</value>
+  </data>
+  <data name="InjectorDateTime" xml:space="preserve">
+    <value>Datum, Tijd</value>
+  </data>
+  <data name="InjectorPartNumber" xml:space="preserve">
+    <value>Onderdeel nummer</value>
+  </data>
+  <data name="InjectorType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="PageTitelAnalysis" xml:space="preserve">
+    <value>Gegenereerde analyse</value>
+  </data>
+  <data name="PageTitelHome" xml:space="preserve">
+    <value>Analyse overzicht</value>
+  </data>
+  <data name="PageTitelSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="PDFOptionCompact" xml:space="preserve">
+    <value>Zoveel mogelijk op één pagina</value>
+  </data>
+  <data name="PDFOptionKeepTestTogether" xml:space="preserve">
+    <value>Test naar nieuwe pagina als deze niet past</value>
+  </data>
+  <data name="PDFOptionOneTestPerPage" xml:space="preserve">
+    <value>Elke test op aparte pagina</value>
+  </data>
+  <data name="ButtonRefresh" xml:space="preserve">
+    <value>Ververs</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Instellingen</value>
+  </data>
+  <data name="TestResultsOverview" xml:space="preserve">
+    <value>Testresultaten overzicht</value>
+  </data>
+  <data name="ButtonPDFDownload" xml:space="preserve">
+    <value>PDF downloaden</value>
+  </data>
+  <data name="Injector" xml:space="preserve">
+    <value>Verstuiver</value>
+  </data>
+  <data name="Customer" xml:space="preserve">
+    <value>Klant</value>
+  </data>
+  <data name="CustomerMail" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="CustomerName" xml:space="preserve">
+    <value>Naam</value>
+  </data>
+  <data name="CustomerPhoneNumber" xml:space="preserve">
+    <value>Tel</value>
+  </data>
+  <data name="CustomerNote" xml:space="preserve">
+    <value>Notitie</value>
+  </data>
+  <data name="InjectorTimeOffTesting" xml:space="preserve">
+    <value>Datum en tijd van testen</value>
+  </data>
+  <data name="InjectorSerialNumber" xml:space="preserve">
+    <value>Verstuiver nummer</value>
+  </data>
+  <data name="InjectorNote" xml:space="preserve">
+    <value>Notitie</value>
+  </data>
+  <data name="TestTestNameAndTank" xml:space="preserve">
+    <value>Test / Tank</value>
+  </data>
+  <data name="TestResponseTime" xml:space="preserve">
+    <value>Reactie tijd</value>
+  </data>
+  <data name="TestType" xml:space="preserve">
+    <value>Test type</value>
+  </data>
+  <data name="TestMin" xml:space="preserve">
+    <value>Min</value>
+  </data>
+  <data name="TestMax" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="TestAvg" xml:space="preserve">
+    <value>Gem</value>
+  </data>
+  <data name="TestLimit" xml:space="preserve">
+    <value>Limiet</value>
+  </data>
+  <data name="TestSkipped" xml:space="preserve">
+    <value>Overgeslagen</value>
+  </data>
+  <data name="TestNoResults" xml:space="preserve">
+    <value>Geen resultaten</value>
+  </data>
+  <data name="TestResults" xml:space="preserve">
+    <value>Alle resultaten</value>
   </data>
 </root>

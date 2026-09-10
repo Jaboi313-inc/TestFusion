@@ -120,7 +120,115 @@
   <data name="AppName" xml:space="preserve">
     <value>TestFusion</value>
   </data>
+  <data name="ButtonClearSelected" xml:space="preserve">
+    <value>Clear selected</value>
+  </data>
+  <data name="ErrorDiffirentInjectorPartNumber" xml:space="preserve">
+    <value>You can only select injectors with the same part number</value>
+  </data>
+  <data name="ButtonGenerateAnalysis" xml:space="preserve">
+    <value>Generate analysis</value>
+  </data>
+  <data name="InjectorBrand" xml:space="preserve">
+    <value>Brand</value>
+  </data>
+  <data name="InjectorComparison" xml:space="preserve">
+    <value>Injector comparison</value>
+  </data>
+  <data name="InjectorDateTime" xml:space="preserve">
+    <value>Date, Time</value>
+  </data>
+  <data name="InjectorPartNumber" xml:space="preserve">
+    <value>Part number</value>
+  </data>
+  <data name="InjectorType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="PageTitelAnalysis" xml:space="preserve">
+    <value>Generated analysis</value>
+  </data>
+  <data name="PageTitelHome" xml:space="preserve">
+    <value>Analysis overview</value>
+  </data>
+  <data name="PageTitelSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="PDFOptionCompact" xml:space="preserve">
+    <value>As much as possible on a single page</value>
+  </data>
+  <data name="PDFOptionKeepTestTogether" xml:space="preserve">
+    <value>Test moves to a new page if this doesn't fit.</value>
+  </data>
+  <data name="PDFOptionOneTestPerPage" xml:space="preserve">
+    <value>Each test on a separate page</value>
+  </data>
+  <data name="ButtonRefresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Settings</value>
+  </data>
+  <data name="TestResultsOverview" xml:space="preserve">
+    <value>Testresults overview</value>
+  </data>
+  <data name="ButtonPDFDownload" xml:space="preserve">
+    <value>PDF downloaden</value>
+  </data>
+  <data name="Injector" xml:space="preserve">
+    <value>Injector</value>
+  </data>
+  <data name="Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="CustomerMail" xml:space="preserve">
+    <value>Mail</value>
+  </data>
+  <data name="CustomerName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="CustomerPhoneNumber" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="CustomerNote" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="InjectorTimeOffTesting" xml:space="preserve">
+    <value>Date and time of testing</value>
+  </data>
+  <data name="InjectorSerialNumber" xml:space="preserve">
+    <value>Injector number</value>
+  </data>
+  <data name="InjectorNote" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="TestTestNameAndTank" xml:space="preserve">
+    <value>Test / Tank</value>
+  </data>
+  <data name="TestResponseTime" xml:space="preserve">
+    <value>Response time</value>
+  </data>
+  <data name="TestType" xml:space="preserve">
+    <value>Test type</value>
+  </data>
+  <data name="TestMin" xml:space="preserve">
+    <value>Min</value>
+  </data>
+  <data name="TestMax" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="TestAvg" xml:space="preserve">
+    <value>Avg</value>
+  </data>
+  <data name="TestLimit" xml:space="preserve">
+    <value>Limit</value>
+  </data>
+  <data name="TestSkipped" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="TestNoResults" xml:space="preserve">
+    <value>No results</value>
+  </data>
+  <data name="TestResults" xml:space="preserve">
+    <value>All results</value>
   </data>
 </root>

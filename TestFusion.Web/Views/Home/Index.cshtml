@@ -1,5 +1,10 @@
-﻿@{
-    ViewData["Title"] = "Analyse overzicht";
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["PageTitelHome"];
 }
 
 @model List<TestFusion.Core.Models.TestListItemModel>
@@ -10,17 +15,17 @@
 
 <form id="refresh-form" asp-controller="Home" asp-action="Refresh" method="post"></form>
 
-<form asp-controller="Analysis" asp-action="Index" method="post">
+<form asp-controller="Analysis" asp-action="Generate" method="post">
 
     <div id="top-bar">
 
         <div class="top-bar-left">
-            <h2>Testresultaten overzicht</h2>
+            <h2>@Localizer["TestResultsOverview"]</h2>
 
             <button type="submit"
                     form="refresh-form"
                     class="btn">
-                Refresh
+                @Localizer["ButtonRefresh"]
             </button>
         </div>
 
@@ -28,14 +33,14 @@
             <button type="button"
                     id="clear-selected"
                     class="btn">
-                Clear selected
+                @Localizer["ButtonClearSelected"]
             </button>
 
             <button type="submit"
                     id="generate-analysis"
                     class="btn"
                     disabled>
-                Genereer analyse
+                @Localizer["ButtonGenerateAnalysis"]
             </button>
         </div>
 
@@ -45,10 +50,10 @@
 
         <div class="list-row header">
             <span></span>
-            <span>Verstuiver #</span>
-            <span>Merk</span>
-            <span>Type</span>
-            <span>Datum, Tijd</span>
+            <span>@Localizer["InjectorPartNumber"]</span>
+            <span>@Localizer["InjectorBrand"]</span>
+            <span>@Localizer["InjectorType"]</span>
+            <span>@Localizer["InjectorDateTime"]</span>
         </div>
 
         @foreach (var item in Model)
@@ -125,9 +130,13 @@
 
                 if (differentPartNumber) {
 
-                    alert(
-                        "Je kunt alleen verstuivers met hetzelfde onderdeelnummer selecteren."
-                    );
+                        alert(
+                            @Html.Raw(
+                                    System.Text.Json.JsonSerializer.Serialize(
+                                                            Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
+                                    )
+                            )
+                        );
 
                     this.checked = false;
                 }

@@ -1,7 +1,12 @@
-﻿@model TestFusion.Core.Models.WebModels.GeneratedModel
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@inject IStringLocalizer<SharedResource> Localizer
+
+@model TestFusion.Core.Models.WebModels.GeneratedModel
 
 @{
-    ViewData["Title"] = "Gegenereerde analyse";
+    ViewData["Title"] = Localizer["PageTitelAnalysis"];
 }
 
 @functions {
@@ -15,9 +20,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4 main-body">
 
-    <h2 class="mb-0">
-        Vergelijking verstuivers
-    </h2>
+    <h2 class="mb-0">@Localizer["InjectorComparison"]</h2>
 
     <form asp-controller="Analysis"
           asp-action="GeneratePdf"
@@ -35,22 +38,22 @@
                 class="form-select">
 
             <option value="Compact">
-                Zoveel mogelijk op één pagina
+                @Localizer["PDFOptionCompact"]
             </option>
 
             <option value="KeepTestTogether">
-                Test naar nieuwe pagina als deze niet past
+                @Localizer["PDFOptionKeepTestTogether"]
             </option>
 
             <option value="OneTestPerPage">
-                Elke test op aparte pagina
+                @Localizer["PDFOptionOneTestPerPage"]
             </option>
 
         </select>
 
         <button type="submit"
                 class="btn btn-primary">
-            PDF downloaden
+            @Localizer["ButtonPDFDownload"]
         </button>
 
     </form>
@@ -63,26 +66,26 @@
     <thead>
         <tr class="info-row">
             <th class="info-column">
-                <strong>Verstuiver:</strong>
+                <strong>@Localizer["Injector"]:</strong>
 
                 <br />
 
                 <small>
-                    Nummer:
+                    @Localizer["InjectorPartNumber"]:
                     @Model.Injectors.FirstOrDefault()?.Data.PartNumber
                 </small>
 
                 <br />
 
                 <small>
-                    Merk:
+                    @Localizer["InjectorBrand"]:
                     @Model.Injectors.FirstOrDefault()?.Data.PartBrand
                 </small>
 
                 <br />
 
                 <small>
-                    Type:
+                    @Localizer["InjectorType"]:
                     @Model.Injectors.FirstOrDefault()?.Data.PartType
                 </small>
 
@@ -90,12 +93,12 @@
 
             </th>
             <th class="info-column">
-                <strong>Klant:</strong>
+                <strong>@Localizer["Customer"]:</strong>
 
                 <br />
 
                 <small>
-                    Naam:
+                    @Localizer["CustomerName"]:
                     @Model.Injectors.FirstOrDefault()?.Data.CustomerName
                 </small>
 
@@ -106,7 +109,7 @@
                     Model.Injectors.FirstOrDefault()?.Data.CustomerPhone))
                 {
                     <small>
-                        Tel:
+                        @Localizer["CustomerPhoneNumber"]:
                         @Model.Injectors.FirstOrDefault()?.Data.CustomerPhone
                     </small>
                 }
@@ -118,7 +121,7 @@
                     Model.Injectors.FirstOrDefault()?.Data.CustomerMail))
                 {
                     <small>
-                        Mail:
+                        @Localizer["CustomerMail"]:
                         @Model.Injectors.FirstOrDefault()?.Data.CustomerMail
                     </small>
                 }
@@ -130,7 +133,7 @@
                     Model.Injectors.FirstOrDefault()?.Data.CustomerNotes))
                 {
                     <small>
-                        Notitie:
+                        @Localizer["CustomerNote"]:
                         @Model.Injectors.FirstOrDefault()?.Data.CustomerNotes
                     </small>
                 }
@@ -143,19 +146,19 @@
                 <br />
 
                 <small>
-                    Datum en tijd van testen:
+                    @Localizer["InjectorTimeOffTesting"]:
                 </small>
 
                 <br />
 
                 <small>
-                    Verstuiver nummer:
+                    @Localizer["InjectorSerialNumber"]:
                 </small>
 
                 <br />
 
                 <small>
-                    Notitie:
+                    @Localizer["InjectorNote"]:
                 </small>
             </th>
 
@@ -198,7 +201,7 @@
                 <br />
                 <br />
                 <div class="info-row">
-                    Test / Tank
+                    @Localizer["TestTestNameAndTank"]
                 </div>
 
             </th>
@@ -233,14 +236,14 @@
                         <br />
 
                         <small>
-                            Response time:
+                            @Localizer["TestResponseTime"]:
                             @test.TestResponseTime s
                         </small>
 
                         <br />
 
                         <small>
-                            Test type:
+                            @Localizer["TestType"]:
                             @test.TestType
                         </small>
 
@@ -269,19 +272,19 @@
                         <br />
 
                         <small>
-                            Min: @tank.Min
+                            @Localizer["TestMin"]: @tank.Min
                         </small>
 
                         <br />
 
                         <small>
-                            Max: @tank.Max
+                            @Localizer["TestMax"]: @tank.Max
                         </small>
 
                         <br />
 
                         <small>
-                            Limiet:
+                            @Localizer["TestLimit"]:
                             @average +/- @tolerance
                         </small>
 
@@ -303,14 +306,14 @@
                             @if (sub == null)
                             {
                                 <strong>
-                                    Skipped
+                                    @Localizer["TestSkipped"]
                                 </strong>
                             }
                             else if (sub.Results == null ||
                                      sub.Results.Count == 0)
                             {
                                 <strong>
-                                    Geen resultaten
+                                    @Localizer["TestNoResults"]
                                 </strong>
                             }
                             else
@@ -330,7 +333,7 @@
                                 <div>
 
                                     <strong>
-                                        Min:
+                                        @Localizer["TestMin"]:
                                     </strong>
 
                                     @resultMinCalculated
@@ -341,7 +344,7 @@
                                 <div>
 
                                     <strong>
-                                        Avg:
+                                        @Localizer["TestAvg"]:
                                     </strong>
 
                                     @resultAverageCalculated.ToString("0.0")
@@ -352,7 +355,7 @@
                                 <div>
 
                                     <strong>
-                                        Max:
+                                        @Localizer["TestMax"]:
                                     </strong>
 
                                     @resultMaxCalculated
@@ -367,7 +370,7 @@
                                 <div>
 
                                     <strong>
-                                        Results:
+                                        @Localizer["TestResults"]:
                                     </strong>
 
                                     @string.Join(

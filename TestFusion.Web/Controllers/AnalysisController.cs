@@ -3,6 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TestFusion.Core.Enums;
 using TestFusion.Core.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using System.Text.Json;
+using TestFusion.Core;
+using TestFusion.Core.Enums;
+using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
@@ -14,24 +21,46 @@ namespace TestFusion.Web.Controllers
     {
         private readonly AppDbContext _db;
         private readonly ISyncService _sync;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public AnalysisController(
             AppDbContext db,
-            ISyncService sync)
+            ISyncService sync,
+            IStringLocalizer<SharedResource> localizer)
         {
             _db = db;
             _sync = sync;
+            _localizer = localizer;
         }
 
         [HttpPost]
+        public IActionResult Generate(List<string> selectedIds)
+        {
+            if (selectedIds == null || selectedIds.Count == 0)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            return RedirectToAction(
+                nameof(Index),
+                new { selectedIds }
+            );
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Index(List<string> selectedIds)
         {
+            if (selectedIds == null || selectedIds.Count == 0)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             var model = await BuildGeneratedModel(selectedIds);
 
             if (model == null)
             {
                 TempData["Error"] =
-                    "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
+                _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
 
                 return RedirectToAction("Index", "Home");
             }
@@ -40,14 +69,16 @@ namespace TestFusion.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GeneratePdf(List<string> selectedIds, PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact)
+        public async Task<IActionResult> GeneratePdf(
+            List<string> selectedIds,
+            PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact)
         {
             var model = await BuildGeneratedModel(selectedIds);
 
             if (model == null)
             {
                 TempData["Error"] =
-                    "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
+                    _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
 
                 return RedirectToAction("Index", "Home");
             }
@@ -67,13 +98,10 @@ namespace TestFusion.Web.Controllers
         private async Task<GeneratedModel?> BuildGeneratedModel(
             List<string> selectedIds)
         {
-            // Get JSON from db
             var jsons = await _db.StoredJsons
                 .Where(x => selectedIds.Contains(x.Id))
                 .ToListAsync();
 
-
-            // JSON -> TestResultModel
             var injectors = jsons
                 .Select(x => new TestResultViewModel
                 {
@@ -81,7 +109,6 @@ namespace TestFusion.Web.Controllers
                 })
                 .ToList();
 
-            // Check if all injectors have the same part number
             var partNumbers = injectors
                 .Select(x => x.Data.PartNumber)
                 .Distinct()
@@ -97,7 +124,9 @@ namespace TestFusion.Web.Controllers
                 .GroupBy(x => NormalizeTestName(x.TestName))
                 .Select(g =>
                 {
-                    var firstValid = g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First();
+                    var firstValid =
+                        g.FirstOrDefault(x => x.TestStatus != 1)
+                        ?? g.First();
 
                     return new TestModel
                     {
@@ -120,7 +149,9 @@ namespace TestFusion.Web.Controllers
                     .GroupBy(x => NormalizeTestName(x.TestName))
                     .Select(g =>
                     {
-                        var firstValid = g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First();
+                        var firstValid =
+                            g.FirstOrDefault(x => x.TestStatus != 1)
+                            ?? g.First();
 
                         return new TestCellModel
                         {

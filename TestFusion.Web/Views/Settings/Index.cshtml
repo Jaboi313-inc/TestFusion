@@ -1,5 +1,10 @@
-﻿@{
-    ViewData["Title"] = "Analyse overzicht";
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["PageTitelSettings"];
 }
 
 @model List<TestFusion.Core.Models.TestListItemModel>
