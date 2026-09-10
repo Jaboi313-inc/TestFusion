@@ -172,7 +172,7 @@
     <value>Testresults overview</value>
   </data>
   <data name="ButtonPDFDownload" xml:space="preserve">
-    <value>PDF downloaden</value>
+    <value>Download PDF</value>
   </data>
   <data name="Injector" xml:space="preserve">
     <value>Injector</value>

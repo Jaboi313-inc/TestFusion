@@ -32,7 +32,8 @@
         <div class="top-bar-right">
             <button type="button"
                     id="clear-selected"
-                    class="btn">
+                    class="btn"
+                    disabled>
                 @Localizer["ButtonClearSelected"]
             </button>
 
@@ -85,16 +86,21 @@
         document.getElementById('generate-analysis');
 
 
-    function updateSelection() {
+        function updateSelection() {
 
         const selected = Array.from(checkboxes)
             .filter(cb => cb.checked);
 
         if (selected.length === 0) {
             selectedPartNumber = null;
+
             generateAnalysisButton.disabled = true;
+            clearSelectedButton.disabled = true;
+
             return;
         }
+
+        clearSelectedButton.disabled = false;
 
         const partNumbers = [
             ...new Set(
@@ -157,5 +163,7 @@
     });
 
     updateSelection();
+
+    window.addEventListener('pageshow', updateSelection);
 </script>
 
