@@ -246,4 +246,10 @@
   <data name="ButtonResetSorting" xml:space="preserve">
     <value>Sortering resetten</value>
   </data>
+  <data name="Show" xml:space="preserve">
+    <value>Toon</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>Alle</value>
+  </data>
 </root>

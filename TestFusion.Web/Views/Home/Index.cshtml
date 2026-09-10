@@ -5,17 +5,38 @@
 
 @{
     ViewData["Title"] = Localizer["PageTitelHome"];
+
+    var resultLimit =
+        ViewBag.ResultLimit is int limit
+            ? limit
+            : 50;
+
+    var totalCount =
+        ViewBag.TotalCount is int count
+            ? count
+            : Model.Count;
 }
 
 @model List<TestFusion.Core.Models.TestListItemModel>
 
-<link rel="stylesheet" href="~/css/home.css" />
+<link rel="stylesheet"
+      href="~/css/home.css"
+      asp-append-version="true" />
+
 
 <form id="refresh-form"
       asp-controller="Home"
       asp-action="Refresh"
       method="post">
 </form>
+
+
+<form id="result-limit-form"
+      asp-controller="Home"
+      asp-action="Index"
+      method="get">
+</form>
+
 
 <form asp-controller="Analysis"
       asp-action="Generate"
@@ -24,14 +45,92 @@
     <div id="top-bar">
 
         <div class="top-bar-left">
-            <h2>@Localizer["TestResultsOverview"]</h2>
+
+            <h2>
+                @Localizer["TestResultsOverview"]
+            </h2>
+
 
             <button type="submit"
                     form="refresh-form"
                     class="btn">
                 @Localizer["ButtonRefresh"]
             </button>
+
+
+            <div class="result-limit-container">
+
+                <label for="resultLimit">
+                    @Localizer["Show"]:
+                </label>
+
+                <select id="resultLimit"
+                        name="resultLimit"
+                        form="result-limit-form"
+                        class="result-limit-select"
+                        onchange="this.form.submit()">
+
+                    @if (resultLimit == 25)
+                    {
+                        <option value="25" selected>
+                            25
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="25">
+                            25
+                        </option>
+                    }
+
+
+                    @if (resultLimit == 50)
+                    {
+                        <option value="50" selected>
+                            50
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="50">
+                            50
+                        </option>
+                    }
+
+
+                    @if (resultLimit == 100)
+                    {
+                        <option value="100" selected>
+                            100
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="100">
+                            100
+                        </option>
+                    }
+
+
+                    @if (resultLimit == 0)
+                    {
+                        <option value="0" selected>
+                            @Localizer["All"] (@totalCount)
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="0">
+                            @Localizer["All"] (@totalCount)
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
         </div>
+
 
         <div class="top-bar-right">
 
@@ -41,6 +140,7 @@
                     disabled>
                 @Localizer["ButtonClearSelected"]
             </button>
+
 
             <button type="submit"
                     id="generate-analysis"
@@ -53,56 +153,93 @@
 
     </div>
 
-    <div class="list" id="test-results-list">
+
+    <div class="list"
+         id="test-results-list">
 
         <div class="list-row header">
 
             <span class="sort-reset-cell">
+
                 <button type="button"
                         id="reset-sort"
                         class="btn sort-reset-button"
                         disabled>
                     @Localizer["ButtonResetSorting"]
                 </button>
+
             </span>
 
+
             <span>
+
                 <button type="button"
                         class="sort-button"
                         data-sort="partnumber">
+
                     @Localizer["InjectorPartNumber"]
-                    <span class="sort-indicator">↕</span>
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
                 </button>
+
             </span>
 
+
             <span>
+
                 <button type="button"
                         class="sort-button"
                         data-sort="brand">
+
                     @Localizer["InjectorBrand"]
-                    <span class="sort-indicator">↕</span>
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
                 </button>
+
             </span>
 
+
             <span>
+
                 <button type="button"
                         class="sort-button"
                         data-sort="type">
+
                     @Localizer["InjectorType"]
-                    <span class="sort-indicator">↕</span>
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
                 </button>
+
             </span>
 
+
             <span>
+
                 <button type="button"
                         class="sort-button"
                         data-sort="datetime">
+
                     @Localizer["InjectorDateTime"]
-                    <span class="sort-indicator">↕</span>
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
                 </button>
+
             </span>
 
         </div>
+
 
         @foreach (var item in Model)
         {
@@ -119,6 +256,7 @@
                            value="@item.Id"
                            data-partnumber="@item.PartNumber">
 
+
                     <button type="button"
                             class="select-all-same btn"
                             data-partnumber="@item.PartNumber"
@@ -129,18 +267,35 @@
                         </span>
 
                         <span class="select-all-total">
+
                             @Localizer["Total"]:
-                            <span class="select-all-count">0</span>
+
+                            <span class="select-all-count">
+                                0
+                            </span>
+
                         </span>
 
                     </button>
 
                 </span>
 
-                <span>@item.PartNumber</span>
-                <span>@item.PartBrand</span>
-                <span>@item.PartType</span>
-                <span>@item.DateTime.ToString("dd-MM-yyyy HH:mm")</span>
+
+                <span>
+                    @item.PartNumber
+                </span>
+
+                <span>
+                    @item.PartBrand
+                </span>
+
+                <span>
+                    @item.PartType
+                </span>
+
+                <span>
+                    @item.DateTime.ToString("dd-MM-yyyy HH:mm")
+                </span>
 
             </div>
         }
@@ -149,13 +304,16 @@
 
 </form>
 
+
 <script>
+    // State
     let selectedPartNumber = null;
 
     let currentSortColumn = null;
     let currentSortDirection = 'asc';
 
 
+    // DOM references
     const checkboxes = document.querySelectorAll(
         'input[type="checkbox"][name="selectedIds"]'
     );
@@ -179,13 +337,13 @@
         document.getElementById('test-results-list');
 
 
-    // Bewaar de originele volgorde zoals deze vanaf de server kwam
     const originalRows =
         Array.from(
             testResultsList.querySelectorAll('.data-row')
         );
 
 
+    // Selection
     function getCheckboxesInCurrentOrder() {
 
         return Array.from(
@@ -202,16 +360,16 @@
             getCheckboxesInCurrentOrder();
 
         const selected =
-            currentCheckboxes.filter(cb => cb.checked);
+            currentCheckboxes.filter(
+                cb => cb.checked
+            );
 
 
-        // Verberg eerst alle select-all knoppen
         selectAllSameButtons.forEach(button => {
             button.style.display = 'none';
         });
 
 
-        // Niets geselecteerd
         if (selected.length === 0) {
 
             selectedPartNumber = null;
@@ -235,7 +393,6 @@
         ];
 
 
-        // Voor de zekerheid: meerdere verschillende partnummers
         if (partNumbers.length !== 1) {
 
             generateAnalysisButton.disabled = true;
@@ -264,7 +421,6 @@
             );
 
 
-        // Toon select-all bij de eerste geselecteerde rij
         if (!allSelected) {
 
             const firstSelected =
@@ -304,6 +460,7 @@
     }
 
 
+    // Sorting
     function comparePartNumbers(valueA, valueB) {
 
         valueA =
@@ -319,17 +476,14 @@
 
         function getCharacterGroup(character) {
 
-            // Cijfers eerst
             if (/[0-9]/.test(character)) {
                 return 0;
             }
 
-            // Daarna letters
             if (/[A-Z]/.test(character)) {
                 return 1;
             }
 
-            // Daarna overige tekens zoals . - /
             return 2;
         }
 
@@ -350,8 +504,6 @@
                 valueB[i];
 
 
-            // Als beide tot hier gelijk zijn:
-            // kortste waarde eerst
             if (charA === undefined) {
                 return -1;
             }
@@ -373,13 +525,11 @@
                 getCharacterGroup(charB);
 
 
-            // Cijfer < letter < overige tekens
             if (groupA !== groupB) {
                 return groupA - groupB;
             }
 
 
-            // Binnen dezelfde groep normaal vergelijken
             if (charA < charB) {
                 return -1;
             }
@@ -396,8 +546,6 @@
 
     function sortRows(column) {
 
-        // Zelfde kolom opnieuw aangeklikt:
-        // wissel tussen oplopend en aflopend
         if (currentSortColumn === column) {
 
             currentSortDirection =
@@ -407,7 +555,6 @@
         }
         else {
 
-            // Nieuwe kolom begint altijd oplopend
             currentSortColumn = column;
             currentSortDirection = 'asc';
         }
@@ -426,7 +573,6 @@
             let comparison = 0;
 
 
-            // Datum numeriek sorteren
             if (column === 'datetime') {
 
                 const valueA =
@@ -439,7 +585,6 @@
                     valueA - valueB;
             }
 
-            // Part number krijgt eigen sorteerlogica
             else if (column === 'partnumber') {
 
                 comparison =
@@ -449,7 +594,6 @@
                     );
             }
 
-            // Brand en type normaal alfabetisch sorteren
             else {
 
                 const valueA =
@@ -477,13 +621,11 @@
         });
 
 
-        // Rijen opnieuw in de DOM plaatsen
         rows.forEach(row => {
             testResultsList.appendChild(row);
         });
 
 
-        // Resetknop activeren
         resetSortButton.disabled = false;
 
 
@@ -494,7 +636,6 @@
 
     function resetSorting() {
 
-        // Originele servervolgorde herstellen
         originalRows.forEach(row => {
             testResultsList.appendChild(row);
         });
@@ -504,7 +645,6 @@
         currentSortDirection = 'asc';
 
 
-        // Resetknop weer uitschakelen
         resetSortButton.disabled = true;
 
 
@@ -528,7 +668,6 @@
             }
 
 
-            // Niet actieve kolommen
             if (
                 button.dataset.sort !==
                 currentSortColumn
@@ -540,7 +679,6 @@
             }
 
 
-            // Actieve kolom
             indicator.textContent =
                 currentSortDirection === 'asc'
                     ? '▲'
@@ -549,7 +687,7 @@
     }
 
 
-    // Checkbox selectie
+    // Event handlers
     checkboxes.forEach(cb => {
 
         cb.addEventListener(
@@ -564,7 +702,9 @@
 
                     const selected =
                         getCheckboxesInCurrentOrder()
-                            .filter(cb => cb.checked);
+                            .filter(
+                                cb => cb.checked
+                            );
 
 
                     const differentPartNumber =
@@ -585,6 +725,7 @@
                             )
                         );
 
+
                         this.checked = false;
                     }
                 }
@@ -596,7 +737,6 @@
     });
 
 
-    // Selecteer alle met hetzelfde onderdeelnummer
     selectAllSameButtons.forEach(button => {
 
         button.addEventListener(
@@ -627,7 +767,6 @@
     });
 
 
-    // Sorteerknoppen
     sortButtons.forEach(button => {
 
         button.addEventListener(
@@ -642,14 +781,12 @@
     });
 
 
-    // Sortering resetten
     resetSortButton.addEventListener(
         'click',
         resetSorting
     );
 
 
-    // Geselecteerde resultaten wissen
     clearSelectedButton.addEventListener(
         'click',
         function () {
@@ -666,14 +803,13 @@
     );
 
 
-    // Beginstatus
+    // Initialization
     updateSelection();
     updateSortIndicators();
 
     resetSortButton.disabled = true;
 
 
-    // Herstel selectie bij browser back/forward
     window.addEventListener(
         'pageshow',
         function () {
