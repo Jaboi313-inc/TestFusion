@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /TestFusion.SyncService/playwright-session
 /TestFusion.Web/playwright-session
+/TestFusion.Services/playwright-session

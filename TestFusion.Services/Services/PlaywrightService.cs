@@ -5,8 +5,8 @@ using System.Text.Json;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models;
 using TestFusion.Core.Models.WebModels;
-using TestFusion.SyncService.Models;
-using TestFusion.SyncService.Services;
+using TestFusion.Services.Models;
+using TestFusion.Services.Services;
 
 public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 {

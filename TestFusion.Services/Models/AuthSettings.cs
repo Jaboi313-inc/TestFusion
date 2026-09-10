@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TestFusion.SyncService.Models
+namespace TestFusion.Services.Models
 {
     public class AuthSettings
     {

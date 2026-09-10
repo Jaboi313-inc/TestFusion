@@ -31,7 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TestFusion.Core\TestFusion.Core.csproj" />
     <ProjectReference Include="..\TestFusion.Data\TestFusion.Data.csproj" />
-    <ProjectReference Include="..\TestFusion.SyncService\TestFusion.SyncService.csproj" />
+    <ProjectReference Include="..\TestFusion.Services\TestFusion.Services.csproj" />
   </ItemGroup>
 
 </Project>

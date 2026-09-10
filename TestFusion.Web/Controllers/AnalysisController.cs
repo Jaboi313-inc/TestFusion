@@ -8,7 +8,7 @@ using TestFusion.Core;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
-using TestFusion.Web.Services;
+using TestFusion.Services.Services;
 
 namespace TestFusion.Web.Controllers
 {

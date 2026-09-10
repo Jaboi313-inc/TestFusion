@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
-using TestFusion.SyncService.Models;
-using TestFusion.SyncService.Services;
+using TestFusion.Services.Models;
+using TestFusion.Services.Services;
 using TestFusion.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);

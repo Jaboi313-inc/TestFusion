@@ -5,9 +5,9 @@ using System.Text.Json;
 using TestFusion.Core.Helpers;
 using TestFusion.Core.Models;
 using TestFusion.Core.Models.TestResult;
-using TestFusion.SyncService.Models;
+using TestFusion.Services.Models;
 
-namespace TestFusion.SyncService.Services
+namespace TestFusion.Services.Services
 {
     public class JSONService
     {

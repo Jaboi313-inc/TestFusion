@@ -6,7 +6,7 @@ using TestFusion.Core;
 using TestFusion.Core.Enums;
 using TestFusion.Core.Models.WebModels;
 
-namespace TestFusion.Web.Services;
+namespace TestFusion.Services.Services;
 
 public static class PDFService
 {

@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
-using TestFusion.SyncService;
-using TestFusion.SyncService.Models;
-using TestFusion.SyncService.Services;
+using TestFusion.Services;
+using TestFusion.Services.Models;
+using TestFusion.Services.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 
