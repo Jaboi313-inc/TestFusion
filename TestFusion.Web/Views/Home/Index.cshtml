@@ -9,8 +9,7 @@
 
 @model List<TestFusion.Core.Models.TestListItemModel>
 
-<link rel="stylesheet" href="~/css/site.css" />
-<link rel="stylesheet" href="~/css/analysis.css" />
+<link rel="stylesheet" href="~/css/home.css" />
 
 <form id="refresh-form"
       asp-controller="Home"
@@ -79,7 +78,15 @@
                             class="select-all-same btn"
                             data-partnumber="@item.PartNumber"
                             style="display: none;">
-                        @Localizer["ButtonSelectAllSamePartNumber"]
+
+                        <span class="select-all-title">
+                            @Localizer["ButtonSelectAllSamePartNumber"]
+                        </span>
+
+                        <span class="select-all-total">
+                            @Localizer["Total"]: <span class="select-all-count">0</span>
+                        </span>
+
                     </button>
 
                 </span>
@@ -118,13 +125,11 @@
         const selected = Array.from(checkboxes)
             .filter(cb => cb.checked);
 
-        // Eerst alle "selecteer alles" knoppen verbergen
         selectAllSameButtons.forEach(button => {
             button.style.display = 'none';
         });
 
 
-        // Niets geselecteerd
         if (selected.length === 0) {
 
             selectedPartNumber = null;
@@ -139,7 +144,6 @@
         clearSelectedButton.disabled = false;
 
 
-        // Alle unieke partnummers van geselecteerde regels
         const partNumbers = [
             ...new Set(
                 selected.map(cb => cb.dataset.partnumber)
@@ -147,8 +151,6 @@
         ];
 
 
-        // Dit zou normaal niet mogen voorkomen,
-        // maar voor de zekerheid
         if (partNumbers.length !== 1) {
 
             generateAnalysisButton.disabled = true;
@@ -161,24 +163,17 @@
 
         generateAnalysisButton.disabled = false;
 
-
-        // Alle checkboxes met hetzelfde partnummer
         const samePartNumberCheckboxes =
             Array.from(checkboxes)
                 .filter(cb =>
                     cb.dataset.partnumber === selectedPartNumber
                 );
 
-
-        // Controleer of ze allemaal al geselecteerd zijn
         const allSelected =
             samePartNumberCheckboxes.every(
                 cb => cb.checked
             );
 
-
-        // Als nog niet alles geselecteerd is,
-        // toon knop bij eerste geselecteerde rij
         if (!allSelected) {
 
             const firstSelected =
@@ -193,14 +188,23 @@
                     row.querySelector('.select-all-same');
 
                 if (button) {
-                    button.style.display = 'inline-block';
+
+                    const count =
+                        samePartNumberCheckboxes.length;
+
+                    const countElement =
+                        button.querySelector('.select-all-count');
+
+                    if (countElement) {
+                        countElement.textContent = count;
+                    }
+
+                    button.style.display = 'inline-flex';
                 }
             }
         }
     }
 
-
-    // Checkbox veranderen
     checkboxes.forEach(cb => {
 
         cb.addEventListener('change', function () {
@@ -242,8 +246,6 @@
         });
     });
 
-
-    // Selecteer alle met hetzelfde onderdeelnummer
     selectAllSameButtons.forEach(button => {
 
         button.addEventListener('click', function () {
@@ -265,8 +267,6 @@
         });
     });
 
-
-    // Selectie wissen
     clearSelectedButton.addEventListener('click', function () {
 
         checkboxes.forEach(cb => {
@@ -277,12 +277,8 @@
         updateSelection();
     });
 
-
-    // Initiële status
     updateSelection();
 
-
-    // Herstel na browser back/forward cache
     window.addEventListener(
         'pageshow',
         updateSelection

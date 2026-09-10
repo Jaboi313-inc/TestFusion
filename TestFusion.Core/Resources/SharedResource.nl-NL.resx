@@ -238,6 +238,9 @@
     <value>Pagina</value>
   </data>
   <data name="ButtonSelectAllSamePartNumber" xml:space="preserve">
-    <value>Selecteer alle met dit onderdeelnummer</value>
+    <value>Selecteer alle met hetzelfde onderdeelnummer</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Totaal</value>
   </data>
 </root>

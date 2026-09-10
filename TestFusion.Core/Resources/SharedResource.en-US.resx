@@ -238,6 +238,9 @@
     <value>Page</value>
   </data>
   <data name="ButtonSelectAllSamePartNumber" xml:space="preserve">
-    <value>Select all with this part number</value>
+    <value>Select all with same part number</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
   </data>
 </root>
