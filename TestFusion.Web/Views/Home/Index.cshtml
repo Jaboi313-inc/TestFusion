@@ -12,10 +12,15 @@
 <link rel="stylesheet" href="~/css/site.css" />
 <link rel="stylesheet" href="~/css/analysis.css" />
 
+<form id="refresh-form"
+      asp-controller="Home"
+      asp-action="Refresh"
+      method="post">
+</form>
 
-<form id="refresh-form" asp-controller="Home" asp-action="Refresh" method="post"></form>
-
-<form asp-controller="Analysis" asp-action="Generate" method="post">
+<form asp-controller="Analysis"
+      asp-action="Generate"
+      method="post">
 
     <div id="top-bar">
 
@@ -30,6 +35,7 @@
         </div>
 
         <div class="top-bar-right">
+
             <button type="button"
                     id="clear-selected"
                     class="btn"
@@ -43,6 +49,7 @@
                     disabled>
                 @Localizer["ButtonGenerateAnalysis"]
             </button>
+
         </div>
 
     </div>
@@ -60,11 +67,28 @@
         @foreach (var item in Model)
         {
             <div class="list-row">
-                <input type="checkbox" name="selectedIds" value="@item.Id" data-partnumber="@item.PartNumber">
+
+                <span class="selection-cell">
+
+                    <input type="checkbox"
+                           name="selectedIds"
+                           value="@item.Id"
+                           data-partnumber="@item.PartNumber">
+
+                    <button type="button"
+                            class="select-all-same btn"
+                            data-partnumber="@item.PartNumber"
+                            style="display: none;">
+                        @Localizer["ButtonSelectAllSamePartNumber"]
+                    </button>
+
+                </span>
+
                 <span>@item.PartNumber</span>
                 <span>@item.PartBrand</span>
                 <span>@item.PartType</span>
                 <span>@item.DateTime.ToString("dd-MM-yyyy HH:mm")</span>
+
             </div>
         }
 
@@ -79,6 +103,9 @@
         'input[type="checkbox"][name="selectedIds"]'
     );
 
+    const selectAllSameButtons =
+        document.querySelectorAll('.select-all-same');
+
     const clearSelectedButton =
         document.getElementById('clear-selected');
 
@@ -86,12 +113,20 @@
         document.getElementById('generate-analysis');
 
 
-        function updateSelection() {
+    function updateSelection() {
 
         const selected = Array.from(checkboxes)
             .filter(cb => cb.checked);
 
+        // Eerst alle "selecteer alles" knoppen verbergen
+        selectAllSameButtons.forEach(button => {
+            button.style.display = 'none';
+        });
+
+
+        // Niets geselecteerd
         if (selected.length === 0) {
+
             selectedPartNumber = null;
 
             generateAnalysisButton.disabled = true;
@@ -100,70 +135,156 @@
             return;
         }
 
+
         clearSelectedButton.disabled = false;
 
+
+        // Alle unieke partnummers van geselecteerde regels
         const partNumbers = [
             ...new Set(
                 selected.map(cb => cb.dataset.partnumber)
             )
         ];
 
+
+        // Dit zou normaal niet mogen voorkomen,
+        // maar voor de zekerheid
         if (partNumbers.length !== 1) {
+
             generateAnalysisButton.disabled = true;
+
             return;
         }
+
 
         selectedPartNumber = partNumbers[0];
 
         generateAnalysisButton.disabled = false;
+
+
+        // Alle checkboxes met hetzelfde partnummer
+        const samePartNumberCheckboxes =
+            Array.from(checkboxes)
+                .filter(cb =>
+                    cb.dataset.partnumber === selectedPartNumber
+                );
+
+
+        // Controleer of ze allemaal al geselecteerd zijn
+        const allSelected =
+            samePartNumberCheckboxes.every(
+                cb => cb.checked
+            );
+
+
+        // Als nog niet alles geselecteerd is,
+        // toon knop bij eerste geselecteerde rij
+        if (!allSelected) {
+
+            const firstSelected =
+                selected[0];
+
+            const row =
+                firstSelected.closest('.list-row');
+
+            if (row) {
+
+                const button =
+                    row.querySelector('.select-all-same');
+
+                if (button) {
+                    button.style.display = 'inline-block';
+                }
+            }
+        }
     }
 
 
+    // Checkbox veranderen
     checkboxes.forEach(cb => {
 
-        cb.addEventListener('change', function() {
+        cb.addEventListener('change', function () {
 
-            const partNumber = this.dataset.partnumber;
+            const partNumber =
+                this.dataset.partnumber;
+
 
             if (this.checked) {
 
-                const selected = Array.from(checkboxes)
-                    .filter(cb => cb.checked);
+                const selected =
+                    Array.from(checkboxes)
+                        .filter(cb => cb.checked);
 
-                const differentPartNumber = selected.some(
-                    cb => cb.dataset.partnumber !== partNumber
-                );
+
+                const differentPartNumber =
+                    selected.some(
+                        cb =>
+                            cb.dataset.partnumber !== partNumber
+                    );
+
 
                 if (differentPartNumber) {
 
-                        alert(
-                            @Html.Raw(
-                                    System.Text.Json.JsonSerializer.Serialize(
-                                                            Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
-                                    )
+                    alert(
+                        @Html.Raw(
+                            System.Text.Json.JsonSerializer.Serialize(
+                                Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
                             )
-                        );
+                        )
+                    );
 
                     this.checked = false;
                 }
             }
+
 
             updateSelection();
         });
     });
 
 
-    clearSelectedButton.addEventListener('click', function() {
+    // Selecteer alle met hetzelfde onderdeelnummer
+    selectAllSameButtons.forEach(button => {
+
+        button.addEventListener('click', function () {
+
+            const partNumber =
+                this.dataset.partnumber;
+
+
+            checkboxes.forEach(cb => {
+
+                if (cb.dataset.partnumber === partNumber) {
+                    cb.checked = true;
+                }
+
+            });
+
+
+            updateSelection();
+        });
+    });
+
+
+    // Selectie wissen
+    clearSelectedButton.addEventListener('click', function () {
 
         checkboxes.forEach(cb => {
             cb.checked = false;
         });
 
+
         updateSelection();
     });
 
+
+    // Initiële status
     updateSelection();
 
-    window.addEventListener('pageshow', updateSelection);
-</script>
 
+    // Herstel na browser back/forward cache
+    window.addEventListener(
+        'pageshow',
+        updateSelection
+    );
+</script>

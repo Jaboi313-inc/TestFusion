@@ -237,4 +237,7 @@
   <data name="Page" xml:space="preserve">
     <value>Page</value>
   </data>
+  <data name="ButtonSelectAllSamePartNumber" xml:space="preserve">
+    <value>Select all with this part number</value>
+  </data>
 </root>

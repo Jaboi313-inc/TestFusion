@@ -237,4 +237,7 @@
   <data name="Page" xml:space="preserve">
     <value>Pagina</value>
   </data>
+  <data name="ButtonSelectAllSamePartNumber" xml:space="preserve">
+    <value>Selecteer alle met dit onderdeelnummer</value>
+  </data>
 </root>
