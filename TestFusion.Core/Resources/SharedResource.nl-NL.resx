@@ -144,14 +144,14 @@
   <data name="InjectorType" xml:space="preserve">
     <value>Type</value>
   </data>
-  <data name="PageTitelAnalysis" xml:space="preserve">
+  <data name="PageTitleAnalysis" xml:space="preserve">
     <value>Gegenereerde analyse</value>
   </data>
-  <data name="PageTitelHome" xml:space="preserve">
+  <data name="PageTitleHome" xml:space="preserve">
     <value>Analyse overzicht</value>
   </data>
-  <data name="PageTitelSettings" xml:space="preserve">
-    <value>Settings</value>
+  <data name="PageTitleSettings" xml:space="preserve">
+    <value>Instellingen</value>
   </data>
   <data name="PDFOptionCompact" xml:space="preserve">
     <value>Zoveel mogelijk op één pagina</value>
@@ -251,5 +251,8 @@
   </data>
   <data name="All" xml:space="preserve">
     <value>Alle</value>
+  </data>
+  <data name="PageTitleDebug" xml:space="preserve">
+    <value>Debug</value>
   </data>
 </root>

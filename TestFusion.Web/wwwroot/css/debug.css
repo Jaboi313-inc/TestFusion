@@ -1,0 +1,9 @@
+﻿.settings-header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+}
+
+    .settings-header h2 {
+        margin: 0;
+    }
