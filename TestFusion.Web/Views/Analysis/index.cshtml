@@ -1,6 +1,8 @@
 ﻿@using System.Globalization
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
+@using TestFusion.Core.Interfaces
+@inject ITimeZoneService TimeZoneService
 @inject IStringLocalizer<SharedResource> Localizer
 
 @model TestFusion.Core.Models.WebModels.GeneratedModel
@@ -219,7 +221,7 @@
                     <br />
 
                     <small>
-                        @injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")
+                        @TimeZoneService.FormatForUser(injector.Data.TimeOffTesting, "dd-MM-yyyy HH:mm")
                     </small>
 
                     <br />

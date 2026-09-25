@@ -1,9 +1,137 @@
-﻿.settings-header {
-    display: flex;
-    align-items: center;
+﻿.debug-page {
     padding: 20px;
 }
 
-    .settings-header h2 {
+.debug-header {
+    margin-bottom: 20px;
+}
+
+    .debug-header h2 {
         margin: 0;
     }
+
+
+/* Sections */
+
+.debug-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background-color: #f7f7f7;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+}
+
+.debug-section-header {
+    margin-bottom: 18px;
+}
+
+    .debug-section-header h3 {
+        margin-top: 0;
+        margin-bottom: 6px;
+    }
+
+    .debug-section-header p {
+        margin: 0;
+        color: #666666;
+    }
+
+
+/* Actions */
+
+.debug-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .debug-actions form {
+        margin: 0;
+    }
+
+
+/* Destructive actions */
+
+.debug-danger-button {
+    background-color: #dc3545;
+    border-color: #b52a37;
+}
+
+    .debug-danger-button:hover {
+        background-color: #c82333;
+        border-color: #a71d2a;
+    }
+
+    .debug-danger-button:active {
+        background-color: #bd2130;
+        border-color: #9f1c28;
+    }
+
+
+/* JSON tools */
+
+.json-tool {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 750px;
+}
+
+    .json-tool > label {
+        font-weight: 600;
+    }
+
+.debug-input {
+    padding: 9px 12px;
+    font: inherit;
+    background-color: #ffffff;
+    color: #222222;
+    border: 1px solid #bcbcbc;
+    border-radius: 6px;
+}
+
+    .debug-input:hover {
+        border-color: #888888;
+    }
+
+    .debug-input:focus {
+        outline: none;
+        border-color: #28a745;
+        box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.15);
+    }
+
+.json-description {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 5px;
+    padding-top: 15px;
+    border-top: 1px solid #d8d8d8;
+}
+
+    .json-description > div {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .json-description strong {
+        font-size: 0.9rem;
+    }
+
+    .json-description span {
+        color: #666666;
+        font-size: 0.85rem;
+    }
+
+
+/* Messages */
+
+.debug-message {
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 6px;
+}

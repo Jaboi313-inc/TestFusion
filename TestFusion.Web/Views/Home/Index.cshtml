@@ -1,6 +1,8 @@
 ﻿@using System.Globalization
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
+@using TestFusion.Core.Interfaces
+@inject ITimeZoneService TimeZoneService
 @inject IStringLocalizer<SharedResource> Localizer
 
 @{
@@ -247,7 +249,7 @@
                  data-partnumber="@item.PartNumber"
                  data-brand="@item.PartBrand"
                  data-type="@item.PartType"
-                 data-datetime="@item.DateTime.ToUniversalTime().Ticks">
+                 data-datetime="@item.DateTime.UtcTicks">
 
                 <span class="selection-cell">
 
@@ -294,7 +296,7 @@
                 </span>
 
                 <span>
-                    @item.DateTime.ToString("dd-MM-yyyy HH:mm")
+                    @TimeZoneService.FormatForUser(item.DateTime, "dd-MM-yyyy HH:mm")
                 </span>
 
             </div>
