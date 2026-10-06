@@ -9,35 +9,54 @@ namespace TestFusion.Web.Controllers
     {
         private readonly AppDbContext _db;
         private readonly ISyncService _sync;
+        private readonly ITimeZoneService _timeZoneService;
 
         public HomeController(
             AppDbContext db,
-            ISyncService sync)
+            ISyncService sync,
+            ITimeZoneService timeZoneService)
         {
             _db = db;
             _sync = sync;
+            _timeZoneService = timeZoneService;
         }
 
-        public async Task<IActionResult> Index(int? resultLimit = null)
+
+        public async Task<IActionResult> Index(
+            int? resultLimit = null,
+            string? partNumber = null,
+            string? brand = null,
+            string? type = null,
+            DateTime? dateFrom = null,
+            DateTime? dateTo = null)
         {
             const int defaultLimit = 50;
             const string cookieName = "TestFusion.ResultLimit";
 
-            var allowedLimits = new[] { 25, 50, 100, 0 };
+            var allowedLimits =
+                new[] { 25, 50, 100, 0 };
 
             int selectedLimit;
 
-            if (resultLimit.HasValue &&
-                allowedLimits.Contains(resultLimit.Value))
+
+            // Result limit
+            if (
+                resultLimit.HasValue &&
+                allowedLimits.Contains(
+                    resultLimit.Value)
+            )
             {
-                selectedLimit = resultLimit.Value;
+                selectedLimit =
+                    resultLimit.Value;
 
                 Response.Cookies.Append(
                     cookieName,
                     selectedLimit.ToString(),
                     new CookieOptions
                     {
-                        Expires = DateTimeOffset.UtcNow.AddYears(1),
+                        Expires =
+                            DateTimeOffset.UtcNow.AddYears(1),
+
                         IsEssential = true,
                         HttpOnly = true,
                         SameSite = SameSiteMode.Lax,
@@ -46,43 +65,162 @@ namespace TestFusion.Web.Controllers
                     });
             }
             else if (
-                Request.Cookies.TryGetValue(cookieName, out var savedValue) &&
-                int.TryParse(savedValue, out var savedLimit) &&
-                allowedLimits.Contains(savedLimit))
+                Request.Cookies.TryGetValue(
+                    cookieName,
+                    out var savedValue) &&
+                int.TryParse(
+                    savedValue,
+                    out var savedLimit) &&
+                allowedLimits.Contains(
+                    savedLimit)
+            )
             {
-                selectedLimit = savedLimit;
+                selectedLimit =
+                    savedLimit;
             }
             else
             {
-                selectedLimit = defaultLimit;
+                selectedLimit =
+                    defaultLimit;
             }
 
 
+            var hasActiveFilters =
+                !string.IsNullOrWhiteSpace(partNumber) ||
+                !string.IsNullOrWhiteSpace(brand) ||
+                !string.IsNullOrWhiteSpace(type) ||
+                dateFrom.HasValue ||
+                dateTo.HasValue;
+
+
             var totalCount =
-                await _db.TestItems.CountAsync();
+                await _db.TestItems
+                    .CountAsync();
 
 
-            var query = _db.TestItems
-                .OrderByDescending(x => x.DateTime);
+            var query =
+                _db.TestItems
+                    .AsNoTracking()
+                    .AsQueryable();
 
 
-            var items = selectedLimit == 0
-                ? await query.ToListAsync()
-                : await query.Take(selectedLimit).ToListAsync();
+            // Filters
+            if (!string.IsNullOrWhiteSpace(
+                partNumber))
+            {
+                var value =
+                    partNumber.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.PartNumber,
+                            $"%{value}%"));
+            }
 
 
-            ViewBag.ResultLimit = selectedLimit;
-            ViewBag.TotalCount = totalCount;
+            if (!string.IsNullOrWhiteSpace(
+                brand))
+            {
+                var value =
+                    brand.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.PartBrand,
+                            $"%{value}%"));
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(
+                type))
+            {
+                var value =
+                    type.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.PartType,
+                            $"%{value}%"));
+            }
+
+
+            if (dateFrom.HasValue)
+            {
+                var fromUtc =
+                    _timeZoneService.ConvertUserToUtc(
+                        dateFrom.Value.Date);
+
+                query =
+                    query.Where(x =>
+                        x.DateTime >= fromUtc);
+            }
+
+
+            if (dateTo.HasValue)
+            {
+                var toUtcExclusive =
+                    _timeZoneService.ConvertUserToUtc(
+                        dateTo.Value.Date.AddDays(1));
+
+                query =
+                    query.Where(x =>
+                        x.DateTime < toUtcExclusive);
+            }
+
+
+            var orderedQuery =
+                query.OrderByDescending(
+                    x => x.DateTime);
+
+
+            List<TestFusion.Core.Models.TestListItemModel> items;
+
+
+            if (hasActiveFilters)
+            {
+                items =
+                    await orderedQuery
+                        .ToListAsync();
+            }
+            else if (selectedLimit == 0)
+            {
+                items =
+                    await orderedQuery
+                        .ToListAsync();
+            }
+            else
+            {
+                items =
+                    await orderedQuery
+                        .Take(selectedLimit)
+                        .ToListAsync();
+            }
+
+
+            ViewBag.ResultLimit =
+                selectedLimit;
+
+            ViewBag.TotalCount =
+                totalCount;
+
+            ViewBag.HasActiveFilters =
+                hasActiveFilters;
+
 
             return View(items);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Refresh()
         {
             await _sync.RunSync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction(
+                nameof(Index));
         }
     }
 }

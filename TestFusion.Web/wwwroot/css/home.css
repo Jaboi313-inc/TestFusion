@@ -22,7 +22,15 @@
 }
 
 #top-bar .btn {
+    margin-top: 0;
     margin-bottom: 0;
+    align-self: center;
+}
+
+.result-limit-container {
+    display: flex;
+    align-items: center;
+    gap: 7px;
 }
 
 /* Results list */
@@ -173,3 +181,74 @@
         border-color: #28a745;
         box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.15);
     }
+
+/* Filter menu */
+
+.filter-panel {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid #d7d7d7;
+    border-radius: 6px;
+    background: #f7f7f7;
+}
+
+    .filter-panel.is-open {
+        display: block;
+    }
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+    .filter-field label {
+        font-weight: 600;
+    }
+
+.filter-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    box-sizing: border-box;
+    padding: 6px 10px;
+    border: 1px solid #c9c9c9;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+#filter-toggle-indicator {
+    margin-left: 5px;
+    font-size: 0.8em;
+}
+
+@media (max-width: 1100px) {
+    .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+}

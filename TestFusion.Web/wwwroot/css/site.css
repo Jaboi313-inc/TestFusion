@@ -26,6 +26,7 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    vertical-align: middle;
     padding: 9px 14px;
     background-color: #28a745;
     color: #ffffff;

@@ -255,4 +255,19 @@
   <data name="PageTitleDebug" xml:space="preserve">
     <value>Debug</value>
   </data>
+  <data name="ButtonFilter" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="ButtonApplyFilters" xml:space="preserve">
+    <value>Apply filters</value>
+  </data>
+  <data name="ButtonClearFilters" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="FilterDateFrom" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="FilterDateTo" xml:space="preserve">
+    <value>To</value>
+  </data>
 </root>

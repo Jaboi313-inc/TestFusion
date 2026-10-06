@@ -17,6 +17,33 @@
         ViewBag.TotalCount is int count
             ? count
             : Model.Count;
+
+    var filterPartNumber =
+        Context.Request.Query["partNumber"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterBrand =
+        Context.Request.Query["brand"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterType =
+        Context.Request.Query["type"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterDateFrom =
+        Context.Request.Query["dateFrom"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterDateTo =
+        Context.Request.Query["dateTo"].FirstOrDefault()
+        ?? string.Empty;
+
+    var hasActiveFilters =
+        !string.IsNullOrWhiteSpace(filterPartNumber) ||
+        !string.IsNullOrWhiteSpace(filterBrand) ||
+        !string.IsNullOrWhiteSpace(filterType) ||
+        !string.IsNullOrWhiteSpace(filterDateFrom) ||
+        !string.IsNullOrWhiteSpace(filterDateTo);
 }
 
 @model List<TestFusion.Core.Models.TestListItemModel>
@@ -34,6 +61,13 @@
 
 
 <form id="result-limit-form"
+      asp-controller="Home"
+      asp-action="Index"
+      method="get">
+</form>
+
+
+<form id="filter-form"
       asp-controller="Home"
       asp-action="Index"
       method="get">
@@ -60,76 +94,87 @@
             </button>
 
 
-            <div class="result-limit-container">
+            @if (!hasActiveFilters)
+            {
+                <div class="result-limit-container">
 
-                <label for="resultLimit">
-                    @Localizer["Show"]:
-                </label>
+                    <label for="resultLimit">
+                        @Localizer["Show"]:
+                    </label>
 
-                <select id="resultLimit"
-                        name="resultLimit"
-                        form="result-limit-form"
-                        class="result-limit-select"
-                        onchange="this.form.submit()">
+                    <select id="resultLimit"
+                            name="resultLimit"
+                            form="result-limit-form"
+                            class="result-limit-select"
+                            onchange="this.form.submit()">
 
-                    @if (resultLimit == 25)
-                    {
-                        <option value="25" selected>
-                            25
-                        </option>
-                    }
-                    else
-                    {
-                        <option value="25">
-                            25
-                        </option>
-                    }
+                        @if (resultLimit == 25)
+                        {
+                            <option value="25" selected>
+                                25
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="25">
+                                25
+                            </option>
+                        }
 
+                        @if (resultLimit == 50)
+                        {
+                            <option value="50" selected>
+                                50
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="50">
+                                50
+                            </option>
+                        }
 
-                    @if (resultLimit == 50)
-                    {
-                        <option value="50" selected>
-                            50
-                        </option>
-                    }
-                    else
-                    {
-                        <option value="50">
-                            50
-                        </option>
-                    }
+                        @if (resultLimit == 100)
+                        {
+                            <option value="100" selected>
+                                100
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="100">
+                                100
+                            </option>
+                        }
 
+                        @if (resultLimit == 0)
+                        {
+                            <option value="0" selected>
+                                @Localizer["All"] (@totalCount)
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="0">
+                                @Localizer["All"] (@totalCount)
+                            </option>
+                        }
 
-                    @if (resultLimit == 100)
-                    {
-                        <option value="100" selected>
-                            100
-                        </option>
-                    }
-                    else
-                    {
-                        <option value="100">
-                            100
-                        </option>
-                    }
+                    </select>
 
+                </div>
+            }
 
-                    @if (resultLimit == 0)
-                    {
-                        <option value="0" selected>
-                            @Localizer["All"] (@totalCount)
-                        </option>
-                    }
-                    else
-                    {
-                        <option value="0">
-                            @Localizer["All"] (@totalCount)
-                        </option>
-                    }
-
-                </select>
-
-            </div>
+            <button type="button"
+                    id="filter-toggle"
+                    class="btn"
+                    aria-expanded="@hasActiveFilters.ToString().ToLowerInvariant()"
+                    aria-controls="filter-panel">
+                @Localizer["ButtonFilter"]
+                <span id="filter-toggle-indicator">
+                    @(hasActiveFilters ? "▲" : "▼")
+                </span>
+            </button>
 
         </div>
 
@@ -150,6 +195,115 @@
                     disabled>
                 @Localizer["ButtonGenerateAnalysis"]
             </button>
+
+        </div>
+
+    </div>
+
+
+    <div id="filter-panel"
+         class="filter-panel @(hasActiveFilters ? "is-open" : "")">
+
+        <div class="filter-grid">
+
+            <div class="filter-field">
+
+                <label for="filter-partnumber">
+                    @Localizer["InjectorPartNumber"]
+                </label>
+
+                <input type="text"
+                       id="filter-partnumber"
+                       name="partNumber"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterPartNumber"
+                       autocomplete="off" />
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="filter-brand">
+                    @Localizer["InjectorBrand"]
+                </label>
+
+                <input type="text"
+                       id="filter-brand"
+                       name="brand"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterBrand"
+                       autocomplete="off" />
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="filter-type">
+                    @Localizer["InjectorType"]
+                </label>
+
+                <input type="text"
+                       id="filter-type"
+                       name="type"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterType"
+                       autocomplete="off" />
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="filter-date-from">
+                    @Localizer["FilterDateFrom"]
+                </label>
+
+                <input type="date"
+                       id="filter-date-from"
+                       name="dateFrom"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterDateFrom" />
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="filter-date-to">
+                    @Localizer["FilterDateTo"]
+                </label>
+
+                <input type="date"
+                       id="filter-date-to"
+                       name="dateTo"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterDateTo" />
+
+            </div>
+
+        </div>
+
+
+        <div class="filter-actions">
+
+            <button type="submit"
+                    form="filter-form"
+                    class="btn">
+                @Localizer["ButtonApplyFilters"]
+            </button>
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="btn">
+                @Localizer["ButtonClearFilters"]
+            </a>
 
         </div>
 
@@ -334,6 +488,15 @@
 
     const resetSortButton =
         document.getElementById('reset-sort');
+
+    const filterToggleButton =
+        document.getElementById('filter-toggle');
+
+    const filterToggleIndicator =
+        document.getElementById('filter-toggle-indicator');
+
+    const filterPanel =
+        document.getElementById('filter-panel');
 
     const testResultsList =
         document.getElementById('test-results-list');
@@ -720,12 +883,12 @@
                     if (differentPartNumber) {
 
                         alert(
-                            @Html.Raw(
-                                System.Text.Json.JsonSerializer.Serialize(
-                                    Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
-                                )
-                            )
-                        );
+                                @Html.Raw(
+                                        System.Text.Json.JsonSerializer.Serialize(
+                                                Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
+                        )
+                        )
+                            );
 
 
                         this.checked = false;
@@ -767,6 +930,28 @@
             }
         );
     });
+
+
+    filterToggleButton.addEventListener(
+        'click',
+        function () {
+
+            const isOpen =
+                filterPanel.classList.toggle(
+                    'is-open'
+                );
+
+            filterToggleButton.setAttribute(
+                'aria-expanded',
+                isOpen.toString()
+            );
+
+            filterToggleIndicator.textContent =
+                isOpen
+                    ? '▲'
+                    : '▼';
+        }
+    );
 
 
     sortButtons.forEach(button => {

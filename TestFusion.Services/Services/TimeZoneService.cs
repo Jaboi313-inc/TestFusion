@@ -55,6 +55,17 @@ public class TimeZoneService : ITimeZoneService
         return TimeZoneInfo.ConvertTime(utcDateTime.ToUniversalTime(), userTimeZone);
     }
 
+    public DateTimeOffset ConvertUserToUtc(DateTime userDateTime)
+    {
+        var userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(UserTimeZoneId);
+
+        var unspecifiedDateTime = DateTime.SpecifyKind(userDateTime, DateTimeKind.Unspecified);
+
+        var utcDateTime = TimeZoneInfo.ConvertTimeToUtc(unspecifiedDateTime, userTimeZone);
+
+        return new DateTimeOffset(utcDateTime, TimeSpan.Zero);
+    }
+
 
     public string FormatForUser(DateTimeOffset utcDateTime, string format = "dd-MM-yyyy HH:mm")
     {
