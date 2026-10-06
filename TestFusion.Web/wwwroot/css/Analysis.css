@@ -1,114 +1,4 @@
-﻿#top-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px;
-}
-
-.top-bar-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.top-bar-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-#top-bar h2 {
-    margin: 0;
-}
-
-#top-bar .btn {
-    margin-bottom: 0;
-}
-
-.main-body {
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 20px;
-}
-
-.list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.list-row {
-    display: grid;
-    grid-template-columns: 230px 1fr 1fr 1fr 1fr;
-    column-gap: 25px;
-    align-items: center;
-    padding: 10px;
-    min-height: 45px;
-    border-bottom: 1px solid #ccc;
-    transition: background-color 0.2s ease;
-}
-
-    .list-row:has(.select-all-same:not([style*="display: none"])) {
-        min-height: 90px;
-    }
-
-.selection-cell {
-    display: grid;
-    grid-template-columns: 25px 1fr;
-    align-items: center;
-    height: 100%;
-    column-gap: 10px;
-}
-
-    .selection-cell input[type="checkbox"] {
-        justify-self: center;
-        align-self: center;
-        margin: 0;
-    }
-
-.select-all-same {
-    justify-self: center;
-    align-self: center;
-    margin: 0;
-    padding: 8px 12px;
-    text-align: center;
-    line-height: 1.2;
-}
-
-.list-row {
-    transition: background-color 0.2s ease;
-}
-
-    .list-row:has(input[type="checkbox"]:checked) {
-        background-color: #d8d8d8;
-    }
-
-    .list-row:not(.header):hover {
-        background-color: #e5e5e5;
-    }
-
-.btn {
-    display: inline-block;
-    padding: 10px 15px;
-    background-color: #28a745;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-bottom: 15px;
-}
-
-    .btn:hover {
-        background-color: #218838;
-    }
-
-    .btn:disabled {
-        background-color: #d8d8d8;
-        color: #888;
-        cursor: not-allowed;
-        opacity: 0.7;
-    }
-
-.info-row {
+﻿.info-row {
     text-align: justify;
 }
 
@@ -122,6 +12,9 @@
     text-align: justify;
 }
 
+
+/* Skipped */
+
 .skipped-cell {
     padding: 20px 12px !important;
     vertical-align: middle !important;
@@ -130,66 +23,61 @@
 }
 
 .skipped-content {
-    min-height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 45px;
 }
 
 .skipped-row .skipped-cell {
     min-height: 60px;
 }
 
+
+/* Tests */
+
 .test-header td {
+    padding: 12px 10px;
     background: #e6e6e6;
     font-weight: bold;
     border-top: 3px solid #111;
     border-bottom: 1px solid #d1d5db;
-    padding: 12px 10px;
 }
 
 .tank-row td {
-    border-bottom: 1px solid #e5e7eb;
+    padding: 10px;
     vertical-align: top;
-    padding: 10px 10px;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-/* line after last tank */
 .tank-row:last-of-type td {
     border-bottom: 3px solid #111;
 }
+
+
+/* Table */
 
 table.table {
     border-collapse: separate;
     border-spacing: 0;
 }
 
-table.table td,
-table.table th {
-    vertical-align: top;
-    min-width: 150px;
-    width: 10%;
-    min-height: 50px;
-    height: 5%;
-}
+    table.table td,
+    table.table th {
+        vertical-align: top;
+        min-width: 150px;
+        width: 10%;
+        min-height: 50px;
+        height: 5%;
+    }
 
 /* colors */
-.result-1 {
-    background-color: #FF331C; /* Red */
-    color: #FFFFFF; /* White text */
-}
-
-.result-2 {
-    background-color: #FF331C; /* Red */
-    color: #FFFFFF; /* White text */
-}
-
-.result-3 {
-    background-color: #FF331C; /* Red */
-    color: #FFFFFF; /* White text */
-}
-
-.result-4 {
+.result-1,
+.result-2,
+.result-3,
+.result-4,
+.result-7,
+.result-8 {
     background-color: #FF331C; /* Red */
     color: #FFFFFF; /* White text */
 }
@@ -201,15 +89,5 @@ table.table th {
 
 .result-6 {
     background-color: #00AB4F; /* Green */
-    color: #FFFFFF; /* White text */
-}
-
-.result-7 {
-    background-color: #FF331C; /* Red */
-    color: #FFFFFF; /* White text */
-}
-
-.result-8 {
-    background-color: #FF331C; /* Red */
     color: #FFFFFF; /* White text */
 }

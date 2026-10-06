@@ -4,6 +4,7 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using TestFusion.Core;
 using TestFusion.Core.Enums;
+using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models.WebModels;
 
 namespace TestFusion.Services.Services;
@@ -13,7 +14,8 @@ public static class PDFService
     public static byte[] Generate(
         GeneratedModel model,
         PdfLayoutModeEnum layoutMode,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        ITimeZoneService timeZoneService)
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
@@ -40,7 +42,8 @@ public static class PDFService
                         CreateGeneralInfo(
                             column,
                             model,
-                            localizer);
+                            localizer,
+                            timeZoneService);
 
                         for (int i = 0; i < model.AllTests.Count; i++)
                         {
@@ -130,7 +133,8 @@ public static class PDFService
     private static void CreateGeneralInfo(
         ColumnDescriptor column,
         GeneratedModel model,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        ITimeZoneService timeZoneService)
     {
         var firstInjector =
             model.Injectors.FirstOrDefault();
@@ -279,8 +283,9 @@ public static class PDFService
                             // Date/time
                             cell.Item()
                                 .Text(
-                                    injector.Data.TimeOffTesting
-                                        .ToString("dd-MM-yyyy HH:mm"));
+                                    timeZoneService.FormatForUser(
+                                        injector.Data.TimeOffTesting,
+                                        "dd-MM-yyyy HH:mm"));
 
 
                             // Serial number

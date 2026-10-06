@@ -19,6 +19,7 @@ builder.Services.Configure<Intervals>(
 builder.Services.AddSingleton<JSONService>();
 builder.Services.AddScoped<IPlaywright, PlaywrightService>();
 builder.Services.AddScoped<ISyncService, SyncService>();
+builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 
 builder.Services.AddHostedService<Worker>();
 

@@ -48,6 +48,7 @@ builder.Services
 builder.Services.AddRazorPages();
 
 
+builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<JSONService>();
 builder.Services.AddSingleton<IPlaywright, PlaywrightService>();
 builder.Services.AddScoped<ISyncService, SyncService>();

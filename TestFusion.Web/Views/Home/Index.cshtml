@@ -1,22 +1,44 @@
 ﻿@using System.Globalization
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
+@using TestFusion.Core.Interfaces
+@inject ITimeZoneService TimeZoneService
 @inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = Localizer["PageTitelHome"];
+    ViewData["Title"] = Localizer["PageTitleHome"];
+
+    var resultLimit =
+        ViewBag.ResultLimit is int limit
+            ? limit
+            : 50;
+
+    var totalCount =
+        ViewBag.TotalCount is int count
+            ? count
+            : Model.Count;
 }
 
 @model List<TestFusion.Core.Models.TestListItemModel>
 
-<link rel="stylesheet" href="~/css/site.css" />
-<link rel="stylesheet" href="~/css/analysis.css" />
+<link rel="stylesheet"
+      href="~/css/home.css"
+      asp-append-version="true" />
+
 
 <form id="refresh-form"
       asp-controller="Home"
       asp-action="Refresh"
       method="post">
 </form>
+
+
+<form id="result-limit-form"
+      asp-controller="Home"
+      asp-action="Index"
+      method="get">
+</form>
+
 
 <form asp-controller="Analysis"
       asp-action="Generate"
@@ -25,14 +47,92 @@
     <div id="top-bar">
 
         <div class="top-bar-left">
-            <h2>@Localizer["TestResultsOverview"]</h2>
+
+            <h2>
+                @Localizer["TestResultsOverview"]
+            </h2>
+
 
             <button type="submit"
                     form="refresh-form"
                     class="btn">
                 @Localizer["ButtonRefresh"]
             </button>
+
+
+            <div class="result-limit-container">
+
+                <label for="resultLimit">
+                    @Localizer["Show"]:
+                </label>
+
+                <select id="resultLimit"
+                        name="resultLimit"
+                        form="result-limit-form"
+                        class="result-limit-select"
+                        onchange="this.form.submit()">
+
+                    @if (resultLimit == 25)
+                    {
+                        <option value="25" selected>
+                            25
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="25">
+                            25
+                        </option>
+                    }
+
+
+                    @if (resultLimit == 50)
+                    {
+                        <option value="50" selected>
+                            50
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="50">
+                            50
+                        </option>
+                    }
+
+
+                    @if (resultLimit == 100)
+                    {
+                        <option value="100" selected>
+                            100
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="100">
+                            100
+                        </option>
+                    }
+
+
+                    @if (resultLimit == 0)
+                    {
+                        <option value="0" selected>
+                            @Localizer["All"] (@totalCount)
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="0">
+                            @Localizer["All"] (@totalCount)
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
         </div>
+
 
         <div class="top-bar-right">
 
@@ -42,6 +142,7 @@
                     disabled>
                 @Localizer["ButtonClearSelected"]
             </button>
+
 
             <button type="submit"
                     id="generate-analysis"
@@ -54,19 +155,101 @@
 
     </div>
 
-    <div class="list">
+
+    <div class="list"
+         id="test-results-list">
 
         <div class="list-row header">
-            <span></span>
-            <span>@Localizer["InjectorPartNumber"]</span>
-            <span>@Localizer["InjectorBrand"]</span>
-            <span>@Localizer["InjectorType"]</span>
-            <span>@Localizer["InjectorDateTime"]</span>
+
+            <span class="sort-reset-cell">
+
+                <button type="button"
+                        id="reset-sort"
+                        class="btn sort-reset-button"
+                        disabled>
+                    @Localizer["ButtonResetSorting"]
+                </button>
+
+            </span>
+
+
+            <span>
+
+                <button type="button"
+                        class="sort-button"
+                        data-sort="partnumber">
+
+                    @Localizer["InjectorPartNumber"]
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
+                </button>
+
+            </span>
+
+
+            <span>
+
+                <button type="button"
+                        class="sort-button"
+                        data-sort="brand">
+
+                    @Localizer["InjectorBrand"]
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
+                </button>
+
+            </span>
+
+
+            <span>
+
+                <button type="button"
+                        class="sort-button"
+                        data-sort="type">
+
+                    @Localizer["InjectorType"]
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
+                </button>
+
+            </span>
+
+
+            <span>
+
+                <button type="button"
+                        class="sort-button"
+                        data-sort="datetime">
+
+                    @Localizer["InjectorDateTime"]
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
+                </button>
+
+            </span>
+
         </div>
+
 
         @foreach (var item in Model)
         {
-            <div class="list-row">
+            <div class="list-row data-row"
+                 data-partnumber="@item.PartNumber"
+                 data-brand="@item.PartBrand"
+                 data-type="@item.PartType"
+                 data-datetime="@item.DateTime.UtcTicks">
 
                 <span class="selection-cell">
 
@@ -75,19 +258,46 @@
                            value="@item.Id"
                            data-partnumber="@item.PartNumber">
 
+
                     <button type="button"
                             class="select-all-same btn"
                             data-partnumber="@item.PartNumber"
                             style="display: none;">
-                        @Localizer["ButtonSelectAllSamePartNumber"]
+
+                        <span class="select-all-title">
+                            @Localizer["ButtonSelectAllSamePartNumber"]
+                        </span>
+
+                        <span class="select-all-total">
+
+                            @Localizer["Total"]:
+
+                            <span class="select-all-count">
+                                0
+                            </span>
+
+                        </span>
+
                     </button>
 
                 </span>
 
-                <span>@item.PartNumber</span>
-                <span>@item.PartBrand</span>
-                <span>@item.PartType</span>
-                <span>@item.DateTime.ToString("dd-MM-yyyy HH:mm")</span>
+
+                <span>
+                    @item.PartNumber
+                </span>
+
+                <span>
+                    @item.PartBrand
+                </span>
+
+                <span>
+                    @item.PartType
+                </span>
+
+                <span>
+                    @TimeZoneService.FormatForUser(item.DateTime, "dd-MM-yyyy HH:mm")
+                </span>
 
             </div>
         }
@@ -96,9 +306,16 @@
 
 </form>
 
+
 <script>
+    // State
     let selectedPartNumber = null;
 
+    let currentSortColumn = null;
+    let currentSortDirection = 'asc';
+
+
+    // DOM references
     const checkboxes = document.querySelectorAll(
         'input[type="checkbox"][name="selectedIds"]'
     );
@@ -112,19 +329,49 @@
     const generateAnalysisButton =
         document.getElementById('generate-analysis');
 
+    const sortButtons =
+        document.querySelectorAll('.sort-button');
+
+    const resetSortButton =
+        document.getElementById('reset-sort');
+
+    const testResultsList =
+        document.getElementById('test-results-list');
+
+
+    const originalRows =
+        Array.from(
+            testResultsList.querySelectorAll('.data-row')
+        );
+
+
+    // Selection
+    function getCheckboxesInCurrentOrder() {
+
+        return Array.from(
+            document.querySelectorAll(
+                'input[type="checkbox"][name="selectedIds"]'
+            )
+        );
+    }
+
 
     function updateSelection() {
 
-        const selected = Array.from(checkboxes)
-            .filter(cb => cb.checked);
+        const currentCheckboxes =
+            getCheckboxesInCurrentOrder();
 
-        // Eerst alle "selecteer alles" knoppen verbergen
+        const selected =
+            currentCheckboxes.filter(
+                cb => cb.checked
+            );
+
+
         selectAllSameButtons.forEach(button => {
             button.style.display = 'none';
         });
 
 
-        // Niets geselecteerd
         if (selected.length === 0) {
 
             selectedPartNumber = null;
@@ -139,16 +386,15 @@
         clearSelectedButton.disabled = false;
 
 
-        // Alle unieke partnummers van geselecteerde regels
         const partNumbers = [
             ...new Set(
-                selected.map(cb => cb.dataset.partnumber)
+                selected.map(
+                    cb => cb.dataset.partnumber
+                )
             )
         ];
 
 
-        // Dit zou normaal niet mogen voorkomen,
-        // maar voor de zekerheid
         if (partNumbers.length !== 1) {
 
             generateAnalysisButton.disabled = true;
@@ -157,28 +403,26 @@
         }
 
 
-        selectedPartNumber = partNumbers[0];
+        selectedPartNumber =
+            partNumbers[0];
 
         generateAnalysisButton.disabled = false;
 
 
-        // Alle checkboxes met hetzelfde partnummer
         const samePartNumberCheckboxes =
-            Array.from(checkboxes)
-                .filter(cb =>
-                    cb.dataset.partnumber === selectedPartNumber
-                );
+            currentCheckboxes.filter(
+                cb =>
+                    cb.dataset.partnumber ===
+                    selectedPartNumber
+            );
 
 
-        // Controleer of ze allemaal al geselecteerd zijn
         const allSelected =
             samePartNumberCheckboxes.every(
                 cb => cb.checked
             );
 
 
-        // Als nog niet alles geselecteerd is,
-        // toon knop bij eerste geselecteerde rij
         if (!allSelected) {
 
             const firstSelected =
@@ -187,104 +431,396 @@
             const row =
                 firstSelected.closest('.list-row');
 
+
             if (row) {
 
                 const button =
                     row.querySelector('.select-all-same');
 
+
                 if (button) {
-                    button.style.display = 'inline-block';
+
+                    const count =
+                        samePartNumberCheckboxes.length;
+
+                    const countElement =
+                        button.querySelector(
+                            '.select-all-count'
+                        );
+
+
+                    if (countElement) {
+                        countElement.textContent = count;
+                    }
+
+
+                    button.style.display =
+                        'inline-flex';
                 }
             }
         }
     }
 
 
-    // Checkbox veranderen
-    checkboxes.forEach(cb => {
+    // Sorting
+    function comparePartNumbers(valueA, valueB) {
 
-        cb.addEventListener('change', function () {
+        valueA =
+            (valueA ?? '')
+                .trim()
+                .toUpperCase();
 
-            const partNumber =
-                this.dataset.partnumber;
-
-
-            if (this.checked) {
-
-                const selected =
-                    Array.from(checkboxes)
-                        .filter(cb => cb.checked);
+        valueB =
+            (valueB ?? '')
+                .trim()
+                .toUpperCase();
 
 
-                const differentPartNumber =
-                    selected.some(
-                        cb =>
-                            cb.dataset.partnumber !== partNumber
-                    );
+        function getCharacterGroup(character) {
+
+            if (/[0-9]/.test(character)) {
+                return 0;
+            }
+
+            if (/[A-Z]/.test(character)) {
+                return 1;
+            }
+
+            return 2;
+        }
 
 
-                if (differentPartNumber) {
+        const maxLength =
+            Math.max(
+                valueA.length,
+                valueB.length
+            );
 
-                    alert(
-                        @Html.Raw(
-                            System.Text.Json.JsonSerializer.Serialize(
-                                Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
-                            )
-                        )
-                    );
 
-                    this.checked = false;
-                }
+        for (let i = 0; i < maxLength; i++) {
+
+            const charA =
+                valueA[i];
+
+            const charB =
+                valueB[i];
+
+
+            if (charA === undefined) {
+                return -1;
+            }
+
+            if (charB === undefined) {
+                return 1;
             }
 
 
-            updateSelection();
+            if (charA === charB) {
+                continue;
+            }
+
+
+            const groupA =
+                getCharacterGroup(charA);
+
+            const groupB =
+                getCharacterGroup(charB);
+
+
+            if (groupA !== groupB) {
+                return groupA - groupB;
+            }
+
+
+            if (charA < charB) {
+                return -1;
+            }
+
+            if (charA > charB) {
+                return 1;
+            }
+        }
+
+
+        return 0;
+    }
+
+
+    function sortRows(column) {
+
+        if (currentSortColumn === column) {
+
+            currentSortDirection =
+                currentSortDirection === 'asc'
+                    ? 'desc'
+                    : 'asc';
+        }
+        else {
+
+            currentSortColumn = column;
+            currentSortDirection = 'asc';
+        }
+
+
+        const rows =
+            Array.from(
+                testResultsList.querySelectorAll(
+                    '.data-row'
+                )
+            );
+
+
+        rows.sort((a, b) => {
+
+            let comparison = 0;
+
+
+            if (column === 'datetime') {
+
+                const valueA =
+                    Number(a.dataset.datetime);
+
+                const valueB =
+                    Number(b.dataset.datetime);
+
+                comparison =
+                    valueA - valueB;
+            }
+
+            else if (column === 'partnumber') {
+
+                comparison =
+                    comparePartNumbers(
+                        a.dataset.partnumber,
+                        b.dataset.partnumber
+                    );
+            }
+
+            else {
+
+                const valueA =
+                    a.dataset[column] ?? '';
+
+                const valueB =
+                    b.dataset[column] ?? '';
+
+
+                comparison =
+                    valueA.localeCompare(
+                        valueB,
+                        undefined,
+                        {
+                            numeric: true,
+                            sensitivity: 'base'
+                        }
+                    );
+            }
+
+
+            return currentSortDirection === 'asc'
+                ? comparison
+                : -comparison;
         });
-    });
 
 
-    // Selecteer alle met hetzelfde onderdeelnummer
-    selectAllSameButtons.forEach(button => {
-
-        button.addEventListener('click', function () {
-
-            const partNumber =
-                this.dataset.partnumber;
+        rows.forEach(row => {
+            testResultsList.appendChild(row);
+        });
 
 
-            checkboxes.forEach(cb => {
+        resetSortButton.disabled = false;
 
-                if (cb.dataset.partnumber === partNumber) {
-                    cb.checked = true;
+
+        updateSortIndicators();
+        updateSelection();
+    }
+
+
+    function resetSorting() {
+
+        originalRows.forEach(row => {
+            testResultsList.appendChild(row);
+        });
+
+
+        currentSortColumn = null;
+        currentSortDirection = 'asc';
+
+
+        resetSortButton.disabled = true;
+
+
+        updateSortIndicators();
+        updateSelection();
+    }
+
+
+    function updateSortIndicators() {
+
+        sortButtons.forEach(button => {
+
+            const indicator =
+                button.querySelector(
+                    '.sort-indicator'
+                );
+
+
+            if (!indicator) {
+                return;
+            }
+
+
+            if (
+                button.dataset.sort !==
+                currentSortColumn
+            ) {
+
+                indicator.textContent = '↕';
+
+                return;
+            }
+
+
+            indicator.textContent =
+                currentSortDirection === 'asc'
+                    ? '▲'
+                    : '▼';
+        });
+    }
+
+
+    // Event handlers
+    checkboxes.forEach(cb => {
+
+        cb.addEventListener(
+            'change',
+            function () {
+
+                const partNumber =
+                    this.dataset.partnumber;
+
+
+                if (this.checked) {
+
+                    const selected =
+                        getCheckboxesInCurrentOrder()
+                            .filter(
+                                cb => cb.checked
+                            );
+
+
+                    const differentPartNumber =
+                        selected.some(
+                            cb =>
+                                cb.dataset.partnumber !==
+                                partNumber
+                        );
+
+
+                    if (differentPartNumber) {
+
+                        alert(
+                            @Html.Raw(
+                                System.Text.Json.JsonSerializer.Serialize(
+                                    Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
+                                )
+                            )
+                        );
+
+
+                        this.checked = false;
+                    }
                 }
 
-            });
+
+                updateSelection();
+            }
+        );
+    });
+
+
+    selectAllSameButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                const partNumber =
+                    this.dataset.partnumber;
+
+
+                getCheckboxesInCurrentOrder()
+                    .forEach(cb => {
+
+                        if (
+                            cb.dataset.partnumber ===
+                            partNumber
+                        ) {
+
+                            cb.checked = true;
+                        }
+
+                    });
+
+
+                updateSelection();
+            }
+        );
+    });
+
+
+    sortButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                sortRows(
+                    this.dataset.sort
+                );
+            }
+        );
+    });
+
+
+    resetSortButton.addEventListener(
+        'click',
+        resetSorting
+    );
+
+
+    clearSelectedButton.addEventListener(
+        'click',
+        function () {
+
+            getCheckboxesInCurrentOrder()
+                .forEach(cb => {
+
+                    cb.checked = false;
+                });
 
 
             updateSelection();
-        });
-    });
+        }
+    );
 
 
-    // Selectie wissen
-    clearSelectedButton.addEventListener('click', function () {
-
-        checkboxes.forEach(cb => {
-            cb.checked = false;
-        });
-
-
-        updateSelection();
-    });
-
-
-    // Initiële status
+    // Initialization
     updateSelection();
+    updateSortIndicators();
+
+    resetSortButton.disabled = true;
 
 
-    // Herstel na browser back/forward cache
     window.addEventListener(
         'pageshow',
-        updateSelection
+        function () {
+
+            updateSelection();
+            updateSortIndicators();
+
+            resetSortButton.disabled =
+                currentSortColumn === null;
+        }
     );
 </script>

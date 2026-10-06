@@ -1,12 +1,14 @@
 ﻿@using System.Globalization
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
+@using TestFusion.Core.Interfaces
+@inject ITimeZoneService TimeZoneService
 @inject IStringLocalizer<SharedResource> Localizer
 
 @model TestFusion.Core.Models.WebModels.GeneratedModel
 
 @{
-    ViewData["Title"] = Localizer["PageTitelAnalysis"];
+    ViewData["Title"] = Localizer["PageTitleAnalysis"];
 
     var selectedLayoutMode =
         Context.Request.Query["layoutMode"].FirstOrDefault()
@@ -18,7 +20,6 @@
         => name.Replace(" : SKIPPED", "").Trim();
 }
 
-<link rel="stylesheet" href="~/css/site.css" />
 <link rel="stylesheet" href="~/css/analysis.css" />
 
 
@@ -220,7 +221,7 @@
                     <br />
 
                     <small>
-                        @injector.Data.TimeOffTesting.ToString("dd-MM-yyyy HH:mm")
+                        @TimeZoneService.FormatForUser(injector.Data.TimeOffTesting, "dd-MM-yyyy HH:mm")
                     </small>
 
                     <br />
@@ -406,7 +407,7 @@
                                     average - tank.Min;
                             }
 
-                            @tank.TankName
+                            <strong>@tank.TankName</strong>
 
                             <br />
 

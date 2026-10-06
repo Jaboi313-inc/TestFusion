@@ -17,15 +17,18 @@ namespace TestFusion.Web.Controllers
         private readonly AppDbContext _db;
         private readonly ISyncService _sync;
         private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly ITimeZoneService _timeZoneService;
 
         public AnalysisController(
             AppDbContext db,
             ISyncService sync,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            ITimeZoneService timeZoneService)
         {
             _db = db;
             _sync = sync;
             _localizer = localizer;
+            _timeZoneService = timeZoneService;
         }
 
         [HttpPost]
@@ -81,7 +84,8 @@ namespace TestFusion.Web.Controllers
             var pdf = PDFService.Generate(
                 model,
                 layoutMode,
-                _localizer);
+                _localizer,
+                _timeZoneService);
 
             return File(
                 pdf,

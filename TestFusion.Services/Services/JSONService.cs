@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using TestFusion.Core.Helpers;
+using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Services.Models;
@@ -11,17 +12,23 @@ namespace TestFusion.Services.Services
 {
     public class JSONService
     {
+        private readonly ITimeZoneService _timeZoneService;
+
+        public JSONService(
+            ITimeZoneService timeZoneService)
+        {
+            _timeZoneService = timeZoneService;
+        }
+
         public string ConvertToJson<T>(T model, bool prettyJson = false, bool useUnicodeSymbols = true)
         {
-            return JsonSerializer.Serialize(
-        model,
-        new JsonSerializerOptions
-        {
-            WriteIndented = prettyJson,
-            Encoder = useUnicodeSymbols
-                ? JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                : JavaScriptEncoder.Default
-        });
+            return JsonSerializer.Serialize(model, new JsonSerializerOptions
+            {
+                WriteIndented = prettyJson,
+                Encoder = useUnicodeSymbols
+                    ? JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                    : JavaScriptEncoder.Default
+            });
         }
 
         public TestListItemModel ConvertToTestListModel(TestResultModel testResultModel)
@@ -60,14 +67,21 @@ namespace TestFusion.Services.Services
             };
         }
 
-        private static DateTimeOffset GetDateTimeOffset(JsonElement root, string propertyName)
+        private DateTimeOffset GetDateTimeOffset(JsonElement root, string propertyName)
         {
-            if (!root.TryGetProperty(propertyName, out var value))
+            if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.String)
+            {
                 return DateTimeOffset.MinValue;
+            }
 
-            return DateTimeOffset.TryParse(value.GetString(), out var result)
-                ? result.ToUniversalTime()
-                : DateTimeOffset.MinValue;
+            var dateTimeString = value.GetString();
+
+            if (string.IsNullOrWhiteSpace(dateTimeString))
+            {
+                return DateTimeOffset.MinValue;
+            }
+
+            return _timeZoneService.ParseSourceToUtc(dateTimeString);
         }
 
         private static int GetInt(JsonElement root, string propertyName)

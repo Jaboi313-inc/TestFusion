@@ -45,22 +45,85 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
             await GoToSite(page);
             await EnsureLoggedIn(page);
 
-            var response = await page.WaitForResponseAsync(r =>
+            var lengthSelect = page.Locator(
+                "select[name='client_machine_report_length']"
+            );
+
+            await lengthSelect.WaitForAsync(new()
+            {
+                State = WaitForSelectorState.Visible
+            });
+
+            _logger.LogInformation(
+                "STATUS: Setting report list length to All"
+            );
+
+            var responseTask = page.WaitForResponseAsync(r =>
                 r.Url.Contains("get-machines-report-list") &&
+                r.Url.Contains("length=-1") &&
                 r.Request.Method == "GET" &&
                 r.Status == 200
             );
 
+            await lengthSelect.SelectOptionAsync("-1");
+
+            var selectedValue =
+                await lengthSelect.InputValueAsync();
+
+            if (selectedValue != "-1")
+            {
+                _logger.LogWarning(
+                    "WARNING: Failed to set report list length to All, actual value is {Value}",
+                    selectedValue
+                );
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "SUCCESS: Report list length set to All"
+                );
+            }
+
+            var response = await responseTask;
+
+            _logger.LogInformation(
+                "INFO: Request URL: {Url}",
+                response.Request.Url
+            );
 
             var json = await response.TextAsync();
 
-            var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(json);
+
+            var root = doc.RootElement;
+
+            var recordsTotal =
+                root.TryGetProperty("recordsTotal", out var recordsTotalElement)
+                    ? recordsTotalElement.GetInt32()
+                    : 0;
+
+            var recordsFiltered =
+                root.TryGetProperty("recordsFiltered", out var recordsFilteredElement)
+                    ? recordsFilteredElement.GetInt32()
+                    : 0;
+
+            var data =
+                root.GetProperty("data");
+
+            var responseCount =
+                data.GetArrayLength();
 
             var ids = new List<string>();
 
-            foreach (var item in doc.RootElement.GetProperty("data").EnumerateArray())
+            foreach (var item in data.EnumerateArray())
             {
-                var id = item.GetProperty("_id").GetString();
+                if (!item.TryGetProperty("_id", out var idElement))
+                {
+                    continue;
+                }
+
+                var id =
+                    idElement.GetString();
 
                 if (!string.IsNullOrWhiteSpace(id))
                 {
@@ -68,13 +131,35 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                 }
             }
 
-            _logger.LogInformation("SUCCESS: Retrieved {Count} IDs", ids.Count);
+            if (responseCount != ids.Count)
+            {
+                _logger.LogWarning(
+                    "WARNING: Total records: {TotalCount}, Filtered: {FilteredCount}, Returned: {ReturnedCount}, Valid IDs: {ValidIdCount}",
+                    recordsTotal,
+                    recordsFiltered,
+                    responseCount,
+                    ids.Count
+                );
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "SUCCESS: Total records: {TotalCount}, Filtered: {FilteredCount}, Retrieved: {RetrievedCount} valid IDs",
+                    recordsTotal,
+                    recordsFiltered,
+                    ids.Count
+                );
+            }
 
             return ids;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ERROR: Retrieving IDs");
+            _logger.LogError(
+                ex,
+                "ERROR: Retrieving IDs"
+            );
+
             throw;
         }
         finally
@@ -91,34 +176,69 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
         try
         {
+            await GoToSite(page);
+            await EnsureLoggedIn(page);
+
             var url = _siteSettings.ReportUrl?.Replace("{id}", id);
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new InvalidOperationException(
+                    "ReportUrl is not configured.");
+            }
+
+            _logger.LogInformation(
+                "STATUS: Navigating to report: {Url}",
+                url);
 
             await page.GotoAsync(url, new()
             {
                 WaitUntil = WaitUntilState.DOMContentLoaded
             });
 
-            await EnsureLoggedIn(page);
+            _logger.LogInformation(
+                "INFO: Current URL: {Url}",
+                page.Url);
 
             await page.WaitForFunctionAsync(
-                "() => window.appdatam && window.appdatam._id");
+                """
+                expectedId => {
+                    return window.appdatam &&
+                           window.appdatam._id === expectedId;
+                }
+                """,
+                id,
+                new PageWaitForFunctionOptions
+                {
+                    Timeout = 60000
+                });
 
             var json = await page.EvaluateAsync<string>(
                 "() => JSON.stringify(window.appdatam)");
 
-            _logger.LogInformation("SUCCESS: Retrieved data for ID: {Id}", id);
-
-            //_logger.LogInformation("RAW JSON: {Json}", json);
-
-            //_logger.LogInformation(JsonSerializer.Serialize(_jsonService.ConvertToTestResultModel(json), new JsonSerializerOptions{WriteIndented = true}));
-
-            //File.WriteAllText($"testresult_{DateTime.Now:yyyyMMdd_HHmmss}_{id}.json", _jsonService.ConvertToJson(_jsonService.ConvertToTestResultModel(json), prettyJson: true, useUnicodeSymbols: false));
+            _logger.LogInformation(
+                "SUCCESS: Retrieved data for ID: {Id}",
+                id);
 
             return json;
         }
+        catch (TimeoutException ex)
+        {
+            _logger.LogError(
+                ex,
+                "ERROR: Timed out retrieving data for ID {Id}. Current URL: {Url}",
+                id,
+                page.Url);
+
+            throw;
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ERROR: Retrieving data for ID: {Id}", id);
+            _logger.LogError(
+                ex,
+                "ERROR: Retrieving data for ID: {Id}",
+                id);
+
             throw;
         }
         finally
@@ -203,9 +323,9 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
         _logger.LogInformation("STATUS: Navigating to site");
 
         await page.GotoAsync(_siteSettings.BaseUrl, new()
-            {
-                WaitUntil = WaitUntilState.DOMContentLoaded
-            });
+        {
+            WaitUntil = WaitUntilState.DOMContentLoaded
+        });
 
         await RandomDelay();
 
@@ -223,19 +343,17 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                 _logger.LogInformation("STATUS: Login required");
 
                 await Login(page);
-            }
-            else
-            {
-                _logger.LogInformation("STATUS: Existing session detected, reloading page");
 
-                await page.ReloadAsync();
-
-                _logger.LogInformation("SUCCESS: Page reloaded");
+                return;
             }
+
+            _logger.LogInformation("SUCCESS: Existing session detected");
         }
-        catch
+        catch (Exception ex)
         {
-            _logger.LogInformation("ERROR: Login page not detected");
+            _logger.LogWarning(
+                ex,
+                "WARNING: Could not determine login state");
         }
     }
 
@@ -269,9 +387,9 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
         await locator.ClickAsync();
 
         await locator.PressSequentiallyAsync(text, new()
-            {
-                Delay = Random.Shared.Next(50, 120)
-            });
+        {
+            Delay = Random.Shared.Next(50, 120)
+        });
     }
 
     private async Task RandomDelay(int min = 300, int max = 1200)
