@@ -238,7 +238,7 @@
     <value>Page</value>
   </data>
   <data name="ButtonSelectAllSamePartNumber" xml:space="preserve">
-    <value>Select all with same part number</value>
+    <value>Select all</value>
   </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
@@ -282,7 +282,46 @@
   <data name="FilterSectionDate" xml:space="preserve">
     <value>Date</value>
   </data>
-  <data name="TestNotes" xml:space="preserve">
+  <data name="TestNote" xml:space="preserve">
     <value>Note</value>
+  </data>
+  <data name="ButtonSelectSamePartNumberWithTimeRestraint" xml:space="preserve">
+    <value>Select all within</value>
+  </data>
+  <data name="TimeMinute" xml:space="preserve">
+    <value>minute</value>
+  </data>
+  <data name="TimeMinutes" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="TimeHour" xml:space="preserve">
+    <value>hour</value>
+  </data>
+  <data name="TimeHours" xml:space="preserve">
+    <value>hours</value>
+  </data>
+  <data name="TimeDay" xml:space="preserve">
+    <value>day</value>
+  </data>
+  <data name="TimeDays" xml:space="preserve">
+    <value>days</value>
+  </data>
+  <data name="TimeWeek" xml:space="preserve">
+    <value>week</value>
+  </data>
+  <data name="TimeWeeks" xml:space="preserve">
+    <value>weeks</value>
+  </data>
+  <data name="TimeMonth" xml:space="preserve">
+    <value>month</value>
+  </data>
+  <data name="TimeMonths" xml:space="preserve">
+    <value>months</value>
+  </data>
+  <data name="TimeYear" xml:space="preserve">
+    <value>year</value>
+  </data>
+  <data name="TimeYears" xml:space="preserve">
+    <value>years</value>
   </data>
 </root>

@@ -74,6 +74,140 @@
         !string.IsNullOrWhiteSpace(filterTestNotes) ||
         !string.IsNullOrWhiteSpace(filterDateFrom) ||
         !string.IsNullOrWhiteSpace(filterDateTo);
+
+    const int samePartNumberGroupGapMinutes = 60 * 24 * 7;
+
+    var timeGroupById =
+        new Dictionary<string, int>();
+
+    foreach (var partNumberGroup in Model.GroupBy(x => x.PartNumber))
+    {
+        var orderedItems =
+            partNumberGroup
+                .OrderBy(x => x.TimeOffTesting)
+                .ToList();
+
+        var groupNumber = 0;
+
+        for (var i = 0; i < orderedItems.Count; i++)
+        {
+            if (i > 0)
+            {
+                var previous =
+                    orderedItems[i - 1];
+
+                var current =
+                    orderedItems[i];
+
+                var gap =
+                    current.TimeOffTesting -
+                    previous.TimeOffTesting;
+
+                if (gap >
+                    TimeSpan.FromMinutes(
+                        samePartNumberGroupGapMinutes))
+                {
+                    groupNumber++;
+                }
+            }
+
+            timeGroupById[
+                orderedItems[i].Id
+            ] = groupNumber;
+        }
+    }
+
+}
+
+@functions {
+    private string FormatTimeWindow(int minutes)
+    {
+        const int minutesPerHour = 60;
+        const int minutesPerDay = 60 * 24;
+        const int minutesPerWeek = 60 * 24 * 7;
+        const int minutesPerMonth = 60 * 24 * 30;
+        const int minutesPerYear = 60 * 24 * 365;
+
+        if (minutes >= minutesPerYear &&
+            minutes % minutesPerYear == 0)
+        {
+            var value = minutes / minutesPerYear;
+
+            return FormatTimeValue(
+                value,
+                "TimeYear",
+                "TimeYears"
+            );
+        }
+
+        if (minutes >= minutesPerMonth &&
+            minutes % minutesPerMonth == 0)
+        {
+            var value = minutes / minutesPerMonth;
+
+            return FormatTimeValue(
+                value,
+                "TimeMonth",
+                "TimeMonths"
+            );
+        }
+
+        if (minutes >= minutesPerWeek &&
+            minutes % minutesPerWeek == 0)
+        {
+            var value = minutes / minutesPerWeek;
+
+            return FormatTimeValue(
+                value,
+                "TimeWeek",
+                "TimeWeeks"
+            );
+        }
+
+        if (minutes >= minutesPerDay &&
+            minutes % minutesPerDay == 0)
+        {
+            var value = minutes / minutesPerDay;
+
+            return FormatTimeValue(
+                value,
+                "TimeDay",
+                "TimeDays"
+            );
+        }
+
+        if (minutes >= minutesPerHour &&
+            minutes % minutesPerHour == 0)
+        {
+            var value = minutes / minutesPerHour;
+
+            return FormatTimeValue(
+                value,
+                "TimeHour",
+                "TimeHours"
+            );
+        }
+
+        return FormatTimeValue(
+            minutes,
+            "TimeMinute",
+            "TimeMinutes"
+        );
+    }
+
+
+    private string FormatTimeValue(
+        int value,
+        string singularResourceKey,
+        string pluralResourceKey)
+    {
+        var unit =
+            value == 1
+                ? Localizer[singularResourceKey].Value
+                : Localizer[pluralResourceKey].Value;
+
+        return $"{value} {unit}";
+    }
 }
 
 @model List<TestFusion.Core.Models.TestReportModel>
@@ -586,36 +720,65 @@
                  data-partnumber="@item.PartNumber"
                  data-brand="@item.PartBrand"
                  data-type="@item.PartType"
-                 data-datetime="@item.TimeOffTesting.UtcTicks">
+                 data-datetime="@item.TimeOffTesting.UtcTicks"
+                 data-timegroup="@timeGroupById[item.Id]">
 
                 <span class="selection-cell">
 
                     <input type="checkbox"
                            name="selectedIds"
                            value="@item.Id"
-                           data-partnumber="@item.PartNumber">
+                           data-partnumber="@item.PartNumber"
+                           data-timegroup="@timeGroupById[item.Id]">
 
 
-                    <button type="button"
-                            class="select-all-same btn"
-                            data-partnumber="@item.PartNumber"
-                            style="display: none;">
+                    <span class="selection-buttons">
 
-                        <span class="select-all-title">
-                            @Localizer["ButtonSelectAllSamePartNumber"]
-                        </span>
+                        <button type="button"
+                                class="select-all-same btn"
+                                data-partnumber="@item.PartNumber"
+                                style="display: none;">
 
-                        <span class="select-all-total">
-
-                            @Localizer["Total"]:
-
-                            <span class="select-all-count">
-                                0
+                            <span class="select-all-title">
+                                @Localizer["ButtonSelectAllSamePartNumber"]
                             </span>
 
-                        </span>
+                            <span class="select-all-total">
 
-                    </button>
+                                @Localizer["Total"]:
+
+                                <span class="select-all-count">
+                                    0
+                                </span>
+
+                            </span>
+
+                        </button>
+
+
+                        <button type="button"
+                                class="select-time-group btn"
+                                data-partnumber="@item.PartNumber"
+                                data-timegroup="@timeGroupById[item.Id]"
+                                style="display: none;">
+
+                            <span class="select-all-title">
+                                @($"{Localizer["ButtonSelectSamePartNumberWithTimeRestraint"].Value} {FormatTimeWindow(samePartNumberGroupGapMinutes)}")
+                            </span>
+
+                            <span class="select-all-total">
+
+                                @Localizer["Total"]:
+
+                                <span class="select-time-group-count">
+                                    0
+                                </span>
+
+                            </span>
+
+                        </button>
+
+                    </span>
 
                 </span>
 
@@ -659,6 +822,9 @@
 
     const selectAllSameButtons =
         document.querySelectorAll('.select-all-same');
+
+    const selectTimeGroupButtons =
+        document.querySelectorAll('.select-time-group');
 
     const clearSelectedButton =
         document.getElementById('clear-selected');
@@ -734,6 +900,10 @@
             button.style.display = 'none';
         });
 
+        selectTimeGroupButtons.forEach(button => {
+            button.style.display = 'none';
+        });
+
 
         if (selected.length === 0) {
 
@@ -780,50 +950,129 @@
             );
 
 
-        const allSelected =
+        const allSamePartNumberSelected =
             samePartNumberCheckboxes.every(
                 cb => cb.checked
             );
 
 
-        if (!allSelected) {
+        const firstSelected =
+            selected[0];
 
-            const firstSelected =
-                selected[0];
-
-            const row =
-                firstSelected.closest('.list-row');
-
-
-            if (row) {
-
-                const button =
-                    row.querySelector('.select-all-same');
+        const row =
+            firstSelected.closest(
+                '.data-row'
+            );
 
 
-                if (button) {
+        if (!row) {
+            return;
+        }
 
-                    const count =
+
+        if (!allSamePartNumberSelected) {
+
+            const selectAllButton =
+                row.querySelector(
+                    '.select-all-same'
+                );
+
+
+            if (selectAllButton) {
+
+                const countElement =
+                    selectAllButton.querySelector(
+                        '.select-all-count'
+                    );
+
+
+                if (countElement) {
+                    countElement.textContent =
                         samePartNumberCheckboxes.length;
-
-                    const countElement =
-                        button.querySelector(
-                            '.select-all-count'
-                        );
-
-
-                    if (countElement) {
-                        countElement.textContent = count;
-                    }
-
-
-                    button.style.display =
-                        'inline-flex';
                 }
+
+
+                selectAllButton.style.display =
+                    'inline-flex';
             }
         }
-    }
 
+
+        const availableTimeGroups =
+            new Set(
+                samePartNumberCheckboxes.map(
+                    cb => cb.dataset.timegroup
+                )
+            );
+
+
+        if (availableTimeGroups.size <= 1) {
+            return;
+        }
+
+
+        const selectedTimeGroups =
+            new Set(
+                selected.map(
+                    cb => cb.dataset.timegroup
+                )
+            );
+
+
+        if (selectedTimeGroups.size !== 1) {
+            return;
+        }
+
+
+        const selectedTimeGroup =
+            firstSelected.dataset.timegroup;
+
+
+        const sameTimeGroupCheckboxes =
+            samePartNumberCheckboxes.filter(
+                cb =>
+                    cb.dataset.timegroup ===
+                    selectedTimeGroup
+            );
+
+
+        const allTimeGroupSelected =
+            sameTimeGroupCheckboxes.every(
+                cb => cb.checked
+            );
+
+
+        if (allTimeGroupSelected) {
+            return;
+        }
+
+
+        const timeGroupButton =
+            row.querySelector(
+                '.select-time-group'
+            );
+
+
+        if (!timeGroupButton) {
+            return;
+        }
+
+
+        const countElement =
+            timeGroupButton.querySelector(
+                '.select-time-group-count'
+            );
+
+
+        if (countElement) {
+            countElement.textContent =
+                sameTimeGroupCheckboxes.length;
+        }
+
+
+        timeGroupButton.style.display =
+            'inline-flex';
+    }
 
     // Filters
     function hasFilterInputValue() {
@@ -1178,6 +1427,41 @@
                         if (
                             cb.dataset.partnumber ===
                             partNumber
+                        ) {
+
+                            cb.checked = true;
+                        }
+
+                    });
+
+
+                updateSelection();
+            }
+        );
+    });
+
+
+    selectTimeGroupButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                const partNumber =
+                    this.dataset.partnumber;
+
+                const timeGroup =
+                    this.dataset.timegroup;
+
+
+                getCheckboxesInCurrentOrder()
+                    .forEach(cb => {
+
+                        if (
+                            cb.dataset.partnumber ===
+                            partNumber &&
+                            cb.dataset.timegroup ===
+                            timeGroup
                         ) {
 
                             cb.checked = true;
