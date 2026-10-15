@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TestFusion.Core.Enums;
 using TestFusion.Core.Interfaces;
+using Microsoft.Extensions.Localization;
+using TestFusion.Core;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
-using TestFusion.Web.Services;
+using TestFusion.Services.Services;
 
 namespace TestFusion.Web.Controllers
 {
@@ -14,65 +16,76 @@ namespace TestFusion.Web.Controllers
     {
         private readonly AppDbContext _db;
         private readonly ISyncService _sync;
+        private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly ITimeZoneService _timeZoneService;
 
         public AnalysisController(
             AppDbContext db,
-            ISyncService sync)
+            ISyncService sync,
+            IStringLocalizer<SharedResource> localizer,
+            ITimeZoneService timeZoneService)
         {
             _db = db;
             _sync = sync;
+            _localizer = localizer;
+            _timeZoneService = timeZoneService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Refresh()
+        public IActionResult Generate(List<string> selectedIds)
         {
-            await _sync.RunSync();
-            return RedirectToAction("Index");
+            if (selectedIds == null || selectedIds.Count == 0)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            return RedirectToAction(
+                nameof(Index),
+                new { selectedIds }
+            );
         }
 
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<IActionResult> Index(List<string> selectedIds)
         {
-            var items = await _db.TestItems
-                .OrderByDescending(x => x.DateTime)
-                .Take(50)
-                .ToListAsync();
+            if (selectedIds == null || selectedIds.Count == 0)
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
-            return View(items);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Generate(List<string> selectedIds)
-        {
             var model = await BuildGeneratedModel(selectedIds);
 
             if (model == null)
             {
                 TempData["Error"] =
-                    "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
+                _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Home");
             }
 
             return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> GeneratePdf(List<string> selectedIds, PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact)
+        public async Task<IActionResult> GeneratePdf(
+            List<string> selectedIds,
+            PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact)
         {
             var model = await BuildGeneratedModel(selectedIds);
 
             if (model == null)
             {
                 TempData["Error"] =
-                    "Je kunt alleen verstuivers met hetzelfde onderdeelnummer vergelijken.";
+                    _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Home");
             }
 
-            byte[] pdf = PDFService.Generate(
+            var pdf = PDFService.Generate(
                 model,
-                layoutMode
-            );
+                layoutMode,
+                _localizer,
+                _timeZoneService);
 
             return File(
                 pdf,
@@ -84,13 +97,10 @@ namespace TestFusion.Web.Controllers
         private async Task<GeneratedModel?> BuildGeneratedModel(
             List<string> selectedIds)
         {
-            // Get JSON from db
             var jsons = await _db.StoredJsons
                 .Where(x => selectedIds.Contains(x.Id))
                 .ToListAsync();
 
-
-            // JSON -> TestResultModel
             var injectors = jsons
                 .Select(x => new TestResultViewModel
                 {
@@ -98,7 +108,6 @@ namespace TestFusion.Web.Controllers
                 })
                 .ToList();
 
-            // Check if all injectors have the same part number
             var partNumbers = injectors
                 .Select(x => x.Data.PartNumber)
                 .Distinct()
@@ -114,7 +123,9 @@ namespace TestFusion.Web.Controllers
                 .GroupBy(x => NormalizeTestName(x.TestName))
                 .Select(g =>
                 {
-                    var firstValid = g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First();
+                    var firstValid =
+                        g.FirstOrDefault(x => x.TestStatus != 1)
+                        ?? g.First();
 
                     return new TestModel
                     {
@@ -137,7 +148,9 @@ namespace TestFusion.Web.Controllers
                     .GroupBy(x => NormalizeTestName(x.TestName))
                     .Select(g =>
                     {
-                        var firstValid = g.FirstOrDefault(x => x.TestStatus != 1) ?? g.First();
+                        var firstValid =
+                            g.FirstOrDefault(x => x.TestStatus != 1)
+                            ?? g.First();
 
                         return new TestCellModel
                         {

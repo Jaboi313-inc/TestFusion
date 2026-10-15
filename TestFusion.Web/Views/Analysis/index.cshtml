@@ -1,88 +1,623 @@
-﻿
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@using TestFusion.Core.Interfaces
+@inject ITimeZoneService TimeZoneService
+@inject IStringLocalizer<SharedResource> Localizer
+
+@model TestFusion.Core.Models.WebModels.GeneratedModel
+
 @{
-    ViewData["Title"] = "Analyse overzicht";
+    ViewData["Title"] = Localizer["PageTitleAnalysis"];
+
+    var selectedLayoutMode =
+        Context.Request.Query["layoutMode"].FirstOrDefault()
+        ?? "Compact";
 }
 
-@model List<TestFusion.Core.Models.TestListItemModel>
+@functions {
+    public string NormalizeTestName(string name)
+        => name.Replace(" : SKIPPED", "").Trim();
+}
 
-<link rel="stylesheet" href="~/css/site.css" />
 <link rel="stylesheet" href="~/css/analysis.css" />
 
 
-<div class="main-body">
-    <form asp-controller="Analysis" asp-action="Refresh" method="post">
-        <button type="submit" class="btn">
-            Refresh
-        </button>
-    </form>
-</div>
+<div class="d-flex justify-content-between align-items-center mb-4 main-body">
 
-<form asp-controller="Analysis" asp-action="Generate" method="post">
+    <h2 class="mb-0">
+        @Localizer["InjectorComparison"]
+    </h2>
 
-    <div id="top-bar">
-        <h2>Testresultaten overzicht</h2>
+    <form asp-controller="Analysis"
+          asp-action="GeneratePdf"
+          method="post"
+          class="d-flex align-items-center gap-2">
 
-        <button type="submit" class="main-body btn">
-            Genereer analyse
-        </button>
-    </div>
-
-    <div class="list main-body">
-
-        <div class="list-row header">
-            <span></span>
-            <span>Verstuiver #</span>
-            <span>Merk</span>
-            <span>Type</span>
-            <span>Datum, Tijd</span>
-        </div>
-
-        @foreach (var item in Model)
+        @foreach (var id in Model.SelectedIds)
         {
-            <div class="list-row">
-                <input type="checkbox" name="selectedIds" value="@item.Id" data-partnumber="@item.PartNumber">
-                <span>@item.PartNumber</span>
-                <span>@item.PartBrand</span>
-                <span>@item.PartType</span>
-                <span>@item.DateTime.ToString("dd-MM-yyyy HH:mm")</span>
-            </div>
+            <input type="hidden"
+                   name="selectedIds"
+                   value="@id" />
         }
 
-    </div>
+        <select name="layoutMode"
+                id="layoutMode"
+                class="form-select">
 
-</form>
+            @if (selectedLayoutMode == "Compact")
+            {
+                <option value="Compact" selected>
+                    @Localizer["PDFOptionCompact"]
+                </option>
+            }
+            else
+            {
+                <option value="Compact">
+                    @Localizer["PDFOptionCompact"]
+                </option>
+            }
 
-<script>
-    let selectedPartNumber = null;
+            @if (selectedLayoutMode == "KeepTestTogether")
+            {
+                <option value="KeepTestTogether" selected>
+                    @Localizer["PDFOptionKeepTestTogether"]
+                </option>
+            }
+            else
+            {
+                <option value="KeepTestTogether">
+                    @Localizer["PDFOptionKeepTestTogether"]
+                </option>
+            }
 
-    const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selectedIds"]');
+            @if (selectedLayoutMode == "OneTestPerPage")
+            {
+                <option value="OneTestPerPage" selected>
+                    @Localizer["PDFOptionOneTestPerPage"]
+                </option>
+            }
+            else
+            {
+                <option value="OneTestPerPage">
+                    @Localizer["PDFOptionOneTestPerPage"]
+                </option>
+            }
 
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', function () {
+        </select>
 
-            const partNumber = this.dataset.partnumber;
+        <button type="submit"
+                class="btn btn-primary">
+            @Localizer["ButtonPDFDownload"]
+        </button>
 
-            if (this.checked) {
+    </form>
 
-                if (!selectedPartNumber) {
-                    selectedPartNumber = partNumber;
-                    return;
+</div>
+
+
+<table class="table table-bordered table-striped main-body">
+
+    <thead>
+
+        <!-- General information -->
+        <tr class="info-row">
+
+            <th class="info-column">
+
+                <strong>
+                    @Localizer["Injector"]:
+                </strong>
+
+                <br />
+
+                <small>
+                    @Localizer["InjectorPartNumber"]:
+                    @Model.Injectors.FirstOrDefault()?.Data.PartNumber
+                </small>
+
+                <br />
+
+                <small>
+                    @Localizer["InjectorBrand"]:
+                    @Model.Injectors.FirstOrDefault()?.Data.PartBrand
+                </small>
+
+                <br />
+
+                <small>
+                    @Localizer["InjectorType"]:
+                    @Model.Injectors.FirstOrDefault()?.Data.PartType
+                </small>
+
+                <br />
+
+            </th>
+
+
+            <th class="info-column">
+
+                <strong>
+                    @Localizer["Customer"]:
+                </strong>
+
+                <br />
+
+                <small>
+                    @Localizer["CustomerName"]:
+                    @Model.Injectors.FirstOrDefault()?.Data.CustomerName
+                </small>
+
+                <br />
+
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.Injectors.FirstOrDefault()?.Data.CustomerPhone))
+                {
+                    <small>
+                        @Localizer["CustomerPhoneNumber"]:
+                        @Model.Injectors.FirstOrDefault()?.Data.CustomerPhone
+                    </small>
                 }
 
-                if (partNumber !== selectedPartNumber) {
-                    alert("Je kunt alleen verstuivers met dezelfde onderdeel nummer selecteren.");
-                    this.checked = false;
+                <br />
+
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.Injectors.FirstOrDefault()?.Data.CustomerMail))
+                {
+                    <small>
+                        @Localizer["CustomerMail"]:
+                        @Model.Injectors.FirstOrDefault()?.Data.CustomerMail
+                    </small>
                 }
 
-            } else {
+                <br />
 
-                const anyChecked = Array.from(checkboxes).some(x => x.checked);
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.Injectors.FirstOrDefault()?.Data.CustomerNotes))
+                {
+                    <small>
+                        @Localizer["CustomerNote"]:
+                        @Model.Injectors.FirstOrDefault()?.Data.CustomerNotes
+                    </small>
+                }
 
-                if (!anyChecked) {
-                    selectedPartNumber = null;
+                <br />
+
+            </th>
+
+        </tr>
+
+
+        <!-- Injector information -->
+        <tr>
+
+            <th class="info-row">
+
+                <br />
+
+                <small>
+                    @Localizer["InjectorTimeOffTesting"]:
+                </small>
+
+                <br />
+
+                <small>
+                    @Localizer["InjectorSerialNumber"]:
+                </small>
+
+                <br />
+
+                <small>
+                    @Localizer["InjectorNote"]:
+                </small>
+
+            </th>
+
+
+            @foreach (var injector in Model.Injectors)
+            {
+                <th class="injector-info">
+
+                    <br />
+
+                    <small>
+                        @TimeZoneService.FormatForUser(injector.Data.TimeOffTesting, "dd-MM-yyyy HH:mm")
+                    </small>
+
+                    <br />
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        injector.Data.InjectorSerialNumber))
+                    {
+                        <small>
+                            @injector.Data.InjectorSerialNumber
+                        </small>
+                    }
+
+                    <br />
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        injector.Data.TestNotes))
+                    {
+                        <small>
+                            @Html.Raw(injector.Data.TestNotes)
+                        </small>
+                    }
+
+                </th>
+            }
+
+        </tr>
+
+
+        <!-- Test / tank header -->
+        <tr>
+
+            <th>
+
+                <br />
+                <br />
+
+                <div class="info-row">
+                    @Localizer["TestTestNameAndTank"]
+                </div>
+
+            </th>
+
+        </tr>
+
+    </thead>
+
+
+    <tbody>
+
+        @foreach (var test in Model.AllTests)
+        {
+            var normalizedTest =
+                NormalizeTestName(test.TestName);
+
+
+            var injectorTests = Model.Injectors
+                .Select(injector =>
+                    injector.NormalizedTests
+                        .FirstOrDefault(t =>
+                            NormalizeTestName(t.TestName)
+                            == normalizedTest))
+                .ToList();
+
+
+            var hasAnyNonSkippedTest =
+                injectorTests.Any(t =>
+                    t != null &&
+                    !t.IsSkipped);
+
+            var tankSubData = Model.Injectors
+                .SelectMany(injector =>
+                    injector.Data.Tests)
+                .Where(t =>
+                    NormalizeTestName(t.TestName)
+                    == normalizedTest &&
+                    t.TestStatus != 1)
+                .SelectMany(t => t.SubTests)
+                .GroupBy(t => t.TankName)
+                .Select(g => g.First())
+                .ToList();
+
+
+            <!-- Test header -->
+            <tr class="test-header">
+
+                <td colspan="@(Model.Injectors.Count + 1)">
+
+                    <div>
+
+                        <strong>
+                            @normalizedTest
+                        </strong>
+
+                        <br />
+
+                        <small>
+                            @Localizer["TestType"]:
+                            @(string.IsNullOrWhiteSpace(test.TestType)
+                                ? "-"
+                                : test.TestType)
+                        </small>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+
+            @if (hasAnyNonSkippedTest)
+            {
+                <tr class="tank-row">
+
+                    <td>
+
+                        <small>
+                            @Localizer["TestResponseTime"]:
+                        </small>
+
+                    </td>
+
+
+                    @for (var i = 0;
+                          i < injectorTests.Count;
+                          i++)
+                    {
+                        var injectorTest =
+                            injectorTests[i];
+
+                        if (injectorTest == null ||
+                            injectorTest.IsSkipped)
+                        {
+                            <td>-</td>
+                        }
+                        else
+                        {
+                            <td>
+                                @injectorTest.Response @Localizer["SecondIndicator"]
+                            </td>
+                        }
+                    }
+
+                </tr>
+            }
+            else
+            {
+                <tr class="skipped-row">
+
+                    <td></td>
+
+                    @for (var i = 0;
+                          i < Model.Injectors.Count;
+                          i++)
+                    {
+                        <td class="skipped-cell">
+
+                            <strong>
+                                @Localizer["TestSkipped"]
+                            </strong>
+
+                        </td>
+                    }
+
+                </tr>
+            }
+
+
+            @if (hasAnyNonSkippedTest)
+            {
+                <!-- Tank / result rows -->
+                @foreach (var tank in tankSubData)
+                {
+                    <tr class="tank-row">
+
+                        <!-- Tank information -->
+                        <td>
+
+                            @{
+                                var average =
+                                    (tank.Min + tank.Max) / 2;
+
+                                var tolerance =
+                                    average - tank.Min;
+                            }
+
+                            <strong>@tank.TankName</strong>
+
+                            <br />
+
+                            <small>
+                                @Localizer["TestMin"]:
+                                @tank.Min
+                            </small>
+
+                            <br />
+
+                            <small>
+                                @Localizer["TestMax"]:
+                                @tank.Max
+                            </small>
+
+                            <br />
+
+                            <small>
+                                @Localizer["TestLimit"]:
+                                @average +/- @tolerance
+                            </small>
+
+                        </td>
+
+
+                        <!-- Injector results -->
+                        @foreach (var injector in Model.Injectors)
+                        {
+                            var injectorTest =
+                                injector.NormalizedTests
+                                    .FirstOrDefault(t =>
+                                        NormalizeTestName(t.TestName)
+                                        == normalizedTest);
+
+
+                            var sub = injector.Data.Tests
+                                .Where(t =>
+                                    NormalizeTestName(t.TestName)
+                                    == normalizedTest)
+                                .SelectMany(t => t.SubTests)
+                                .FirstOrDefault(s =>
+                                    s.TankName == tank.TankName);
+
+
+                            if (injectorTest == null ||
+                                injectorTest.IsSkipped)
+                            {
+                                <td class="skipped-cell">
+
+                                    <div class="skipped-content">
+
+                                        <strong>
+                                            @Localizer["TestSkipped"]
+                                        </strong>
+
+                                    </div>
+
+                                </td>
+                            }
+                            else if (sub == null)
+                            {
+                                <td class="skipped-cell">
+
+                                    <div class="skipped-content">
+
+                                        <strong>
+                                            @Localizer["TestSkipped"]
+                                        </strong>
+
+                                    </div>
+
+                                </td>
+                            }
+                            else
+                            {
+                                <td class="result-@sub.ResultColor">
+
+                                    @if (sub.Results == null ||
+                                         sub.Results.Count == 0)
+                                    {
+                                        <strong>
+                                            @Localizer["TestNoResults"]
+                                        </strong>
+                                    }
+                                    else
+                                    {
+                                        var results =
+                                            sub.Results;
+
+                                        var resultMinCalculated =
+                                            results.Min();
+
+                                        var resultAverageCalculated =
+                                            results.Average();
+
+                                        var resultMaxCalculated =
+                                            results.Max();
+
+
+                                        <div>
+
+                                            <strong>
+                                                @Localizer["TestMin"]:
+                                            </strong>
+
+                                            @resultMinCalculated
+                                            @sub.ResultMin
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                @Localizer["TestAvg"]:
+                                            </strong>
+
+                                            @resultAverageCalculated.ToString("0.0")
+                                            @sub.ResultAverage
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                @Localizer["TestMax"]:
+                                            </strong>
+
+                                            @resultMaxCalculated
+                                            @sub.ResultMax
+
+                                        </div>
+
+
+                                        <br />
+
+
+                                        <div>
+
+                                            <strong>
+                                                @Localizer["TestResults"]:
+                                            </strong>
+
+                                            @string.Join(
+                                                " | ",
+                                                sub.Results
+                                            )
+
+                                        </div>
+                                    }
+                                </td>
+                            }
+                        }
+
+                    </tr>
                 }
             }
+        }
+
+    </tbody>
+
+</table>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const layoutSelect =
+            document.getElementById("layoutMode");
+
+        if (!layoutSelect) {
+            return;
+        }
+
+        const storageKey = "analysisPdfLayoutMode";
+
+        const savedLayout =
+            sessionStorage.getItem(storageKey);
+
+        if (savedLayout) {
+
+            const optionExists =
+                Array.from(layoutSelect.options)
+                    .some(option =>
+                        option.value === savedLayout);
+
+            if (optionExists) {
+                layoutSelect.value = savedLayout;
+            }
+        }
+
+        layoutSelect.addEventListener("change", function () {
+
+            sessionStorage.setItem(
+                storageKey,
+                layoutSelect.value
+            );
+
+            const url =
+                new URL(window.location.href);
+
+            url.searchParams.set(
+                "layoutMode",
+                layoutSelect.value
+            );
+
+            window.history.replaceState(
+                {},
+                "",
+                url
+            );
         });
+
     });
 </script>
-

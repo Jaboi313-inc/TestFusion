@@ -1,8 +1,1011 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@using TestFusion.Core.Interfaces
+@inject ITimeZoneService TimeZoneService
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["PageTitleHome"];
+
+    var resultLimit =
+        ViewBag.ResultLimit is int limit
+            ? limit
+            : 50;
+
+    var totalCount =
+        ViewBag.TotalCount is int count
+            ? count
+            : Model.Count;
+
+    var filterPartNumber =
+        Context.Request.Query["partNumber"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterBrand =
+        Context.Request.Query["brand"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterType =
+        Context.Request.Query["type"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterDateFrom =
+        Context.Request.Query["dateFrom"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterDateTo =
+        Context.Request.Query["dateTo"].FirstOrDefault()
+        ?? string.Empty;
+
+    var hasActiveFilters =
+        !string.IsNullOrWhiteSpace(filterPartNumber) ||
+        !string.IsNullOrWhiteSpace(filterBrand) ||
+        !string.IsNullOrWhiteSpace(filterType) ||
+        !string.IsNullOrWhiteSpace(filterDateFrom) ||
+        !string.IsNullOrWhiteSpace(filterDateTo);
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@model List<TestFusion.Core.Models.TestListItemModel>
+
+<link rel="stylesheet"
+      href="~/css/home.css"
+      asp-append-version="true" />
+
+
+<form id="refresh-form"
+      asp-controller="Home"
+      asp-action="Refresh"
+      method="post">
+</form>
+
+
+<form id="result-limit-form"
+      asp-controller="Home"
+      asp-action="Index"
+      method="get">
+</form>
+
+
+<form id="filter-form"
+      asp-controller="Home"
+      asp-action="Index"
+      method="get">
+</form>
+
+
+<form asp-controller="Analysis"
+      asp-action="Generate"
+      method="post">
+
+    <div id="top-bar">
+
+        <div class="top-bar-left">
+
+            <h2>
+                @Localizer["TestResultsOverview"]
+            </h2>
+
+
+            <button type="submit"
+                    form="refresh-form"
+                    class="btn">
+                @Localizer["ButtonRefresh"]
+            </button>
+
+
+            @if (!hasActiveFilters)
+            {
+                <div class="result-limit-container">
+
+                    <label for="resultLimit">
+                        @Localizer["Show"]:
+                    </label>
+
+                    <select id="resultLimit"
+                            name="resultLimit"
+                            form="result-limit-form"
+                            class="result-limit-select"
+                            onchange="this.form.submit()">
+
+                        @if (resultLimit == 25)
+                        {
+                            <option value="25" selected>
+                                25
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="25">
+                                25
+                            </option>
+                        }
+
+                        @if (resultLimit == 50)
+                        {
+                            <option value="50" selected>
+                                50
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="50">
+                                50
+                            </option>
+                        }
+
+                        @if (resultLimit == 100)
+                        {
+                            <option value="100" selected>
+                                100
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="100">
+                                100
+                            </option>
+                        }
+
+                        @if (resultLimit == 0)
+                        {
+                            <option value="0" selected>
+                                @Localizer["All"] (@totalCount)
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="0">
+                                @Localizer["All"] (@totalCount)
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+            }
+
+            <button type="button"
+                    id="filter-toggle"
+                    class="btn"
+                    aria-expanded="@hasActiveFilters.ToString().ToLowerInvariant()"
+                    aria-controls="filter-panel">
+                @Localizer["ButtonFilter"]
+                <span id="filter-toggle-indicator">
+                    @(hasActiveFilters ? "▲" : "▼")
+                </span>
+            </button>
+
+        </div>
+
+
+        <div class="top-bar-right">
+
+            <button type="button"
+                    id="clear-selected"
+                    class="btn"
+                    disabled>
+                @Localizer["ButtonClearSelected"]
+            </button>
+
+
+            <button type="submit"
+                    id="generate-analysis"
+                    class="btn"
+                    disabled>
+                @Localizer["ButtonGenerateAnalysis"]
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div id="filter-panel"
+         class="filter-panel @(hasActiveFilters ? "is-open" : "")">
+
+        <div class="filter-grid">
+
+            <div class="filter-field">
+
+                <label for="filter-partnumber">
+                    @Localizer["InjectorPartNumber"]
+                </label>
+
+                <input type="text"
+                       id="filter-partnumber"
+                       name="partNumber"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterPartNumber"
+                       autocomplete="off" />
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="filter-brand">
+                    @Localizer["InjectorBrand"]
+                </label>
+
+                <input type="text"
+                       id="filter-brand"
+                       name="brand"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterBrand"
+                       autocomplete="off" />
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="filter-type">
+                    @Localizer["InjectorType"]
+                </label>
+
+                <input type="text"
+                       id="filter-type"
+                       name="type"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterType"
+                       autocomplete="off" />
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="filter-date-from">
+                    @Localizer["FilterDateFrom"]
+                </label>
+
+                <input type="date"
+                       id="filter-date-from"
+                       name="dateFrom"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterDateFrom" />
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="filter-date-to">
+                    @Localizer["FilterDateTo"]
+                </label>
+
+                <input type="date"
+                       id="filter-date-to"
+                       name="dateTo"
+                       form="filter-form"
+                       class="filter-input"
+                       value="@filterDateTo" />
+
+            </div>
+
+        </div>
+
+
+        <div class="filter-actions">
+
+            <button type="submit"
+                    form="filter-form"
+                    class="btn">
+                @Localizer["ButtonApplyFilters"]
+            </button>
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="btn">
+                @Localizer["ButtonClearFilters"]
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="list"
+         id="test-results-list">
+
+        <div class="list-row header">
+
+            <span class="sort-reset-cell">
+
+                <button type="button"
+                        id="reset-sort"
+                        class="btn sort-reset-button"
+                        disabled>
+                    @Localizer["ButtonResetSorting"]
+                </button>
+
+            </span>
+
+
+            <span>
+
+                <button type="button"
+                        class="sort-button"
+                        data-sort="partnumber">
+
+                    @Localizer["InjectorPartNumber"]
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
+                </button>
+
+            </span>
+
+
+            <span>
+
+                <button type="button"
+                        class="sort-button"
+                        data-sort="brand">
+
+                    @Localizer["InjectorBrand"]
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
+                </button>
+
+            </span>
+
+
+            <span>
+
+                <button type="button"
+                        class="sort-button"
+                        data-sort="type">
+
+                    @Localizer["InjectorType"]
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
+                </button>
+
+            </span>
+
+
+            <span>
+
+                <button type="button"
+                        class="sort-button"
+                        data-sort="datetime">
+
+                    @Localizer["InjectorDateTime"]
+
+                    <span class="sort-indicator">
+                        ↕
+                    </span>
+
+                </button>
+
+            </span>
+
+        </div>
+
+
+        @foreach (var item in Model)
+        {
+            <div class="list-row data-row"
+                 data-partnumber="@item.PartNumber"
+                 data-brand="@item.PartBrand"
+                 data-type="@item.PartType"
+                 data-datetime="@item.DateTime.UtcTicks">
+
+                <span class="selection-cell">
+
+                    <input type="checkbox"
+                           name="selectedIds"
+                           value="@item.Id"
+                           data-partnumber="@item.PartNumber">
+
+
+                    <button type="button"
+                            class="select-all-same btn"
+                            data-partnumber="@item.PartNumber"
+                            style="display: none;">
+
+                        <span class="select-all-title">
+                            @Localizer["ButtonSelectAllSamePartNumber"]
+                        </span>
+
+                        <span class="select-all-total">
+
+                            @Localizer["Total"]:
+
+                            <span class="select-all-count">
+                                0
+                            </span>
+
+                        </span>
+
+                    </button>
+
+                </span>
+
+
+                <span>
+                    @item.PartNumber
+                </span>
+
+                <span>
+                    @item.PartBrand
+                </span>
+
+                <span>
+                    @item.PartType
+                </span>
+
+                <span>
+                    @TimeZoneService.FormatForUser(item.DateTime, "dd-MM-yyyy HH:mm")
+                </span>
+
+            </div>
+        }
+
+    </div>
+
+</form>
+
+
+<script>
+    // State
+    let selectedPartNumber = null;
+
+    let currentSortColumn = null;
+    let currentSortDirection = 'asc';
+
+
+    // DOM references
+    const checkboxes = document.querySelectorAll(
+        'input[type="checkbox"][name="selectedIds"]'
+    );
+
+    const selectAllSameButtons =
+        document.querySelectorAll('.select-all-same');
+
+    const clearSelectedButton =
+        document.getElementById('clear-selected');
+
+    const generateAnalysisButton =
+        document.getElementById('generate-analysis');
+
+    const sortButtons =
+        document.querySelectorAll('.sort-button');
+
+    const resetSortButton =
+        document.getElementById('reset-sort');
+
+    const filterToggleButton =
+        document.getElementById('filter-toggle');
+
+    const filterToggleIndicator =
+        document.getElementById('filter-toggle-indicator');
+
+    const filterPanel =
+        document.getElementById('filter-panel');
+
+    const testResultsList =
+        document.getElementById('test-results-list');
+
+
+    const originalRows =
+        Array.from(
+            testResultsList.querySelectorAll('.data-row')
+        );
+
+
+    // Selection
+    function getCheckboxesInCurrentOrder() {
+
+        return Array.from(
+            document.querySelectorAll(
+                'input[type="checkbox"][name="selectedIds"]'
+            )
+        );
+    }
+
+
+    function updateSelection() {
+
+        const currentCheckboxes =
+            getCheckboxesInCurrentOrder();
+
+        const selected =
+            currentCheckboxes.filter(
+                cb => cb.checked
+            );
+
+
+        selectAllSameButtons.forEach(button => {
+            button.style.display = 'none';
+        });
+
+
+        if (selected.length === 0) {
+
+            selectedPartNumber = null;
+
+            generateAnalysisButton.disabled = true;
+            clearSelectedButton.disabled = true;
+
+            return;
+        }
+
+
+        clearSelectedButton.disabled = false;
+
+
+        const partNumbers = [
+            ...new Set(
+                selected.map(
+                    cb => cb.dataset.partnumber
+                )
+            )
+        ];
+
+
+        if (partNumbers.length !== 1) {
+
+            generateAnalysisButton.disabled = true;
+
+            return;
+        }
+
+
+        selectedPartNumber =
+            partNumbers[0];
+
+        generateAnalysisButton.disabled = false;
+
+
+        const samePartNumberCheckboxes =
+            currentCheckboxes.filter(
+                cb =>
+                    cb.dataset.partnumber ===
+                    selectedPartNumber
+            );
+
+
+        const allSelected =
+            samePartNumberCheckboxes.every(
+                cb => cb.checked
+            );
+
+
+        if (!allSelected) {
+
+            const firstSelected =
+                selected[0];
+
+            const row =
+                firstSelected.closest('.list-row');
+
+
+            if (row) {
+
+                const button =
+                    row.querySelector('.select-all-same');
+
+
+                if (button) {
+
+                    const count =
+                        samePartNumberCheckboxes.length;
+
+                    const countElement =
+                        button.querySelector(
+                            '.select-all-count'
+                        );
+
+
+                    if (countElement) {
+                        countElement.textContent = count;
+                    }
+
+
+                    button.style.display =
+                        'inline-flex';
+                }
+            }
+        }
+    }
+
+
+    // Sorting
+    function comparePartNumbers(valueA, valueB) {
+
+        valueA =
+            (valueA ?? '')
+                .trim()
+                .toUpperCase();
+
+        valueB =
+            (valueB ?? '')
+                .trim()
+                .toUpperCase();
+
+
+        function getCharacterGroup(character) {
+
+            if (/[0-9]/.test(character)) {
+                return 0;
+            }
+
+            if (/[A-Z]/.test(character)) {
+                return 1;
+            }
+
+            return 2;
+        }
+
+
+        const maxLength =
+            Math.max(
+                valueA.length,
+                valueB.length
+            );
+
+
+        for (let i = 0; i < maxLength; i++) {
+
+            const charA =
+                valueA[i];
+
+            const charB =
+                valueB[i];
+
+
+            if (charA === undefined) {
+                return -1;
+            }
+
+            if (charB === undefined) {
+                return 1;
+            }
+
+
+            if (charA === charB) {
+                continue;
+            }
+
+
+            const groupA =
+                getCharacterGroup(charA);
+
+            const groupB =
+                getCharacterGroup(charB);
+
+
+            if (groupA !== groupB) {
+                return groupA - groupB;
+            }
+
+
+            if (charA < charB) {
+                return -1;
+            }
+
+            if (charA > charB) {
+                return 1;
+            }
+        }
+
+
+        return 0;
+    }
+
+
+    function sortRows(column) {
+
+        if (currentSortColumn === column) {
+
+            currentSortDirection =
+                currentSortDirection === 'asc'
+                    ? 'desc'
+                    : 'asc';
+        }
+        else {
+
+            currentSortColumn = column;
+            currentSortDirection = 'asc';
+        }
+
+
+        const rows =
+            Array.from(
+                testResultsList.querySelectorAll(
+                    '.data-row'
+                )
+            );
+
+
+        rows.sort((a, b) => {
+
+            let comparison = 0;
+
+
+            if (column === 'datetime') {
+
+                const valueA =
+                    Number(a.dataset.datetime);
+
+                const valueB =
+                    Number(b.dataset.datetime);
+
+                comparison =
+                    valueA - valueB;
+            }
+
+            else if (column === 'partnumber') {
+
+                comparison =
+                    comparePartNumbers(
+                        a.dataset.partnumber,
+                        b.dataset.partnumber
+                    );
+            }
+
+            else {
+
+                const valueA =
+                    a.dataset[column] ?? '';
+
+                const valueB =
+                    b.dataset[column] ?? '';
+
+
+                comparison =
+                    valueA.localeCompare(
+                        valueB,
+                        undefined,
+                        {
+                            numeric: true,
+                            sensitivity: 'base'
+                        }
+                    );
+            }
+
+
+            return currentSortDirection === 'asc'
+                ? comparison
+                : -comparison;
+        });
+
+
+        rows.forEach(row => {
+            testResultsList.appendChild(row);
+        });
+
+
+        resetSortButton.disabled = false;
+
+
+        updateSortIndicators();
+        updateSelection();
+    }
+
+
+    function resetSorting() {
+
+        originalRows.forEach(row => {
+            testResultsList.appendChild(row);
+        });
+
+
+        currentSortColumn = null;
+        currentSortDirection = 'asc';
+
+
+        resetSortButton.disabled = true;
+
+
+        updateSortIndicators();
+        updateSelection();
+    }
+
+
+    function updateSortIndicators() {
+
+        sortButtons.forEach(button => {
+
+            const indicator =
+                button.querySelector(
+                    '.sort-indicator'
+                );
+
+
+            if (!indicator) {
+                return;
+            }
+
+
+            if (
+                button.dataset.sort !==
+                currentSortColumn
+            ) {
+
+                indicator.textContent = '↕';
+
+                return;
+            }
+
+
+            indicator.textContent =
+                currentSortDirection === 'asc'
+                    ? '▲'
+                    : '▼';
+        });
+    }
+
+
+    // Event handlers
+    checkboxes.forEach(cb => {
+
+        cb.addEventListener(
+            'change',
+            function () {
+
+                const partNumber =
+                    this.dataset.partnumber;
+
+
+                if (this.checked) {
+
+                    const selected =
+                        getCheckboxesInCurrentOrder()
+                            .filter(
+                                cb => cb.checked
+                            );
+
+
+                    const differentPartNumber =
+                        selected.some(
+                            cb =>
+                                cb.dataset.partnumber !==
+                                partNumber
+                        );
+
+
+                    if (differentPartNumber) {
+
+                        alert(
+                                @Html.Raw(
+                                        System.Text.Json.JsonSerializer.Serialize(
+                                                Localizer["ErrorDiffirentInjectorPartNumber"].Value + "."
+                        )
+                        )
+                            );
+
+
+                        this.checked = false;
+                    }
+                }
+
+
+                updateSelection();
+            }
+        );
+    });
+
+
+    selectAllSameButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                const partNumber =
+                    this.dataset.partnumber;
+
+
+                getCheckboxesInCurrentOrder()
+                    .forEach(cb => {
+
+                        if (
+                            cb.dataset.partnumber ===
+                            partNumber
+                        ) {
+
+                            cb.checked = true;
+                        }
+
+                    });
+
+
+                updateSelection();
+            }
+        );
+    });
+
+
+    filterToggleButton.addEventListener(
+        'click',
+        function () {
+
+            const isOpen =
+                filterPanel.classList.toggle(
+                    'is-open'
+                );
+
+            filterToggleButton.setAttribute(
+                'aria-expanded',
+                isOpen.toString()
+            );
+
+            filterToggleIndicator.textContent =
+                isOpen
+                    ? '▲'
+                    : '▼';
+        }
+    );
+
+
+    sortButtons.forEach(button => {
+
+        button.addEventListener(
+            'click',
+            function () {
+
+                sortRows(
+                    this.dataset.sort
+                );
+            }
+        );
+    });
+
+
+    resetSortButton.addEventListener(
+        'click',
+        resetSorting
+    );
+
+
+    clearSelectedButton.addEventListener(
+        'click',
+        function () {
+
+            getCheckboxesInCurrentOrder()
+                .forEach(cb => {
+
+                    cb.checked = false;
+                });
+
+
+            updateSelection();
+        }
+    );
+
+
+    // Initialization
+    updateSelection();
+    updateSortIndicators();
+
+    resetSortButton.disabled = true;
+
+
+    window.addEventListener(
+        'pageshow',
+        function () {
+
+            updateSelection();
+            updateSortIndicators();
+
+            resetSortButton.disabled =
+                currentSortColumn === null;
+        }
+    );
+</script>

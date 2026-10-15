@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
-using TestFusion.SyncService;
-using TestFusion.SyncService.Models;
-using TestFusion.SyncService.Services;
+using TestFusion.Services;
+using TestFusion.Services.Models;
+using TestFusion.Services.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -19,6 +19,7 @@ builder.Services.Configure<Intervals>(
 builder.Services.AddSingleton<JSONService>();
 builder.Services.AddScoped<IPlaywright, PlaywrightService>();
 builder.Services.AddScoped<ISyncService, SyncService>();
+builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 
 builder.Services.AddHostedService<Worker>();
 

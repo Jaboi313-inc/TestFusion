@@ -3,7 +3,7 @@ using System.Text.Json;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models;
 using TestFusion.Data;
-using TestFusion.SyncService.Services;
+using TestFusion.Services.Services;
 
 public class SyncService : ISyncService
 {

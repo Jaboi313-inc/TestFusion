@@ -1,27 +1,64 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@inject IStringLocalizer<SharedResource> Localizer
+
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TestFusion</title>
     <script type="importmap"></script>
-    <link rel="stylesheet" href="~/css/site.css"/>
-    <link rel="stylesheet" href="~/css/nav-bar.css"/>
+
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/nav-bar.css" />
 </head>
 <body>
     <header>
         <nav class="nav-bar">
-            <a id="nav-app-name" href="Analysis">TestFusion</a>
-            <div>
-                <ul id="nav-subbar">
-                    <li class="nav-item">
-                        <a id="nav-link-analysis" class="nav-link" href="Analysis">Analyse maken</a>
-                    </li>
-                    <li class="nav-item">
-                        <a id="nav-link-history" class="nav-link" href="Home">Historie</a>
-                    </li>
-                </ul>
-                    
+            <a id="nav-home"
+               asp-controller="Home"
+               asp-action="Index">
+                @Localizer["AppName"]
+            </a>
+
+            <div class="nav-right">
+
+                <a id="nav-settings"
+                   asp-controller="Settings"
+                   asp-action="Index">
+                    @Localizer["Settings"]
+                </a>
+
+                <form asp-controller="Language"
+                      asp-action="SetLanguage"
+                      method="post"
+                      id="language-form">
+
+                    <input type="hidden"
+                           name="returnUrl"
+                           value="@Context.Request.Path@Context.Request.QueryString" />
+
+                    <select name="culture"
+                            class="language-select"
+                            onchange="this.form.submit()">
+
+                        @if (CultureInfo.CurrentUICulture.Name.StartsWith("nl"))
+                        {
+                            <option value="nl-NL" selected>NL</option>
+                            <option value="en-US">EN</option>
+                        }
+                        else
+                        {
+                            <option value="nl-NL">NL</option>
+                            <option value="en-US" selected>EN</option>
+                        }
+
+                    </select>
+
+                </form>
+
             </div>
         </nav>
     </header>

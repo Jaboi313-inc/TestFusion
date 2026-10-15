@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 using TestFusion.Core.Interfaces;
-using TestFusion.SyncService.Models;
+using TestFusion.Services.Models;
 
 public class Worker : BackgroundService
 {

@@ -4,7 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<UserSecretsId>dotnet-TestFusion.SyncService-5be049b2-d0e0-4c9b-a45f-0136c3a2f61d</UserSecretsId>
+		<UserSecretsId>dotnet-TestFusion.Services-5be049b2-d0e0-4c9b-a45f-0136c3a2f61d</UserSecretsId>
 	</PropertyGroup>
 
   <ItemGroup>
