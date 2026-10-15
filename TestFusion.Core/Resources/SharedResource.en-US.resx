@@ -139,7 +139,7 @@
     <value>Date, Time</value>
   </data>
   <data name="InjectorPartNumber" xml:space="preserve">
-    <value>Part number</value>
+    <value>Number</value>
   </data>
   <data name="InjectorType" xml:space="preserve">
     <value>Type</value>
@@ -269,5 +269,20 @@
   </data>
   <data name="FilterDateTo" xml:space="preserve">
     <value>To</value>
+  </data>
+  <data name="FilterSectionPart" xml:space="preserve">
+    <value>Part</value>
+  </data>
+  <data name="FilterSectionCustomer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="FilterSectionTest" xml:space="preserve">
+    <value>Test</value>
+  </data>
+  <data name="FilterSectionDate" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="TestNotes" xml:space="preserve">
+    <value>Note</value>
   </data>
 </root>

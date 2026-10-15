@@ -30,6 +30,30 @@
         Context.Request.Query["type"].FirstOrDefault()
         ?? string.Empty;
 
+    var filterInjectorSerialNumber =
+        Context.Request.Query["injectorSerialNumber"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterCustomerName =
+        Context.Request.Query["customerName"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterCustomerPhone =
+        Context.Request.Query["customerPhone"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterCustomerMail =
+        Context.Request.Query["customerMail"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterCustomerNotes =
+        Context.Request.Query["customerNotes"].FirstOrDefault()
+        ?? string.Empty;
+
+    var filterTestNotes =
+        Context.Request.Query["testNotes"].FirstOrDefault()
+        ?? string.Empty;
+
     var filterDateFrom =
         Context.Request.Query["dateFrom"].FirstOrDefault()
         ?? string.Empty;
@@ -42,6 +66,12 @@
         !string.IsNullOrWhiteSpace(filterPartNumber) ||
         !string.IsNullOrWhiteSpace(filterBrand) ||
         !string.IsNullOrWhiteSpace(filterType) ||
+        !string.IsNullOrWhiteSpace(filterInjectorSerialNumber) ||
+        !string.IsNullOrWhiteSpace(filterCustomerName) ||
+        !string.IsNullOrWhiteSpace(filterCustomerPhone) ||
+        !string.IsNullOrWhiteSpace(filterCustomerMail) ||
+        !string.IsNullOrWhiteSpace(filterCustomerNotes) ||
+        !string.IsNullOrWhiteSpace(filterTestNotes) ||
         !string.IsNullOrWhiteSpace(filterDateFrom) ||
         !string.IsNullOrWhiteSpace(filterDateTo);
 }
@@ -204,89 +234,239 @@
     <div id="filter-panel"
          class="filter-panel @(hasActiveFilters ? "is-open" : "")">
 
-        <div class="filter-grid">
+        <div class="filter-groups">
 
-            <div class="filter-field">
+            <section class="filter-group">
 
-                <label for="filter-partnumber">
-                    @Localizer["InjectorPartNumber"]
-                </label>
+                <h3 class="filter-group-title">
+                    @Localizer["FilterSectionPart"]
+                </h3>
 
-                <input type="text"
-                       id="filter-partnumber"
-                       name="partNumber"
-                       form="filter-form"
-                       class="filter-input"
-                       value="@filterPartNumber"
-                       autocomplete="off" />
+                <div class="filter-group-fields filter-group-fields-3">
 
-            </div>
+                    <div class="filter-field">
 
+                        <label for="filter-partnumber">
+                            @Localizer["InjectorPartNumber"]
+                        </label>
 
-            <div class="filter-field">
+                        <input type="text"
+                               id="filter-partnumber"
+                               name="partNumber"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterPartNumber"
+                               autocomplete="off" />
 
-                <label for="filter-brand">
-                    @Localizer["InjectorBrand"]
-                </label>
-
-                <input type="text"
-                       id="filter-brand"
-                       name="brand"
-                       form="filter-form"
-                       class="filter-input"
-                       value="@filterBrand"
-                       autocomplete="off" />
-
-            </div>
+                    </div>
 
 
-            <div class="filter-field">
+                    <div class="filter-field">
 
-                <label for="filter-type">
-                    @Localizer["InjectorType"]
-                </label>
+                        <label for="filter-brand">
+                            @Localizer["InjectorBrand"]
+                        </label>
 
-                <input type="text"
-                       id="filter-type"
-                       name="type"
-                       form="filter-form"
-                       class="filter-input"
-                       value="@filterType"
-                       autocomplete="off" />
+                        <input type="text"
+                               id="filter-brand"
+                               name="brand"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterBrand"
+                               autocomplete="off" />
 
-            </div>
-
-
-            <div class="filter-field">
-
-                <label for="filter-date-from">
-                    @Localizer["FilterDateFrom"]
-                </label>
-
-                <input type="date"
-                       id="filter-date-from"
-                       name="dateFrom"
-                       form="filter-form"
-                       class="filter-input"
-                       value="@filterDateFrom" />
-
-            </div>
+                    </div>
 
 
-            <div class="filter-field">
+                    <div class="filter-field">
 
-                <label for="filter-date-to">
-                    @Localizer["FilterDateTo"]
-                </label>
+                        <label for="filter-type">
+                            @Localizer["InjectorType"]
+                        </label>
 
-                <input type="date"
-                       id="filter-date-to"
-                       name="dateTo"
-                       form="filter-form"
-                       class="filter-input"
-                       value="@filterDateTo" />
+                        <input type="text"
+                               id="filter-type"
+                               name="type"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterType"
+                               autocomplete="off" />
 
-            </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="filter-group">
+
+                <h3 class="filter-group-title">
+                    @Localizer["FilterSectionCustomer"]
+                </h3>
+
+                <div class="filter-group-fields filter-group-fields-4">
+
+                    <div class="filter-field">
+
+                        <label for="filter-customer-name">
+                            @Localizer["CustomerName"]
+                        </label>
+
+                        <input type="text"
+                               id="filter-customer-name"
+                               name="customerName"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterCustomerName"
+                               autocomplete="off" />
+
+                    </div>
+
+
+                    <div class="filter-field">
+
+                        <label for="filter-customer-phone">
+                            @Localizer["CustomerPhoneNumber"]
+                        </label>
+
+                        <input type="text"
+                               id="filter-customer-phone"
+                               name="customerPhone"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterCustomerPhone"
+                               autocomplete="off" />
+
+                    </div>
+
+
+                    <div class="filter-field">
+
+                        <label for="filter-customer-mail">
+                            @Localizer["CustomerMail"]
+                        </label>
+
+                        <input type="text"
+                               id="filter-customer-mail"
+                               name="customerMail"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterCustomerMail"
+                               autocomplete="off" />
+
+                    </div>
+
+
+                    <div class="filter-field">
+
+                        <label for="filter-customer-notes">
+                            @Localizer["CustomerNote"]
+                        </label>
+
+                        <input type="text"
+                               id="filter-customer-notes"
+                               name="customerNotes"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterCustomerNotes"
+                               autocomplete="off" />
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="filter-group">
+
+                <h3 class="filter-group-title">
+                    @Localizer["FilterSectionTest"]
+                </h3>
+
+                <div class="filter-group-fields filter-group-fields-2">
+
+                    <div class="filter-field">
+
+                        <label for="filter-injector-serial-number">
+                            @Localizer["InjectorSerialNumber"]
+                        </label>
+
+                        <input type="text"
+                               id="filter-injector-serial-number"
+                               name="injectorSerialNumber"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterInjectorSerialNumber"
+                               autocomplete="off" />
+
+                    </div>
+
+
+                    <div class="filter-field">
+
+                        <label for="filter-test-notes">
+                            @Localizer["TestNotes"]
+                        </label>
+
+                        <input type="text"
+                               id="filter-test-notes"
+                               name="testNotes"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterTestNotes"
+                               autocomplete="off" />
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="filter-group">
+
+                <h3 class="filter-group-title">
+                    @Localizer["FilterSectionDate"]
+                </h3>
+
+                <div class="filter-group-fields filter-group-fields-2">
+
+                    <div class="filter-field">
+
+                        <label for="filter-date-from">
+                            @Localizer["FilterDateFrom"]
+                        </label>
+
+                        <input type="date"
+                               id="filter-date-from"
+                               name="dateFrom"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterDateFrom" />
+
+                    </div>
+
+
+                    <div class="filter-field">
+
+                        <label for="filter-date-to">
+                            @Localizer["FilterDateTo"]
+                        </label>
+
+                        <input type="date"
+                               id="filter-date-to"
+                               name="dateTo"
+                               form="filter-form"
+                               class="filter-input"
+                               value="@filterDateTo" />
+
+                    </div>
+
+                </div>
+
+            </section>
 
         </div>
 
@@ -294,16 +474,19 @@
         <div class="filter-actions">
 
             <button type="submit"
+                    id="apply-filters"
                     form="filter-form"
-                    class="btn">
+                    class="btn"
+                    disabled>
                 @Localizer["ButtonApplyFilters"]
             </button>
 
-            <a asp-controller="Home"
-               asp-action="Index"
-               class="btn">
+            <button type="button"
+                    id="clear-filters"
+                    class="btn"
+                    disabled>
                 @Localizer["ButtonClearFilters"]
-            </a>
+            </button>
 
         </div>
 
@@ -498,6 +681,23 @@
     const filterPanel =
         document.getElementById('filter-panel');
 
+    const filterInputs =
+        document.querySelectorAll(
+            '#filter-panel .filter-input'
+        );
+
+    const applyFiltersButton =
+        document.getElementById('apply-filters');
+
+    const clearFiltersButton =
+        document.getElementById('clear-filters');
+
+    const hasAppliedFilters =
+        @hasActiveFilters.ToString().ToLowerInvariant();
+
+    const clearFiltersUrl =
+        '@Url.Action("Index", "Home")';
+
     const testResultsList =
         document.getElementById('test-results-list');
 
@@ -623,6 +823,66 @@
             }
         }
     }
+
+
+    // Filters
+    function hasFilterInputValue() {
+
+        return Array.from(
+            filterInputs
+        ).some(input =>
+            input.value.trim() !== ''
+        );
+    }
+
+
+    function updateFilterButtons() {
+
+        const hasInputValue =
+            hasFilterInputValue();
+
+        applyFiltersButton.disabled =
+            !hasInputValue;
+
+        clearFiltersButton.disabled =
+            !hasInputValue &&
+            !hasAppliedFilters;
+    }
+
+
+    filterInputs.forEach(input => {
+
+        input.addEventListener(
+            'input',
+            updateFilterButtons
+        );
+
+        input.addEventListener(
+            'change',
+            updateFilterButtons
+        );
+    });
+
+
+    clearFiltersButton.addEventListener(
+        'click',
+        function () {
+
+            if (hasAppliedFilters) {
+
+                window.location.href =
+                    clearFiltersUrl;
+
+                return;
+            }
+
+            filterInputs.forEach(input => {
+                input.value = '';
+            });
+
+            updateFilterButtons();
+        }
+    );
 
 
     // Sorting
@@ -993,6 +1253,7 @@
     // Initialization
     updateSelection();
     updateSortIndicators();
+    updateFilterButtons();
 
     resetSortButton.disabled = true;
 
