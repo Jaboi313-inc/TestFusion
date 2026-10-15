@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Text.Json;
+using TestFusion.Core;
 using TestFusion.Core.Enums;
 using TestFusion.Core.Interfaces;
-using Microsoft.Extensions.Localization;
-using TestFusion.Core;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Data;
@@ -15,18 +15,15 @@ namespace TestFusion.Web.Controllers
     public class AnalysisController : Controller
     {
         private readonly AppDbContext _db;
-        private readonly ISyncService _sync;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ITimeZoneService _timeZoneService;
 
         public AnalysisController(
             AppDbContext db,
-            ISyncService sync,
             IStringLocalizer<SharedResource> localizer,
             ITimeZoneService timeZoneService)
         {
             _db = db;
-            _sync = sync;
             _localizer = localizer;
             _timeZoneService = timeZoneService;
         }
@@ -39,10 +36,7 @@ namespace TestFusion.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            return RedirectToAction(
-                nameof(Index),
-                new { selectedIds }
-            );
+            return RedirectToAction(nameof(Index), new { selectedIds });
         }
 
         [HttpGet]
@@ -57,8 +51,7 @@ namespace TestFusion.Web.Controllers
 
             if (model == null)
             {
-                TempData["Error"] =
-                _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
+                TempData["Error"] = _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
 
                 return RedirectToAction("Index", "Home");
             }
@@ -67,51 +60,46 @@ namespace TestFusion.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GeneratePdf(
-            List<string> selectedIds,
-            PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact)
+        public async Task<IActionResult> GeneratePdf(List<string> selectedIds, PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact)
         {
+            if (selectedIds == null || selectedIds.Count == 0)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             var model = await BuildGeneratedModel(selectedIds);
 
             if (model == null)
             {
-                TempData["Error"] =
-                    _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
+                TempData["Error"] = _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
 
                 return RedirectToAction("Index", "Home");
             }
 
-            var pdf = PDFService.Generate(
-                model,
-                layoutMode,
-                _localizer,
-                _timeZoneService);
+            var pdf = PDFService.Generate(model, layoutMode, _localizer, _timeZoneService);
 
-            return File(
-                pdf,
-                "application/pdf",
-                $"Analyse-{DateTime.Now:yyyy-MM-dd-HHmm}.pdf"
-            );
+            return File(pdf, "application/pdf", $"Analyse-{DateTime.Now:yyyy-MM-dd-HHmm}.pdf");
         }
 
-        private async Task<GeneratedModel?> BuildGeneratedModel(
-            List<string> selectedIds)
+        private async Task<GeneratedModel?> BuildGeneratedModel(List<string> selectedIds)
         {
-            var jsons = await _db.StoredJsons
-                .Where(x => selectedIds.Contains(x.Id))
-                .ToListAsync();
+            var reports = await _db.TestReports
+                    .AsNoTracking()
+                    .Where(x => selectedIds.Contains(x.Id))
+                    .ToListAsync();
 
-            var injectors = jsons
-                .Select(x => new TestResultViewModel
-                {
-                    Data = JsonSerializer.Deserialize<TestResultModel>(x.Json)!
-                })
-                .ToList();
+            var injectors = reports
+                    .Select(x =>
+                        new TestResultViewModel
+                        {
+                            Data = JsonSerializer.Deserialize<TestResultModel>(x.Json)!
+                        })
+                    .ToList();
 
             var partNumbers = injectors
-                .Select(x => x.Data.PartNumber)
-                .Distinct()
-                .ToList();
+                    .Select(x => x.Data.PartNumber)
+                    .Distinct()
+                    .ToList();
 
             if (partNumbers.Count > 1)
             {
@@ -119,53 +107,49 @@ namespace TestFusion.Web.Controllers
             }
 
             var allTests = injectors
-                .SelectMany(x => x.Data.Tests)
-                .GroupBy(x => NormalizeTestName(x.TestName))
-                .Select(g =>
-                {
-                    var firstValid =
-                        g.FirstOrDefault(x => x.TestStatus != 1)
-                        ?? g.First();
-
-                    return new TestModel
+                    .SelectMany(x => x.Data.Tests)
+                    .GroupBy(x => NormalizeTestName(x.TestName))
+                    .Select(g =>
                     {
-                        TestId = firstValid.TestId,
-                        TestName = NormalizeTestName(firstValid.TestName),
-                        TestOrder = firstValid.TestOrder,
-                        TestStatus = firstValid.TestStatus,
-                        TestTime = firstValid.TestTime,
-                        TestType = firstValid.TestType,
-                        TestResponseTime = firstValid.TestResponseTime,
-                        SubTests = firstValid.SubTests ?? new()
-                    };
-                })
-                .OrderBy(x => x.TestOrder)
-                .ToList();
+                        var firstValid = g.FirstOrDefault(x => x.TestStatus != 1)?? g.First();
+
+                        return new TestModel
+                        {
+                            TestId = firstValid.TestId,
+                            TestName = NormalizeTestName(firstValid.TestName),
+                            TestOrder = firstValid.TestOrder,
+                            TestStatus = firstValid.TestStatus,
+                            TestTime = firstValid.TestTime,
+                            TestType = firstValid.TestType,
+                            TestResponseTime = firstValid.TestResponseTime,
+                            SubTests = firstValid.SubTests?? new()
+                        };
+                    })
+                    .OrderBy(x => x.TestOrder)
+                    .ToList();
 
             foreach (var injector in injectors)
             {
                 injector.NormalizedTests = injector.Data.Tests
-                    .GroupBy(x => NormalizeTestName(x.TestName))
-                    .Select(g =>
-                    {
-                        var firstValid =
-                            g.FirstOrDefault(x => x.TestStatus != 1)
-                            ?? g.First();
-
-                        return new TestCellModel
+                        .GroupBy(x => NormalizeTestName(x.TestName))
+                        .Select(g =>
                         {
-                            TestId = firstValid.TestId,
-                            TestName = NormalizeTestName(firstValid.TestName),
-                            Exists = true,
-                            IsSkipped = firstValid.TestStatus == 1,
-                            Status = firstValid.TestStatus,
-                            Time = firstValid.TestTime,
-                            Response = firstValid.TestResponseTime.ToString(),
-                            SubTests = firstValid.SubTests ?? new()
-                        };
-                    })
-                    .OrderBy(x => x.TestName)
-                    .ToList();
+                            var firstValid = g.FirstOrDefault(x => x.TestStatus != 1)?? g.First();
+
+                            return new TestCellModel
+                            {
+                                TestId = firstValid.TestId,
+                                TestName = NormalizeTestName(firstValid.TestName),
+                                Exists = true,
+                                IsSkipped = firstValid.TestStatus == 1,
+                                Status = firstValid.TestStatus,
+                                Time = firstValid.TestTime,
+                                Response = firstValid.TestResponseTime.ToString(),
+                                SubTests = firstValid.SubTests?? new()
+                            };
+                        })
+                        .OrderBy(x => x.TestName)
+                        .ToList();
             }
 
             return new GeneratedModel

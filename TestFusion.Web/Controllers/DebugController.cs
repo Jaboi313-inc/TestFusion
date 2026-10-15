@@ -37,37 +37,16 @@ public class DebugController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ClearTestItems(bool confirmed)
+    public async Task<IActionResult> ClearTestReports(bool confirmed)
     {
         if (!confirmed)
         {
             return BadRequest("Confirmation is required.");
         }
 
-        var deletedCount =
-            await _db.TestItems.ExecuteDeleteAsync();
+        var deletedCount = await _db.TestReports.ExecuteDeleteAsync();
 
-        TempData["DebugMessage"] =
-            $"TestItems cleared. {deletedCount} rows deleted.";
-
-        return RedirectToAction(nameof(Index));
-    }
-
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ClearStoredJsons(bool confirmed)
-    {
-        if (!confirmed)
-        {
-            return BadRequest("Confirmation is required.");
-        }
-
-        var deletedCount =
-            await _db.StoredJsons.ExecuteDeleteAsync();
-
-        TempData["DebugMessage"] =
-            $"StoredJsons cleared. {deletedCount} rows deleted.";
+        TempData["DebugMessage"] = $"TestReports cleared. " + $"{deletedCount} rows deleted.";
 
         return RedirectToAction(nameof(Index));
     }
@@ -82,16 +61,9 @@ public class DebugController : Controller
             return BadRequest("Confirmation is required.");
         }
 
-        var storedJsonCount =
-            await _db.StoredJsons.ExecuteDeleteAsync();
+        var deletedCount = await _db.TestReports.ExecuteDeleteAsync();
 
-        var testItemCount =
-            await _db.TestItems.ExecuteDeleteAsync();
-
-        TempData["DebugMessage"] =
-            $"Test data cleared. " +
-            $"{testItemCount} TestItems and " +
-            $"{storedJsonCount} StoredJsons deleted.";
+        TempData["DebugMessage"] = $"Test data cleared. " + $"{deletedCount} TestReports deleted.";
 
         return RedirectToAction(nameof(Index));
     }
@@ -107,16 +79,11 @@ public class DebugController : Controller
             return BadRequest("ID is required.");
         }
 
-        var rawJson =
-            await _playwrightService.GetDataForId(id);
+        var rawJson = await _playwrightService.GetDataForId(id);
 
-        var bytes =
-            Encoding.UTF8.GetBytes(rawJson);
+        var bytes = Encoding.UTF8.GetBytes(rawJson);
 
-        return File(
-            bytes,
-            "application/json",
-            $"raw_{id}.json");
+        return File( bytes, "application/json", $"raw_{id}.json");
     }
 
 
@@ -128,24 +95,15 @@ public class DebugController : Controller
             return BadRequest("ID is required.");
         }
 
-        var rawJson =
-            await _playwrightService.GetDataForId(id);
+        var rawJson = await _playwrightService.GetDataForId(id);
 
-        var model = _jsonService.ConvertToTestResultModel(rawJson);
+        var model =  _jsonService.ConvertToTestResultModel(rawJson);
 
-        var processedJson =
-            _jsonService.ConvertToJson(
-                model,
-                prettyJson: true,
-                useUnicodeSymbols: false);
+        var processedJson = _jsonService.ConvertToJson(model, prettyJson: true, useUnicodeSymbols: false);
 
-        var bytes =
-            Encoding.UTF8.GetBytes(processedJson);
+        var bytes = Encoding.UTF8.GetBytes(processedJson);
 
-        return File(
-            bytes,
-            "application/json",
-            $"processed_{id}.json");
+        return File(bytes, "application/json", $"processed_{id}.json");
     }
 
 
@@ -157,23 +115,18 @@ public class DebugController : Controller
             return BadRequest("ID is required.");
         }
 
-        var storedJson =
-            await _db.StoredJsons
+        var testReport = await _db.TestReports
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(
+                    x => x.Id == id);
 
-        if (storedJson == null)
+        if (testReport == null)
         {
-            return NotFound(
-                $"No stored JSON found for ID '{id}'.");
+            return NotFound($"No stored JSON found for ID '{id}'.");
         }
 
-        var bytes =
-            Encoding.UTF8.GetBytes(storedJson.Json);
+        var bytes = Encoding.UTF8.GetBytes(testReport.Json);
 
-        return File(
-            bytes,
-            "application/json",
-            $"stored_{id}.json");
+        return File(bytes, "application/json", $"stored_{id}.json");
     }
 }

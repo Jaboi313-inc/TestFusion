@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models;
 using TestFusion.Data;
 
 namespace TestFusion.Web.Controllers
@@ -94,12 +95,12 @@ namespace TestFusion.Web.Controllers
 
 
             var totalCount =
-                await _db.TestItems
+                await _db.TestReports
                     .CountAsync();
 
 
             var query =
-                _db.TestItems
+                _db.TestReports
                     .AsNoTracking()
                     .AsQueryable();
 
@@ -155,7 +156,7 @@ namespace TestFusion.Web.Controllers
 
                 query =
                     query.Where(x =>
-                        x.DateTime >= fromUtc);
+                        x.TimeOffTesting >= fromUtc);
             }
 
 
@@ -167,16 +168,16 @@ namespace TestFusion.Web.Controllers
 
                 query =
                     query.Where(x =>
-                        x.DateTime < toUtcExclusive);
+                        x.TimeOffTesting < toUtcExclusive);
             }
 
 
             var orderedQuery =
                 query.OrderByDescending(
-                    x => x.DateTime);
+                    x => x.TimeOffTesting);
 
 
-            List<TestFusion.Core.Models.TestListItemModel> items;
+            List<TestReportModel> items;
 
 
             if (hasActiveFilters)

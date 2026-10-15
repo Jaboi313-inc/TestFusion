@@ -17,7 +17,7 @@ namespace TestFusion.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -36,7 +36,7 @@ namespace TestFusion.Data.Migrations
                     b.ToTable("stored_jsons", (string)null);
                 });
 
-            modelBuilder.Entity("TestFusion.Core.Models.WebModels.TestListItemModel", b =>
+            modelBuilder.Entity("TestFusion.Core.Models.TestListItemModel", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -59,6 +59,73 @@ namespace TestFusion.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("test_items", (string)null);
+                });
+
+            modelBuilder.Entity("TestFusion.Core.Models.TestReportModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerMail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerNotes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerPhone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("InjectorSerialNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Json")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PartBrand")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TestNotes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("TimeOffTesting")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerMail");
+
+                    b.HasIndex("CustomerName");
+
+                    b.HasIndex("InjectorSerialNumber");
+
+                    b.HasIndex("PartBrand");
+
+                    b.HasIndex("PartNumber");
+
+                    b.HasIndex("PartType");
+
+                    b.HasIndex("TimeOffTesting");
+
+                    b.ToTable("test_reports", (string)null);
                 });
 #pragma warning restore 612, 618
         }

@@ -46,7 +46,7 @@
         !string.IsNullOrWhiteSpace(filterDateTo);
 }
 
-@model List<TestFusion.Core.Models.TestListItemModel>
+@model List<TestFusion.Core.Models.TestReportModel>
 
 <link rel="stylesheet"
       href="~/css/home.css"
@@ -403,7 +403,7 @@
                  data-partnumber="@item.PartNumber"
                  data-brand="@item.PartBrand"
                  data-type="@item.PartType"
-                 data-datetime="@item.DateTime.UtcTicks">
+                 data-datetime="@item.TimeOffTesting.UtcTicks">
 
                 <span class="selection-cell">
 
@@ -450,7 +450,7 @@
                 </span>
 
                 <span>
-                    @TimeZoneService.FormatForUser(item.DateTime, "dd-MM-yyyy HH:mm")
+                    @TimeZoneService.FormatForUser(item.TimeOffTesting, "dd-MM-yyyy HH:mm")
                 </span>
 
             </div>
