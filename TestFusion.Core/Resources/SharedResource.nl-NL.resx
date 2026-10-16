@@ -324,4 +324,112 @@
   <data name="TimeYears" xml:space="preserve">
     <value>jaren</value>
   </data>
+  <data name="DebugJsonViewer" xml:space="preserve">
+    <value>JSON-weergave</value>
+  </data>
+  <data name="DebugJsonViewerDescription" xml:space="preserve">
+    <value>Voer een test-ID in om de ruwe, verwerkte en opgeslagen JSON te bekijken</value>
+  </data>
+  <data name="DebugTestId" xml:space="preserve">
+    <value>Test-ID</value>
+  </data>
+  <data name="DebugViewJson" xml:space="preserve">
+    <value>JSON bekijken</value>
+  </data>
+  <data name="DebugRawJson" xml:space="preserve">
+    <value>Ruwe JSON</value>
+  </data>
+  <data name="DebugProcessedJson" xml:space="preserve">
+    <value>Verwerkte JSON</value>
+  </data>
+  <data name="DebugStoredJson" xml:space="preserve">
+    <value>Opgeslagen JSON</value>
+  </data>
+  <data name="DebugDownload" xml:space="preserve">
+    <value>Downloaden</value>
+  </data>
+  <data name="DebugDownloadJson" xml:space="preserve">
+    <value>JSON downloaden</value>
+  </data>
+  <data name="DebugRawJsonDownloadDescription" xml:space="preserve">
+    <value>Downloadt de originele JSON rechtstreeks van de bron</value>
+  </data>
+  <data name="DebugProcessedJsonDownloadDescription" xml:space="preserve">
+    <value>Downloadt de JSON nadat TestFusion deze heeft verwerkt</value>
+  </data>
+  <data name="DebugStoredJsonDownloadDescription" xml:space="preserve">
+    <value>Downloadt de JSON die momenteel in de database is opgeslagen</value>
+  </data>
+  <data name="DebugRawJsonLoadFailed" xml:space="preserve">
+    <value>Ruwe JSON kon niet worden geladen</value>
+  </data>
+  <data name="DebugProcessedJsonLoadFailed" xml:space="preserve">
+    <value>Verwerkte JSON kon niet worden geladen</value>
+  </data>
+  <data name="DebugStoredJsonNotAvailable" xml:space="preserve">
+    <value>Geen opgeslagen JSON gevonden</value>
+  </data>
+  <data name="DebugRawProcessedLoadError" xml:space="preserve">
+    <value>Ruwe en verwerkte JSON konden niet worden geladen: {0}</value>
+  </data>
+  <data name="DebugStoredJsonNotFound" xml:space="preserve">
+    <value>Geen opgeslagen JSON gevonden voor ID '{0}'</value>
+  </data>
+  <data name="DebugProcessedStoredEqual" xml:space="preserve">
+    <value>Verwerkte JSON en opgeslagen JSON zijn gelijk</value>
+  </data>
+  <data name="DebugProcessedStoredDifferent" xml:space="preserve">
+    <value>Verwerkte JSON en opgeslagen JSON zijn verschillend</value>
+  </data>
+  <data name="DebugDatabase" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="DebugDeleteSelected" xml:space="preserve">
+    <value>Selectie verwijderen</value>
+  </data>
+  <data name="DebugDeleteAll" xml:space="preserve">
+    <value>Alles verwijderen</value>
+  </data>
+  <data name="DebugConfirmDeleteSelected" xml:space="preserve">
+    <value>Weet je zeker dat je de geselecteerde testresultaten wilt verwijderen</value>
+  </data>
+  <data name="DebugConfirmDeleteAll" xml:space="preserve">
+    <value>Weet je zeker dat je alle testresultaten wilt verwijderen</value>
+  </data>
+  <data name="DebugNoTestReports" xml:space="preserve">
+    <value>Geen testresultaten gevonden in de database</value>
+  </data>
+  <data name="DebugSelectAllRows" xml:space="preserve">
+    <value>Alle rijen selecteren</value>
+  </data>
+  <data name="DebugSelectTestReport" xml:space="preserve">
+    <value>Testresultaat {0} selecteren</value>
+  </data>
+  <data name="DebugId" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="DebugJson" xml:space="preserve">
+    <value>JSON</value>
+  </data>
+  <data name="DebugNoRowsSelected" xml:space="preserve">
+    <value>Geen rijen geselecteerd</value>
+  </data>
+  <data name="DebugSelectedRowsDeleted" xml:space="preserve">
+    <value>{0} geselecteerde testresultaten verwijderd</value>
+  </data>
+  <data name="DebugAllRowsDeleted" xml:space="preserve">
+    <value>Alle TestReports verwijderd{1} {0} rijen verwijderd</value>
+  </data>
+  <data name="DebugConfirmationRequired" xml:space="preserve">
+    <value>Bevestiging is verplicht</value>
+  </data>
+  <data name="DebugIdRequired" xml:space="preserve">
+    <value>ID is verplicht</value>
+  </data>
+  <data name="SymbolDot" xml:space="preserve">
+    <value>.</value>
+  </data>
+  <data name="SymbolQuestionmark" xml:space="preserve">
+    <value>?</value>
+  </data>
 </root>

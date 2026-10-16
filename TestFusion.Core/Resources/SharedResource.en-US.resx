@@ -324,4 +324,112 @@
   <data name="TimeYears" xml:space="preserve">
     <value>years</value>
   </data>
+  <data name="DebugJsonViewer" xml:space="preserve">
+    <value>JSON viewer</value>
+  </data>
+  <data name="DebugJsonViewerDescription" xml:space="preserve">
+    <value>Enter a test ID to view the raw, processed and stored JSON</value>
+  </data>
+  <data name="DebugTestId" xml:space="preserve">
+    <value>Test ID</value>
+  </data>
+  <data name="DebugViewJson" xml:space="preserve">
+    <value>View JSON</value>
+  </data>
+  <data name="DebugRawJson" xml:space="preserve">
+    <value>Raw JSON</value>
+  </data>
+  <data name="DebugProcessedJson" xml:space="preserve">
+    <value>Processed JSON</value>
+  </data>
+  <data name="DebugStoredJson" xml:space="preserve">
+    <value>Stored JSON</value>
+  </data>
+  <data name="DebugDownload" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="DebugDownloadJson" xml:space="preserve">
+    <value>Download JSON</value>
+  </data>
+  <data name="DebugRawJsonDownloadDescription" xml:space="preserve">
+    <value>Downloads the original JSON directly from the source</value>
+  </data>
+  <data name="DebugProcessedJsonDownloadDescription" xml:space="preserve">
+    <value>Downloads the JSON after TestFusion has processed it</value>
+  </data>
+  <data name="DebugStoredJsonDownloadDescription" xml:space="preserve">
+    <value>Downloads the JSON currently stored in the database</value>
+  </data>
+  <data name="DebugRawJsonLoadFailed" xml:space="preserve">
+    <value>Raw JSON could not be loaded</value>
+  </data>
+  <data name="DebugProcessedJsonLoadFailed" xml:space="preserve">
+    <value>Processed JSON could not be loaded</value>
+  </data>
+  <data name="DebugStoredJsonNotAvailable" xml:space="preserve">
+    <value>No stored JSON found</value>
+  </data>
+  <data name="DebugRawProcessedLoadError" xml:space="preserve">
+    <value>Raw and processed JSON could not be loaded: {0}</value>
+  </data>
+  <data name="DebugStoredJsonNotFound" xml:space="preserve">
+    <value>No stored JSON was found for ID '{0}'</value>
+  </data>
+  <data name="DebugProcessedStoredEqual" xml:space="preserve">
+    <value>Processed JSON and stored JSON are equal</value>
+  </data>
+  <data name="DebugProcessedStoredDifferent" xml:space="preserve">
+    <value>Processed JSON and stored JSON are different</value>
+  </data>
+  <data name="DebugDatabase" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="DebugDeleteSelected" xml:space="preserve">
+    <value>Delete selected</value>
+  </data>
+  <data name="DebugDeleteAll" xml:space="preserve">
+    <value>Delete all</value>
+  </data>
+  <data name="DebugConfirmDeleteSelected" xml:space="preserve">
+    <value>Are you sure you want to delete the selected TestReports</value>
+  </data>
+  <data name="DebugConfirmDeleteAll" xml:space="preserve">
+    <value>Are you sure you want to delete all TestReports</value>
+  </data>
+  <data name="DebugNoTestReports" xml:space="preserve">
+    <value>No TestReports found in the database</value>
+  </data>
+  <data name="DebugSelectAllRows" xml:space="preserve">
+    <value>Select all rows</value>
+  </data>
+  <data name="DebugSelectTestReport" xml:space="preserve">
+    <value>Select TestReport {0}</value>
+  </data>
+  <data name="DebugId" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="DebugJson" xml:space="preserve">
+    <value>JSON</value>
+  </data>
+  <data name="DebugNoRowsSelected" xml:space="preserve">
+    <value>No rows selected</value>
+  </data>
+  <data name="DebugSelectedRowsDeleted" xml:space="preserve">
+    <value>{0} selected TestReports deleted</value>
+  </data>
+  <data name="DebugAllRowsDeleted" xml:space="preserve">
+    <value>All TestReports deleted{1} {0} rows deleted</value>
+  </data>
+  <data name="DebugConfirmationRequired" xml:space="preserve">
+    <value>Confirmation is required</value>
+  </data>
+  <data name="DebugIdRequired" xml:space="preserve">
+    <value>ID is required</value>
+  </data>
+  <data name="SymbolDot" xml:space="preserve">
+    <value>.</value>
+  </data>
+  <data name="SymbolQuestionmark" xml:space="preserve">
+    <value>?</value>
+  </data>
 </root>
