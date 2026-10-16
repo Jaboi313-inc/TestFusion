@@ -51,7 +51,7 @@ namespace TestFusion.Web.Controllers
 
             if (model == null)
             {
-                TempData["Error"] = _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
+                TempData["Error"] = _localizer["ErrorDiffirentInjectorPartNumber"].Value + _localizer["SymbolDot"];
 
                 return RedirectToAction("Index", "Home");
             }
@@ -71,7 +71,7 @@ namespace TestFusion.Web.Controllers
 
             if (model == null)
             {
-                TempData["Error"] = _localizer["ErrorDiffirentInjectorPartNumber"].Value + ".";
+                TempData["Error"] = _localizer["ErrorDiffirentInjectorPartNumber"].Value + _localizer["SymbolDot"];
 
                 return RedirectToAction("Index", "Home");
             }
