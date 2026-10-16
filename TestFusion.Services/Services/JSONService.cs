@@ -31,15 +31,27 @@ namespace TestFusion.Services.Services
             });
         }
 
-        public TestListItemModel ConvertToTestListModel(TestResultModel testResultModel)
+        public TestReportModel ConvertToTestReportModel(TestResultModel testResultModel)
         {
-            return new TestListItemModel
+            return new TestReportModel
             {
                 Id = testResultModel.Id,
+
+                TimeOffTesting = testResultModel.TimeOffTesting,
+
                 PartNumber = testResultModel.PartNumber,
                 PartBrand = testResultModel.PartBrand,
                 PartType = testResultModel.PartType,
-                DateTime = testResultModel.TimeOffTesting
+
+                CustomerName = testResultModel.CustomerName,
+                CustomerPhone = testResultModel.CustomerPhone,
+                CustomerMail = testResultModel.CustomerMail,
+                CustomerNotes = testResultModel.CustomerNotes,
+
+                TestNotes = testResultModel.TestNotes,
+                InjectorSerialNumber = testResultModel.InjectorSerialNumber?? string.Empty,
+
+                Json = ConvertToJson(testResultModel, prettyJson: false, useUnicodeSymbols: true)
             };
         }
 

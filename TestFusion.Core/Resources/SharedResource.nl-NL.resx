@@ -139,7 +139,7 @@
     <value>Datum, Tijd</value>
   </data>
   <data name="InjectorPartNumber" xml:space="preserve">
-    <value>Onderdeel nummer</value>
+    <value>Nummer</value>
   </data>
   <data name="InjectorType" xml:space="preserve">
     <value>Type</value>
@@ -238,7 +238,7 @@
     <value>Pagina</value>
   </data>
   <data name="ButtonSelectAllSamePartNumber" xml:space="preserve">
-    <value>Selecteer alle met hetzelfde onderdeelnummer</value>
+    <value>Selecteer alle</value>
   </data>
   <data name="Total" xml:space="preserve">
     <value>Totaal</value>
@@ -269,5 +269,59 @@
   </data>
   <data name="FilterDateTo" xml:space="preserve">
     <value>Tot</value>
+  </data>
+  <data name="FilterSectionPart" xml:space="preserve">
+    <value>Onderdeel</value>
+  </data>
+  <data name="FilterSectionCustomer" xml:space="preserve">
+    <value>Klant</value>
+  </data>
+  <data name="FilterSectionTest" xml:space="preserve">
+    <value>Test</value>
+  </data>
+  <data name="FilterSectionDate" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="TestNote" xml:space="preserve">
+    <value>Notitie</value>
+  </data>
+  <data name="ButtonSelectSamePartNumberWithTimeRestraint" xml:space="preserve">
+    <value>Selecteer alle binnen</value>
+  </data>
+  <data name="TimeMinute" xml:space="preserve">
+    <value>minuut</value>
+  </data>
+  <data name="TimeMinutes" xml:space="preserve">
+    <value>minuten</value>
+  </data>
+  <data name="TimeHour" xml:space="preserve">
+    <value>uur</value>
+  </data>
+  <data name="TimeHours" xml:space="preserve">
+    <value>uur</value>
+  </data>
+  <data name="TimeDay" xml:space="preserve">
+    <value>dag</value>
+  </data>
+  <data name="TimeDays" xml:space="preserve">
+    <value>dagen</value>
+  </data>
+  <data name="TimeWeek" xml:space="preserve">
+    <value>week</value>
+  </data>
+  <data name="TimeWeeks" xml:space="preserve">
+    <value>weken</value>
+  </data>
+  <data name="TimeMonth" xml:space="preserve">
+    <value>maand</value>
+  </data>
+  <data name="TimeMonths" xml:space="preserve">
+    <value>maanden</value>
+  </data>
+  <data name="TimeYear" xml:space="preserve">
+    <value>jaar</value>
+  </data>
+  <data name="TimeYears" xml:space="preserve">
+    <value>jaren</value>
   </data>
 </root>

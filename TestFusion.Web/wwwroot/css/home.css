@@ -43,7 +43,7 @@
 
 .list-row {
     display: grid;
-    grid-template-columns: 230px 1fr 1fr 1fr 1fr;
+    grid-template-columns: 300px 1fr 1fr 1fr 1fr;
     column-gap: 25px;
     align-items: center;
     padding: 10px;
@@ -66,39 +66,53 @@
 
 /* Checkbox + select-all button */
 
+/* Selection buttons */
+
 .selection-cell {
     display: grid;
-    grid-template-columns: 25px 1fr;
+    grid-template-columns: auto 1fr;
     align-items: center;
-    height: 100%;
-    column-gap: 10px;
+    gap: 8px;
+    min-width: 0;
 }
 
     .selection-cell input[type="checkbox"] {
-        justify-self: center;
-        align-self: center;
         margin: 0;
+        align-self: center;
     }
 
-.select-all-same {
-    justify-self: center;
-    align-self: center;
+.selection-buttons {
+    display: flex;
     flex-direction: column;
-    gap: 2px;
-    margin: 0;
-    padding: 7px 12px;
-    min-height: 54px;
-    text-align: center;
-    line-height: 1.2;
-    white-space: normal;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
 }
 
+    .selection-buttons .btn {
+        width: 220px;
+        max-width: 100%;
+        box-sizing: border-box;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        margin: 0;
+        padding: 7px 12px;
+        min-height: 54px;
+        text-align: center;
+        line-height: 1.2;
+        white-space: normal;
+    }
+
 .select-all-title {
+    display: block;
     font-size: 0.80rem;
     font-weight: 600;
 }
 
 .select-all-total {
+    display: block;
     font-size: 0.70rem;
     font-weight: 400;
     opacity: 0.90;
@@ -199,12 +213,44 @@
         display: block;
     }
 
-.filter-grid {
+.filter-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group-title {
+    margin: 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #d7d7d7;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.filter-group-fields {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px 30px;
     width: 100%;
     box-sizing: border-box;
+    justify-content: start;
+}
+
+.filter-group-fields-2 {
+    grid-template-columns: repeat(2, minmax(180px, 360px));
+}
+
+.filter-group-fields-3 {
+    grid-template-columns: repeat(3, minmax(180px, 360px));
+}
+
+.filter-group-fields-4 {
+    grid-template-columns: repeat(4, minmax(180px, 360px));
 }
 
 .filter-field {
@@ -233,7 +279,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 16px;
 }
 
 #filter-toggle-indicator {
@@ -242,13 +288,18 @@
 }
 
 @media (max-width: 1100px) {
-    .filter-grid {
+
+    .filter-group-fields-3,
+    .filter-group-fields-4 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 650px) {
-    .filter-grid {
+
+    .filter-group-fields-2,
+    .filter-group-fields-3,
+    .filter-group-fields-4 {
         grid-template-columns: 1fr;
     }
 }

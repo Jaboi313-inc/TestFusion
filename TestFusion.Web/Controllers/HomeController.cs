@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models;
 using TestFusion.Data;
 
 namespace TestFusion.Web.Controllers
@@ -27,6 +28,12 @@ namespace TestFusion.Web.Controllers
             string? partNumber = null,
             string? brand = null,
             string? type = null,
+            string? customerName = null,
+            string? customerPhone = null,
+            string? customerMail = null,
+            string? customerNotes = null,
+            string? testNotes = null,
+            string? injectorSerialNumber = null,
             DateTime? dateFrom = null,
             DateTime? dateTo = null)
         {
@@ -89,22 +96,28 @@ namespace TestFusion.Web.Controllers
                 !string.IsNullOrWhiteSpace(partNumber) ||
                 !string.IsNullOrWhiteSpace(brand) ||
                 !string.IsNullOrWhiteSpace(type) ||
+                !string.IsNullOrWhiteSpace(customerName) ||
+                !string.IsNullOrWhiteSpace(customerPhone) ||
+                !string.IsNullOrWhiteSpace(customerMail) ||
+                !string.IsNullOrWhiteSpace(customerNotes) ||
+                !string.IsNullOrWhiteSpace(testNotes) ||
+                !string.IsNullOrWhiteSpace(injectorSerialNumber) ||
                 dateFrom.HasValue ||
                 dateTo.HasValue;
 
 
             var totalCount =
-                await _db.TestItems
+                await _db.TestReports
                     .CountAsync();
 
 
             var query =
-                _db.TestItems
+                _db.TestReports
                     .AsNoTracking()
                     .AsQueryable();
 
 
-            // Filters
+            // Injector filters
             if (!string.IsNullOrWhiteSpace(
                 partNumber))
             {
@@ -147,6 +160,93 @@ namespace TestFusion.Web.Controllers
             }
 
 
+            if (!string.IsNullOrWhiteSpace(
+                injectorSerialNumber))
+            {
+                var value =
+                    injectorSerialNumber.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.InjectorSerialNumber,
+                            $"%{value}%"));
+            }
+
+
+            // Customer filters
+            if (!string.IsNullOrWhiteSpace(
+                customerName))
+            {
+                var value =
+                    customerName.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.CustomerName,
+                            $"%{value}%"));
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(
+                customerPhone))
+            {
+                var value =
+                    customerPhone.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.CustomerPhone,
+                            $"%{value}%"));
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(
+                customerMail))
+            {
+                var value =
+                    customerMail.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.CustomerMail,
+                            $"%{value}%"));
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(
+                customerNotes))
+            {
+                var value =
+                    customerNotes.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.CustomerNotes,
+                            $"%{value}%"));
+            }
+
+
+            // Test filters
+            if (!string.IsNullOrWhiteSpace(
+                testNotes))
+            {
+                var value =
+                    testNotes.Trim();
+
+                query =
+                    query.Where(x =>
+                        EF.Functions.ILike(
+                            x.TestNotes,
+                            $"%{value}%"));
+            }
+
+
+            // Date filters
             if (dateFrom.HasValue)
             {
                 var fromUtc =
@@ -155,7 +255,7 @@ namespace TestFusion.Web.Controllers
 
                 query =
                     query.Where(x =>
-                        x.DateTime >= fromUtc);
+                        x.TimeOffTesting >= fromUtc);
             }
 
 
@@ -167,16 +267,16 @@ namespace TestFusion.Web.Controllers
 
                 query =
                     query.Where(x =>
-                        x.DateTime < toUtcExclusive);
+                        x.TimeOffTesting < toUtcExclusive);
             }
 
 
             var orderedQuery =
                 query.OrderByDescending(
-                    x => x.DateTime);
+                    x => x.TimeOffTesting);
 
 
-            List<TestFusion.Core.Models.TestListItemModel> items;
+            List<TestReportModel> items;
 
 
             if (hasActiveFilters)

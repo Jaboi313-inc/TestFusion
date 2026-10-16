@@ -34,12 +34,13 @@ public class SyncService : ISyncService
 
             var allIds = await playwright.GetAllIDs();
 
-            var existingIds = await db.TestItems
+            var existingIds = await db.TestReports
                 .Select(x => x.Id)
                 .ToListAsync(ct);
 
             var newIds = allIds
-                .Where(id => !existingIds.Contains(id));
+                .Where(id => !existingIds.Contains(id))
+                .ToList();
 
             var limitedIds = newIds
                 // Limit to # items to fetch, to avoid overloading the system
@@ -50,29 +51,27 @@ public class SyncService : ISyncService
             _logger.LogInformation("STATUS: New items to fetch: {count}", newIds.ToList().Count);
             _logger.LogInformation("STATUS: New items actually going to be fetched: {count}", limitedIds.Count);
 
+            if (limitedIds.Count == 0)
+            {
+                _logger.LogInformation("SUCCESS: sync done, no new items found");
+                return;
+            }
+
             var jsonResults = await Task.WhenAll(
                 limitedIds.Select(id => playwright.GetDataForId(id))
             );
 
-            var listItems = new List<TestListItemModel>();
-            var storedJsons = new List<StoredJsonModel>();
+            var testReports = new List<TestReportModel>();
 
             foreach (var json in jsonResults)
             {
-                //_logger.LogInformation("DEBUG: Json: {json}", json);
-                var testResultModel = _jsonService.ConvertToTestResultModel(json);
-
-                listItems.Add(_jsonService.ConvertToTestListModel(testResultModel));
-
-                storedJsons.Add(new StoredJsonModel
-                {
-                    Id = testResultModel.Id,
-                    Json = _jsonService.ConvertToJson(testResultModel)
-                });
+                var testResultModel =  _jsonService.ConvertToTestResultModel(json);
+                var testReport = _jsonService.ConvertToTestReportModel(testResultModel);
+                testReports.Add(testReport);
             }
 
-            db.TestItems.AddRange(listItems);
-            db.StoredJsons.AddRange(storedJsons);
+
+            db.TestReports.AddRange(testReports);
 
             await db.SaveChangesAsync(ct);
 
