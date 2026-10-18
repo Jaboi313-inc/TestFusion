@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
+using Serilog;
+using Serilog.Formatting.Compact;
 using System.Globalization;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
@@ -20,6 +22,31 @@ builder.Logging.AddSimpleConsole(options =>
     options.UseUtcTimestamp = false;
     options.ColorBehavior = LoggerColorBehavior.Enabled;
 });
+
+var logDirectory = Path.GetFullPath(
+    Path.Combine(
+        builder.Environment.ContentRootPath,
+        "..",
+        "logs"));
+
+Directory.CreateDirectory(logDirectory);
+
+var fileLogger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .WriteTo.File(
+        new CompactJsonFormatter(),
+        Path.Combine(
+            logDirectory,
+            "web-.jsonl"),
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 30,
+        flushToDiskInterval: TimeSpan.FromSeconds(1))
+    .CreateLogger();
+
+builder.Logging.AddSerilog(
+    fileLogger,
+    dispose: true);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(
