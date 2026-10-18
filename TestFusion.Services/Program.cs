@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Console;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
 using TestFusion.Services;
@@ -6,6 +7,16 @@ using TestFusion.Services.Models;
 using TestFusion.Services.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Logging.ClearProviders();
+
+builder.Logging.AddSimpleConsole(options =>
+{
+    options.SingleLine = true;
+    options.TimestampFormat = "dd-MM-yyyy HH:mm:ss ";
+    options.UseUtcTimestamp = false;
+    options.ColorBehavior = LoggerColorBehavior.Enabled;
+});
 
 builder.Services.Configure<SiteSettings>(
     builder.Configuration.GetSection("SiteSettings"));

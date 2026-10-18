@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
+﻿using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models;
 using TestFusion.Data;
@@ -23,63 +23,105 @@ public class SyncService : ISyncService
 
     public async Task RunSync(CancellationToken ct = default)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         try
         {
+            _logger.LogInformation("Sync started");
+
             using var scope = _scopeFactory.CreateScope();
 
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var playwright = scope.ServiceProvider.GetRequiredService<IPlaywright>();
 
-            _logger.LogInformation("STATUS: sync started");
-
             var allIds = await playwright.GetAllIDs();
+
+            _logger.LogInformation(
+                "Found {Count} reports at source",
+                allIds.Count);
 
             var existingIds = await db.TestReports
                 .Select(x => x.Id)
                 .ToListAsync(ct);
 
+            var existingIdSet = existingIds.ToHashSet();
+
             var newIds = allIds
-                .Where(id => !existingIds.Contains(id))
+                .Where(id => !existingIdSet.Contains(id))
                 .ToList();
 
             var limitedIds = newIds
-                // Limit to # items to fetch, to avoid overloading the system
-                // Recommend 5-10
+                // Limit the amount of reports fetched per sync
                 .Take(5)
                 .ToList();
 
-            _logger.LogInformation("STATUS: New items to fetch: {count}", newIds.ToList().Count);
-            _logger.LogInformation("STATUS: New items actually going to be fetched: {count}", limitedIds.Count);
+            _logger.LogInformation(
+                "Found {NewCount} new reports, fetching {FetchCount}",
+                newIds.Count,
+                limitedIds.Count);
 
             if (limitedIds.Count == 0)
             {
-                _logger.LogInformation("SUCCESS: sync done, no new items found");
+                stopwatch.Stop();
+
+                _logger.LogInformation(
+                    "Sync completed, no new reports found in {ElapsedMilliseconds} ms",
+                    stopwatch.ElapsedMilliseconds);
+
                 return;
             }
 
             var jsonResults = await Task.WhenAll(
-                limitedIds.Select(id => playwright.GetDataForId(id))
-            );
+                limitedIds.Select(id => playwright.GetDataForId(id)));
 
             var testReports = new List<TestReportModel>();
 
             foreach (var json in jsonResults)
             {
-                var testResultModel =  _jsonService.ConvertToTestResultModel(json);
-                var testReport = _jsonService.ConvertToTestReportModel(testResultModel);
-                testReports.Add(testReport);
-            }
+                var testResultModel =
+                    _jsonService.ConvertToTestResultModel(json);
 
+                var testReport =
+                    _jsonService.ConvertToTestReportModel(testResultModel);
+
+                testReports.Add(testReport);
+
+                _logger.LogInformation(
+                    "Processed report {ReportId}",
+                    testReport.Id);
+            }
 
             db.TestReports.AddRange(testReports);
 
             await db.SaveChangesAsync(ct);
 
-            _logger.LogInformation("SUCCESS: sync done");
+            stopwatch.Stop();
+
+            _logger.LogInformation(
+                "Sync completed, {Count} reports stored in {ElapsedMilliseconds} ms",
+                testReports.Count,
+                stopwatch.ElapsedMilliseconds);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            stopwatch.Stop();
+
+            _logger.LogWarning(
+                "Sync cancelled after {ElapsedMilliseconds} ms",
+                stopwatch.ElapsedMilliseconds);
+
+            throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ERROR: sync failed");
+            stopwatch.Stop();
+
+            _logger.LogError(
+                ex,
+                "Sync failed after {ElapsedMilliseconds} ms",
+                stopwatch.ElapsedMilliseconds);
+
+            throw;
         }
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Console;
 using System.Globalization;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
@@ -9,6 +10,16 @@ using TestFusion.Services.Services;
 using TestFusion.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+
+builder.Logging.AddSimpleConsole(options =>
+{
+    options.SingleLine = true;
+    options.TimestampFormat = "dd-MM-yyyy HH:mm:ss ";
+    options.UseUtcTimestamp = false;
+    options.ColorBehavior = LoggerColorBehavior.Enabled;
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException(

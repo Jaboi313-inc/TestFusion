@@ -18,35 +18,69 @@ public class Worker : BackgroundService
         _scopeFactory = scopeFactory;
     }
 
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var workerLoop = RunWorkerLoop(stoppingToken);
-        var dataLoop = RunDataFetchingLoop(stoppingToken);
+        _logger.LogInformation("Worker started");
 
-        await Task.WhenAll(workerLoop, dataLoop);
+        try
+        {
+            var workerLoop = RunWorkerLoop(stoppingToken);
+            var dataLoop = RunDataFetchingLoop(stoppingToken);
+
+            await Task.WhenAll(workerLoop, dataLoop);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Normal shutdown
+        }
+        finally
+        {
+            _logger.LogInformation("Worker stopped");
+        }
     }
+
 
     private async Task RunWorkerLoop(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+            _logger.LogDebug("Worker heartbeat");
 
-            await Task.Delay(_intervals.WorkerHeartbeatInterval, stoppingToken);
+            await Task.Delay(
+                _intervals.WorkerHeartbeatInterval,
+                stoppingToken);
         }
     }
+
 
     private async Task RunDataFetchingLoop(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var scope = _scopeFactory.CreateScope();
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
 
-            var syncService = scope.ServiceProvider.GetRequiredService<ISyncService>();
+                var syncService =
+                    scope.ServiceProvider.GetRequiredService<ISyncService>();
 
-            await syncService.RunSync(stoppingToken);
+                await syncService.RunSync(stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception)
+            {
+                _logger.LogWarning(
+                    "Sync cycle failed. Worker will retry after {Interval}",
+                    _intervals.DatafetchingInterval);
+            }
 
-            await Task.Delay(_intervals.DatafetchingInterval, stoppingToken);
+            await Task.Delay(
+                _intervals.DatafetchingInterval,
+                stoppingToken);
         }
     }
 }
