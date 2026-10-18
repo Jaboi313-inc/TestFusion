@@ -432,4 +432,52 @@
   <data name="SymbolQuestionmark" xml:space="preserve">
     <value>?</value>
   </data>
+  <data name="Logs" xml:space="preserve">
+    <value>Logs</value>
+  </data>
+  <data name="DebugLogsDescription" xml:space="preserve">
+    <value>Shows the latest 500 log entries from the web application and worker</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Level" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="DebugLogSearchPlaceholder" xml:space="preserve">
+    <value>Search logs</value>
+  </data>
+  <data name="Web" xml:space="preserve">
+    <value>Web</value>
+  </data>
+  <data name="Worker" xml:space="preserve">
+    <value>Worker</value>
+  </data>
+  <data name="DebugLogInformation" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="DebugLogWarning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="DebugLogError" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="DebugLogDebug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="DebugLogDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="DebugLogException" xml:space="preserve">
+    <value>Exception and stack trace</value>
+  </data>
+  <data name="DebugLogProperties" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="DebugLogNoEntries" xml:space="preserve">
+    <value>No log entries found</value>
+  </data>
 </root>

@@ -5,6 +5,7 @@ namespace TestFusion.Web.Models;
 public class DebugViewModel
 {
     public List<TestReportModel> TestReports { get; set; } = [];
+    public List<DebugLogEntry> Logs { get; set; } = [];
 
     public string JsonId { get; set; } = string.Empty;
 

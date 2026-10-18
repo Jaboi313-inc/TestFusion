@@ -432,4 +432,52 @@
   <data name="SymbolQuestionmark" xml:space="preserve">
     <value>?</value>
   </data>
+  <data name="Logs" xml:space="preserve">
+    <value>Logs</value>
+  </data>
+  <data name="DebugLogsDescription" xml:space="preserve">
+    <value>Toont de laatste 500 logregels van de webapplicatie en worker</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Bron</value>
+  </data>
+  <data name="Level" xml:space="preserve">
+    <value>Niveau</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Zoeken</value>
+  </data>
+  <data name="DebugLogSearchPlaceholder" xml:space="preserve">
+    <value>Zoek in logs</value>
+  </data>
+  <data name="Web" xml:space="preserve">
+    <value>Web</value>
+  </data>
+  <data name="Worker" xml:space="preserve">
+    <value>Worker</value>
+  </data>
+  <data name="DebugLogInformation" xml:space="preserve">
+    <value>Informatie</value>
+  </data>
+  <data name="DebugLogWarning" xml:space="preserve">
+    <value>Waarschuwing</value>
+  </data>
+  <data name="DebugLogError" xml:space="preserve">
+    <value>Fout</value>
+  </data>
+  <data name="DebugLogDebug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="DebugLogDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="DebugLogException" xml:space="preserve">
+    <value>Exception en stacktrace</value>
+  </data>
+  <data name="DebugLogProperties" xml:space="preserve">
+    <value>Eigenschappen</value>
+  </data>
+  <data name="DebugLogNoEntries" xml:space="preserve">
+    <value>Geen logregels gevonden</value>
+  </data>
 </root>
