@@ -60,11 +60,9 @@ public class Worker : BackgroundService
         {
             try
             {
-                using var scope = _scopeFactory.CreateScope();
+                await using var scope = _scopeFactory.CreateAsyncScope();
 
-                var syncService =
-                    scope.ServiceProvider.GetRequiredService<ISyncService>();
-
+                var syncService = scope.ServiceProvider.GetRequiredService<ISyncService>();
                 await syncService.RunSync(stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -78,9 +76,7 @@ public class Worker : BackgroundService
                     _intervals.DatafetchingInterval);
             }
 
-            await Task.Delay(
-                _intervals.DatafetchingInterval,
-                stoppingToken);
+            await Task.Delay(_intervals.DatafetchingInterval, stoppingToken);
         }
     }
 }
