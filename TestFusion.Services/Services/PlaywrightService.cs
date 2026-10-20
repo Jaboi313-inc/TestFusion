@@ -1,19 +1,15 @@
-﻿using Microsoft.Extensions.Options;
-using Microsoft.Playwright;
-using System.Collections;
+﻿using System.Diagnostics;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
+using Microsoft.Playwright;
 using TestFusion.Core.Interfaces;
-using TestFusion.Core.Models;
-using TestFusion.Core.Models.WebModels;
 using TestFusion.Services.Models;
-using TestFusion.Services.Services;
 
 public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 {
     private readonly ILogger<PlaywrightService> _logger;
     private readonly SiteSettings _siteSettings;
     private readonly AuthSettings _authSettings;
-    private readonly JSONService _jsonService;
 
     private Microsoft.Playwright.IPlaywright? _playwright;
     private IBrowserContext? _context;
@@ -25,18 +21,18 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     public PlaywrightService(
         ILogger<PlaywrightService> logger,
         IOptions<SiteSettings> siteSettings,
-        IOptions<AuthSettings> authSettings,
-        JSONService jsonService)
+        IOptions<AuthSettings> authSettings)
     {
         _logger = logger;
         _siteSettings = siteSettings.Value;
         _authSettings = authSettings.Value;
-        _jsonService = jsonService;
     }
 
     public async Task<List<string>> GetAllIDs()
     {
-        _logger.LogInformation("STATUS: Retrieving all IDs");
+        var stopwatch = Stopwatch.StartNew();
+
+        _logger.LogInformation("Retrieving report IDs");
 
         var page = await CreatePage();
 
@@ -46,50 +42,39 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
             await EnsureLoggedIn(page);
 
             var lengthSelect = page.Locator(
-                "select[name='client_machine_report_length']"
-            );
+                "select[name='client_machine_report_length']");
 
             await lengthSelect.WaitForAsync(new()
             {
                 State = WaitForSelectorState.Visible
             });
 
-            _logger.LogInformation(
-                "STATUS: Setting report list length to All"
-            );
-
             var responseTask = page.WaitForResponseAsync(r =>
                 r.Url.Contains("get-machines-report-list") &&
                 r.Url.Contains("length=-1") &&
                 r.Request.Method == "GET" &&
-                r.Status == 200
-            );
+                r.Status == 200);
 
             await lengthSelect.SelectOptionAsync("-1");
 
-            var selectedValue =
-                await lengthSelect.InputValueAsync();
+            var selectedValue = await lengthSelect.InputValueAsync();
 
             if (selectedValue != "-1")
             {
                 _logger.LogWarning(
-                    "WARNING: Failed to set report list length to All, actual value is {Value}",
-                    selectedValue
-                );
+                    "Report list length could not be set to All. Actual value: {Value}",
+                    selectedValue);
             }
             else
             {
-                _logger.LogInformation(
-                    "SUCCESS: Report list length set to All"
-                );
+                _logger.LogDebug("Report list length set to All");
             }
 
             var response = await responseTask;
 
-            _logger.LogInformation(
-                "INFO: Request URL: {Url}",
-                response.Request.Url
-            );
+            _logger.LogDebug(
+                "Report list request completed: {Url}",
+                response.Request.Url);
 
             var json = await response.TextAsync();
 
@@ -107,11 +92,8 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                     ? recordsFilteredElement.GetInt32()
                     : 0;
 
-            var data =
-                root.GetProperty("data");
-
-            var responseCount =
-                data.GetArrayLength();
+            var data = root.GetProperty("data");
+            var responseCount = data.GetArrayLength();
 
             var ids = new List<string>();
 
@@ -122,8 +104,7 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                     continue;
                 }
 
-                var id =
-                    idElement.GetString();
+                var id = idElement.GetString();
 
                 if (!string.IsNullOrWhiteSpace(id))
                 {
@@ -131,34 +112,35 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                 }
             }
 
+            stopwatch.Stop();
+
             if (responseCount != ids.Count)
             {
                 _logger.LogWarning(
-                    "WARNING: Total records: {TotalCount}, Filtered: {FilteredCount}, Returned: {ReturnedCount}, Valid IDs: {ValidIdCount}",
-                    recordsTotal,
-                    recordsFiltered,
+                    "Retrieved {ValidIdCount} valid IDs from {ReturnedCount} returned records. Total: {TotalCount}, filtered: {FilteredCount}",
+                    ids.Count,
                     responseCount,
-                    ids.Count
-                );
+                    recordsTotal,
+                    recordsFiltered);
             }
             else
             {
                 _logger.LogInformation(
-                    "SUCCESS: Total records: {TotalCount}, Filtered: {FilteredCount}, Retrieved: {RetrievedCount} valid IDs",
-                    recordsTotal,
-                    recordsFiltered,
-                    ids.Count
-                );
+                    "Retrieved {Count} report IDs in {ElapsedMilliseconds} ms",
+                    ids.Count,
+                    stopwatch.ElapsedMilliseconds);
             }
 
             return ids;
         }
         catch (Exception ex)
         {
+            stopwatch.Stop();
+
             _logger.LogError(
                 ex,
-                "ERROR: Retrieving IDs"
-            );
+                "Failed to retrieve report IDs after {ElapsedMilliseconds} ms",
+                stopwatch.ElapsedMilliseconds);
 
             throw;
         }
@@ -170,7 +152,11 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
     public async Task<string> GetDataForId(string id)
     {
-        _logger.LogInformation("STATUS: Retrieving data for ID: {Id}", id);
+        var stopwatch = Stopwatch.StartNew();
+
+        _logger.LogInformation(
+            "Retrieving report {ReportId}",
+            id);
 
         var page = await CreatePage();
 
@@ -187,18 +173,15 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                     "ReportUrl is not configured.");
             }
 
-            _logger.LogInformation(
-                "STATUS: Navigating to report: {Url}",
+            _logger.LogDebug(
+                "Navigating to report {ReportId}: {Url}",
+                id,
                 url);
 
             await page.GotoAsync(url, new()
             {
                 WaitUntil = WaitUntilState.DOMContentLoaded
             });
-
-            _logger.LogInformation(
-                "INFO: Current URL: {Url}",
-                page.Url);
 
             await page.WaitForFunctionAsync(
                 """
@@ -216,28 +199,37 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
             var json = await page.EvaluateAsync<string>(
                 "() => JSON.stringify(window.appdatam)");
 
+            stopwatch.Stop();
+
             _logger.LogInformation(
-                "SUCCESS: Retrieved data for ID: {Id}",
-                id);
+                "Retrieved report {ReportId} in {ElapsedMilliseconds} ms",
+                id,
+                stopwatch.ElapsedMilliseconds);
 
             return json;
         }
         catch (TimeoutException ex)
         {
+            stopwatch.Stop();
+
             _logger.LogError(
                 ex,
-                "ERROR: Timed out retrieving data for ID {Id}. Current URL: {Url}",
+                "Timed out retrieving report {ReportId} after {ElapsedMilliseconds} ms. Current URL: {Url}",
                 id,
+                stopwatch.ElapsedMilliseconds,
                 page.Url);
 
             throw;
         }
         catch (Exception ex)
         {
+            stopwatch.Stop();
+
             _logger.LogError(
                 ex,
-                "ERROR: Retrieving data for ID: {Id}",
-                id);
+                "Failed to retrieve report {ReportId} after {ElapsedMilliseconds} ms",
+                id,
+                stopwatch.ElapsedMilliseconds);
 
             throw;
         }
@@ -250,16 +242,22 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     private async Task InitializeBrowser()
     {
         if (_context != null)
+        {
             return;
+        }
 
         await _browserLock.WaitAsync();
 
         try
         {
             if (_context != null)
+            {
                 return;
+            }
 
-            _logger.LogInformation("STATUS: Starting browser");
+            var stopwatch = Stopwatch.StartNew();
+
+            _logger.LogInformation("Starting browser");
 
             _playwright = await Playwright.CreateAsync();
 
@@ -273,7 +271,6 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                     new BrowserTypeLaunchPersistentContextOptions
                     {
                         Headless = true,
-
                         Channel = "msedge",
 
                         ViewportSize = new()
@@ -283,7 +280,6 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                         },
 
                         Locale = "nl-NL",
-
                         TimezoneId = "Europe/Amsterdam",
 
                         UserAgent =
@@ -303,7 +299,19 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
                 });
             """);
 
-            _logger.LogInformation("SUCCESS: Browser started");
+            stopwatch.Stop();
+
+            _logger.LogInformation(
+                "Browser started in {ElapsedMilliseconds} ms",
+                stopwatch.ElapsedMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to start browser");
+
+            throw;
         }
         finally
         {
@@ -315,12 +323,18 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     {
         await InitializeBrowser();
 
-        return await _context!.NewPageAsync();
+        var page = await _context!.NewPageAsync();
+
+        _logger.LogDebug("Created browser page");
+
+        return page;
     }
 
     private async Task GoToSite(IPage page)
     {
-        _logger.LogInformation("STATUS: Navigating to site");
+        _logger.LogDebug(
+            "Navigating to source site {Url}",
+            _siteSettings.BaseUrl);
 
         await page.GotoAsync(_siteSettings.BaseUrl, new()
         {
@@ -329,7 +343,7 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
         await RandomDelay();
 
-        _logger.LogInformation("SUCCESS: Navigated to site");
+        _logger.LogDebug("Source site loaded");
     }
 
     private async Task EnsureLoggedIn(IPage page)
@@ -340,32 +354,38 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
             if (await loginButton.IsVisibleAsync())
             {
-                _logger.LogInformation("STATUS: Login required");
+                _logger.LogInformation("Login required");
 
                 await Login(page);
 
                 return;
             }
 
-            _logger.LogInformation("SUCCESS: Existing session detected");
+            _logger.LogDebug("Existing login session detected");
         }
         catch (Exception ex)
         {
             _logger.LogWarning(
                 ex,
-                "WARNING: Could not determine login state");
+                "Could not determine login state");
         }
     }
 
     private async Task Login(IPage page)
     {
-        _logger.LogInformation("STATUS: Logging in");
+        var stopwatch = Stopwatch.StartNew();
 
-        await TypeHumanly(page.Locator("#email"), _authSettings.Email);
+        _logger.LogInformation("Logging in");
+
+        await TypeHumanly(
+            page.Locator("#email"),
+            _authSettings.Email);
 
         await RandomDelay();
 
-        await TypeHumanly(page.Locator("#password"), _authSettings.Password);
+        await TypeHumanly(
+            page.Locator("#password"),
+            _authSettings.Password);
 
         await RandomDelay();
 
@@ -375,14 +395,21 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
         await page.Locator("#btn-login").ClickAsync();
 
-        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+        await page.WaitForLoadStateAsync(
+            LoadState.DOMContentLoaded);
 
         await RandomDelay();
 
-        _logger.LogInformation("SUCCESS: Logged in");
+        stopwatch.Stop();
+
+        _logger.LogInformation(
+            "Login completed in {ElapsedMilliseconds} ms",
+            stopwatch.ElapsedMilliseconds);
     }
 
-    private async Task TypeHumanly(ILocator locator, string text)
+    private async Task TypeHumanly(
+        ILocator locator,
+        string text)
     {
         await locator.ClickAsync();
 
@@ -392,14 +419,17 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
         });
     }
 
-    private async Task RandomDelay(int min = 300, int max = 1200)
+    private async Task RandomDelay(
+        int min = 300,
+        int max = 1200)
     {
-        await Task.Delay(Random.Shared.Next(min, max));
+        await Task.Delay(
+            Random.Shared.Next(min, max));
     }
 
     public async ValueTask DisposeAsync()
     {
-        _logger.LogInformation("STATUS: Disposing browser");
+        _logger.LogInformation("Disposing browser");
 
         try
         {
@@ -409,14 +439,15 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
             }
 
             _playwright?.Dispose();
-
             _browserLock.Dispose();
 
-            _logger.LogInformation("SUCCESS: Browser disposed");
+            _logger.LogInformation("Browser disposed");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ERROR: Disposing browser");
+            _logger.LogError(
+                ex,
+                "Failed to dispose browser");
         }
     }
 }
