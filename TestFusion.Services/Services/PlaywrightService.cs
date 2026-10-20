@@ -242,18 +242,14 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     private async Task InitializeBrowser()
     {
         if (_context != null)
-        {
             return;
-        }
 
         await _browserLock.WaitAsync();
 
         try
         {
             if (_context != null)
-            {
                 return;
-            }
 
             var stopwatch = Stopwatch.StartNew();
 
@@ -261,55 +257,40 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
             _playwright = await Playwright.CreateAsync();
 
-            var sessionPath = Path.Combine(
-                Environment.CurrentDirectory,
-                SessionFolder);
+            var sessionPath = Path.Combine(Environment.CurrentDirectory, SessionFolder);
 
-            _context = await _playwright.Chromium
-                .LaunchPersistentContextAsync(
-                    sessionPath,
-                    new BrowserTypeLaunchPersistentContextOptions
-                    {
-                        Headless = true,
-                        Channel = "msedge",
-
-                        ViewportSize = new()
-                        {
-                            Width = 1920,
-                            Height = 1080
-                        },
-
-                        Locale = "nl-NL",
-                        TimezoneId = "Europe/Amsterdam",
-
-                        UserAgent =
-                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                            "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                            "Chrome/135.0.0.0 Safari/537.36",
-
-                        Args =
-                        [
-                            "--disable-blink-features=AutomationControlled"
-                        ]
-                    });
-
-            await _context.AddInitScriptAsync("""
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined
+            _context = await _playwright.Chromium.LaunchPersistentContextAsync(
+                sessionPath,
+                new BrowserTypeLaunchPersistentContextOptions
+                {
+                    Headless = true,
+                    Channel = "msedge",
+                    ViewportSize = new ViewportSize { Width = 1920, Height = 1080 },
+                    Locale = "nl-NL",
+                    TimezoneId = "Europe/Amsterdam",
+                    UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+                    Args = ["--disable-blink-features=AutomationControlled"]
                 });
-            """);
+
+            await _context.AddInitScriptAsync("""Object.defineProperty(navigator, 'webdriver', {get: () => undefined});""");
 
             stopwatch.Stop();
-
-            _logger.LogInformation(
-                "Browser started in {ElapsedMilliseconds} ms",
-                stopwatch.ElapsedMilliseconds);
+            _logger.LogInformation("Browser started in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Failed to start browser");
+            _logger.LogError(ex, "Failed to start browser");
+
+            if (_context != null)
+            {
+                try { await _context.CloseAsync(); }
+                catch { }
+
+                _context = null;
+            }
+
+            _playwright?.Dispose();
+            _playwright = null;
 
             throw;
         }
@@ -431,23 +412,46 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     {
         _logger.LogInformation("Disposing browser");
 
-        try
+        if (_context != null)
         {
-            if (_context != null)
+            try
             {
+                foreach (var page in _context.Pages.ToList())
+                {
+                    if (!page.IsClosed)
+                        await page.CloseAsync();
+                }
+
                 await _context.CloseAsync();
             }
-
-            _playwright?.Dispose();
-            _browserLock.Dispose();
-
-            _logger.LogInformation("Browser disposed");
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to close browser context");
+            }
+            finally
+            {
+                _context = null;
+            }
         }
-        catch (Exception ex)
+
+        if (_playwright != null)
         {
-            _logger.LogError(
-                ex,
-                "Failed to dispose browser");
+            try
+            {
+                _playwright.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to dispose Playwright");
+            }
+            finally
+            {
+                _playwright = null;
+            }
         }
+
+        _browserLock.Dispose();
+
+        _logger.LogInformation("Browser disposed");
     }
 }
