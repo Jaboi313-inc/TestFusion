@@ -13,6 +13,29 @@
 }
 
 
+/* Customer segments */
+
+.customer-segment-start {
+    position: relative;
+}
+
+    .customer-segment-start::before {
+        content: "";
+        position: absolute;
+        left: -1px;
+        top: -2px;
+        bottom: -2px;
+        width: 3px;
+        background-color: #111;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+.result-5.customer-segment-start::before {
+    left: -1.1px;
+}
+
+
 /* Skipped */
 
 .skipped-cell {
@@ -64,11 +87,13 @@ table.table {
 
     table.table td,
     table.table th {
+        position: relative;
         vertical-align: top;
         min-width: 150px;
         width: 10%;
         min-height: 50px;
         height: 5%;
+        overflow: visible;
     }
 
 /* colors */
@@ -78,16 +103,16 @@ table.table {
 .result-4,
 .result-7,
 .result-8 {
-    background-color: #FF331C; /* Red */
-    color: #FFFFFF; /* White text */
+    background-color: #FF331C;
+    color: #FFFFFF;
 }
 
 .result-5 {
-    background-color: #0000FF; /* Blue */
-    color: #FFFFFF; /* White text */
+    background-color: #0000FF;
+    color: #FFFFFF;
 }
 
 .result-6 {
-    background-color: #00AB4F; /* Green */
-    color: #FFFFFF; /* White text */
+    background-color: #00AB4F;
+    color: #FFFFFF;
 }

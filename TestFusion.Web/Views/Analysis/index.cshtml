@@ -13,11 +13,74 @@
     var selectedLayoutMode =
         Context.Request.Query["layoutMode"].FirstOrDefault()
         ?? "Compact";
+
+    var customerGroups = new List<(int StartIndex, int Count)>();
+
+    if (Model.Injectors.Count > 0)
+    {
+        var groupStartIndex = 0;
+
+        var currentCustomerKey = GetCustomerKey(
+            Model.Injectors[0].Data.CustomerName,
+            Model.Injectors[0].Data.CustomerPhone,
+            Model.Injectors[0].Data.CustomerMail,
+            Model.Injectors[0].Data.CustomerNotes);
+
+        for (var i = 1; i < Model.Injectors.Count; i++)
+        {
+            var injector = Model.Injectors[i];
+
+            var customerKey = GetCustomerKey(
+                injector.Data.CustomerName,
+                injector.Data.CustomerPhone,
+                injector.Data.CustomerMail,
+                injector.Data.CustomerNotes);
+
+            if (customerKey == currentCustomerKey)
+                continue;
+
+            customerGroups.Add((groupStartIndex, i - groupStartIndex));
+
+            groupStartIndex = i;
+            currentCustomerKey = customerKey;
+        }
+
+        customerGroups.Add((groupStartIndex, Model.Injectors.Count - groupStartIndex));
+    }
+
+    var customerSegmentStartIndexes = customerGroups
+        .Skip(1)
+        .Select(group => group.StartIndex)
+        .ToHashSet();
 }
 
 @functions {
     public string NormalizeTestName(string name)
         => name.Replace(" : SKIPPED", "").Trim();
+
+    public string GetCustomerKey(string? name, string? phone, string? mail, string? notes)
+    {
+        return string.Join(
+            "\u001F",
+            NormalizeCustomerValue(name),
+            NormalizeCustomerValue(phone),
+            NormalizeCustomerValue(mail),
+            NormalizeCustomerValue(notes));
+    }
+
+    private string NormalizeCustomerValue(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        var withoutHtml = System.Text.RegularExpressions.Regex.Replace(value, "<.*?>", " ");
+        var decoded = System.Net.WebUtility.HtmlDecode(withoutHtml);
+
+        return System.Text.RegularExpressions.Regex
+            .Replace(decoded, @"\s+", " ")
+            .Trim()
+            .ToUpperInvariant();
+    }
 }
 
 <link rel="stylesheet" href="~/css/analysis.css" />
@@ -135,55 +198,64 @@
             </th>
 
 
-            <th class="info-column">
+            @for (var groupIndex = 0; groupIndex < customerGroups.Count; groupIndex++)
+            {
+                var customerGroup = customerGroups[groupIndex];
+                var customer = Model.Injectors[customerGroup.StartIndex].Data;
 
-                <strong>
-                    @Localizer["Customer"]:
-                </strong>
+                var segmentClass =
+                    groupIndex > 0
+                        ? "customer-segment-start"
+                        : "";
 
-                <br />
+                <th class="info-column @segmentClass"
+                    colspan="@customerGroup.Count">
 
-                <small>
-                    @Localizer["CustomerName"]:
-                    @Model.Injectors.FirstOrDefault()?.Data.CustomerName
-                </small>
+                    <strong>
+                        @Localizer["Customer"]:
+                    </strong>
 
-                <br />
+                    <br />
 
-                @if (!string.IsNullOrWhiteSpace(
-                    Model.Injectors.FirstOrDefault()?.Data.CustomerPhone))
-                {
                     <small>
-                        @Localizer["CustomerPhoneNumber"]:
-                        @Model.Injectors.FirstOrDefault()?.Data.CustomerPhone
+                        @Localizer["CustomerName"]:
+                        @customer.CustomerName
                     </small>
-                }
 
-                <br />
+                    <br />
 
-                @if (!string.IsNullOrWhiteSpace(
-                    Model.Injectors.FirstOrDefault()?.Data.CustomerMail))
-                {
-                    <small>
-                        @Localizer["CustomerMail"]:
-                        @Model.Injectors.FirstOrDefault()?.Data.CustomerMail
-                    </small>
-                }
+                    @if (!string.IsNullOrWhiteSpace(customer.CustomerPhone))
+                    {
+                        <small>
+                            @Localizer["CustomerPhoneNumber"]:
+                            @customer.CustomerPhone
+                        </small>
+                    }
 
-                <br />
+                    <br />
 
-                @if (!string.IsNullOrWhiteSpace(
-                    Model.Injectors.FirstOrDefault()?.Data.CustomerNotes))
-                {
-                    <small>
-                        @Localizer["CustomerNote"]:
-                        @Model.Injectors.FirstOrDefault()?.Data.CustomerNotes
-                    </small>
-                }
+                    @if (!string.IsNullOrWhiteSpace(customer.CustomerMail))
+                    {
+                        <small>
+                            @Localizer["CustomerMail"]:
+                            @customer.CustomerMail
+                        </small>
+                    }
 
-                <br />
+                    <br />
 
-            </th>
+                    @if (!string.IsNullOrWhiteSpace(customer.CustomerNotes))
+                    {
+                        <small>
+                            @Localizer["CustomerNote"]:
+                            @customer.CustomerNotes
+                        </small>
+                    }
+
+                    <br />
+
+                </th>
+            }
 
         </tr>
 
@@ -214,20 +286,28 @@
             </th>
 
 
-            @foreach (var injector in Model.Injectors)
+            @for (var injectorIndex = 0; injectorIndex < Model.Injectors.Count; injectorIndex++)
             {
-                <th class="injector-info">
+                var injector = Model.Injectors[injectorIndex];
+
+                var segmentClass =
+                    customerSegmentStartIndexes.Contains(injectorIndex)
+                        ? "customer-segment-start"
+                        : "";
+
+                <th class="injector-info @segmentClass">
 
                     <br />
 
                     <small>
-                        @TimeZoneService.FormatForUser(injector.Data.TimeOffTesting, "dd-MM-yyyy HH:mm")
+                        @TimeZoneService.FormatForUser(
+                            injector.Data.TimeOffTesting,
+                            "dd-MM-yyyy HH:mm")
                     </small>
 
                     <br />
 
-                    @if (!string.IsNullOrWhiteSpace(
-                        injector.Data.InjectorSerialNumber))
+                    @if (!string.IsNullOrWhiteSpace(injector.Data.InjectorSerialNumber))
                     {
                         <small>
                             @injector.Data.InjectorSerialNumber
@@ -236,8 +316,7 @@
 
                     <br />
 
-                    @if (!string.IsNullOrWhiteSpace(
-                        injector.Data.TestNotes))
+                    @if (!string.IsNullOrWhiteSpace(injector.Data.TestNotes))
                     {
                         <small>
                             @Html.Raw(injector.Data.TestNotes)
@@ -264,6 +343,17 @@
 
             </th>
 
+
+            @for (var injectorIndex = 0; injectorIndex < Model.Injectors.Count; injectorIndex++)
+            {
+                var segmentClass =
+                    customerSegmentStartIndexes.Contains(injectorIndex)
+                        ? "customer-segment-start"
+                        : "";
+
+                <th class="@segmentClass"></th>
+            }
+
         </tr>
 
     </thead>
@@ -276,15 +366,11 @@
             var normalizedTest =
                 NormalizeTestName(test.TestName);
 
-
             var injectorTests = Model.Injectors
                 .Select(injector =>
-                    injector.NormalizedTests
-                        .FirstOrDefault(t =>
-                            NormalizeTestName(t.TestName)
-                            == normalizedTest))
+                    injector.NormalizedTests.FirstOrDefault(t =>
+                        NormalizeTestName(t.TestName) == normalizedTest))
                 .ToList();
-
 
             var hasAnyNonSkippedTest =
                 injectorTests.Any(t =>
@@ -292,11 +378,9 @@
                     !t.IsSkipped);
 
             var tankSubData = Model.Injectors
-                .SelectMany(injector =>
-                    injector.Data.Tests)
+                .SelectMany(injector => injector.Data.Tests)
                 .Where(t =>
-                    NormalizeTestName(t.TestName)
-                    == normalizedTest &&
+                    NormalizeTestName(t.TestName) == normalizedTest &&
                     t.TestStatus != 1)
                 .SelectMany(t => t.SubTests)
                 .GroupBy(t => t.TankName)
@@ -307,7 +391,7 @@
             <!-- Test header -->
             <tr class="test-header">
 
-                <td colspan="@(Model.Injectors.Count + 1)">
+                <td>
 
                     <div>
 
@@ -328,6 +412,17 @@
 
                 </td>
 
+
+                @for (var injectorIndex = 0; injectorIndex < Model.Injectors.Count; injectorIndex++)
+                {
+                    var segmentClass =
+                        customerSegmentStartIndexes.Contains(injectorIndex)
+                            ? "customer-segment-start"
+                            : "";
+
+                    <td class="@segmentClass"></td>
+                }
+
             </tr>
 
 
@@ -344,21 +439,25 @@
                     </td>
 
 
-                    @for (var i = 0;
-                          i < injectorTests.Count;
-                          i++)
+                    @for (var i = 0; i < injectorTests.Count; i++)
                     {
-                        var injectorTest =
-                            injectorTests[i];
+                        var injectorTest = injectorTests[i];
+
+                        var segmentClass =
+                            customerSegmentStartIndexes.Contains(i)
+                                ? "customer-segment-start"
+                                : "";
 
                         if (injectorTest == null ||
                             injectorTest.IsSkipped)
                         {
-                            <td>-</td>
+                            <td class="@segmentClass">
+                                -
+                            </td>
                         }
                         else
                         {
-                            <td>
+                            <td class="@segmentClass">
                                 @injectorTest.Response @Localizer["SecondIndicator"]
                             </td>
                         }
@@ -372,11 +471,14 @@
 
                     <td></td>
 
-                    @for (var i = 0;
-                          i < Model.Injectors.Count;
-                          i++)
+                    @for (var i = 0; i < Model.Injectors.Count; i++)
                     {
-                        <td class="skipped-cell">
+                        var segmentClass =
+                            customerSegmentStartIndexes.Contains(i)
+                                ? "customer-segment-start"
+                                : "";
+
+                        <td class="skipped-cell @segmentClass">
 
                             <strong>
                                 @Localizer["TestSkipped"]
@@ -407,7 +509,9 @@
                                     average - tank.Min;
                             }
 
-                            <strong>@tank.TankName</strong>
+                            <strong>
+                                @tank.TankName
+                            </strong>
 
                             <br />
 
@@ -434,14 +538,21 @@
 
 
                         <!-- Injector results -->
-                        @foreach (var injector in Model.Injectors)
+                        @for (var injectorIndex = 0; injectorIndex < Model.Injectors.Count; injectorIndex++)
                         {
+                            var injector =
+                                Model.Injectors[injectorIndex];
+
+                            var segmentClass =
+                                customerSegmentStartIndexes.Contains(injectorIndex)
+                                    ? "customer-segment-start"
+                                    : "";
+
                             var injectorTest =
                                 injector.NormalizedTests
                                     .FirstOrDefault(t =>
                                         NormalizeTestName(t.TestName)
                                         == normalizedTest);
-
 
                             var sub = injector.Data.Tests
                                 .Where(t =>
@@ -455,7 +566,7 @@
                             if (injectorTest == null ||
                                 injectorTest.IsSkipped)
                             {
-                                <td class="skipped-cell">
+                                <td class="skipped-cell @segmentClass">
 
                                     <div class="skipped-content">
 
@@ -469,7 +580,7 @@
                             }
                             else if (sub == null)
                             {
-                                <td class="skipped-cell">
+                                <td class="skipped-cell @segmentClass">
 
                                     <div class="skipped-content">
 
@@ -483,7 +594,7 @@
                             }
                             else
                             {
-                                <td class="result-@sub.ResultColor">
+                                <td class="result-@sub.ResultColor @segmentClass">
 
                                     @if (sub.Results == null ||
                                          sub.Results.Count == 0)
@@ -518,6 +629,7 @@
 
                                         </div>
 
+
                                         <div>
 
                                             <strong>
@@ -528,6 +640,7 @@
                                             @sub.ResultAverage
 
                                         </div>
+
 
                                         <div>
 
@@ -557,6 +670,7 @@
 
                                         </div>
                                     }
+
                                 </td>
                             }
                         }
@@ -570,6 +684,7 @@
 
 </table>
 
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -580,7 +695,8 @@
             return;
         }
 
-        const storageKey = "analysisPdfLayoutMode";
+        const storageKey =
+            "analysisPdfLayoutMode";
 
         const savedLayout =
             sessionStorage.getItem(storageKey);
@@ -593,7 +709,8 @@
                         option.value === savedLayout);
 
             if (optionExists) {
-                layoutSelect.value = savedLayout;
+                layoutSelect.value =
+                    savedLayout;
             }
         }
 
@@ -618,6 +735,5 @@
                 url
             );
         });
-
     });
 </script>
