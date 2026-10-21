@@ -49,7 +49,6 @@
     }
 
     var customerSegmentStartIndexes = customerGroups
-        .Skip(1)
         .Select(group => group.StartIndex)
         .ToHashSet();
 }
@@ -203,10 +202,7 @@
                 var customerGroup = customerGroups[groupIndex];
                 var customer = Model.Injectors[customerGroup.StartIndex].Data;
 
-                var segmentClass =
-                    groupIndex > 0
-                        ? "customer-segment-start"
-                        : "";
+                var segmentClass = "customer-segment-start";
 
                 <th class="info-column @segmentClass"
                     colspan="@customerGroup.Count">
@@ -263,25 +259,25 @@
         <!-- Injector information -->
         <tr>
 
-            <th class="info-row">
+            <th class="info-row injector-info">
 
-                <br />
+                <div class="injector-info-line">
+                    <small>
+                        @Localizer["InjectorTimeOffTesting"]:
+                    </small>
+                </div>
 
-                <small>
-                    @Localizer["InjectorTimeOffTesting"]:
-                </small>
+                <div class="injector-info-line">
+                    <small>
+                        @Localizer["InjectorSerialNumber"]:
+                    </small>
+                </div>
 
-                <br />
-
-                <small>
-                    @Localizer["InjectorSerialNumber"]:
-                </small>
-
-                <br />
-
-                <small>
-                    @Localizer["InjectorNote"]:
-                </small>
+                <div class="injector-info-line">
+                    <small>
+                        @Localizer["InjectorNote"]:
+                    </small>
+                </div>
 
             </th>
 
@@ -297,31 +293,31 @@
 
                 <th class="injector-info @segmentClass">
 
-                    <br />
-
-                    <small>
-                        @TimeZoneService.FormatForUser(
-                            injector.Data.TimeOffTesting,
-                            "dd-MM-yyyy HH:mm")
-                    </small>
-
-                    <br />
-
-                    @if (!string.IsNullOrWhiteSpace(injector.Data.InjectorSerialNumber))
-                    {
+                    <div class="injector-info-line">
                         <small>
-                            @injector.Data.InjectorSerialNumber
+                            @TimeZoneService.FormatForUser(
+                                injector.Data.TimeOffTesting,
+                                "dd-MM-yyyy HH:mm")
                         </small>
-                    }
+                    </div>
 
-                    <br />
+                    <div class="injector-info-line">
+                        @if (!string.IsNullOrWhiteSpace(injector.Data.InjectorSerialNumber))
+                        {
+                            <small>
+                                @injector.Data.InjectorSerialNumber
+                            </small>
+                        }
+                    </div>
 
-                    @if (!string.IsNullOrWhiteSpace(injector.Data.TestNotes))
-                    {
-                        <small>
-                            @Html.Raw(injector.Data.TestNotes)
-                        </small>
-                    }
+                    <div class="injector-info-line">
+                        @if (!string.IsNullOrWhiteSpace(injector.Data.TestNotes))
+                        {
+                            <small>
+                                @Html.Raw(injector.Data.TestNotes)
+                            </small>
+                        }
+                    </div>
 
                 </th>
             }

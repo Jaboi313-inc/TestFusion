@@ -1,17 +1,37 @@
 ﻿.info-row {
-    text-align: justify;
+    text-align: left;
 }
 
 .info-column {
-    text-align: justify;
+    text-align: left;
     border-top: 3px solid #111;
     border-bottom: 3px solid #111;
     padding: 8px 10px !important;
 }
 
 .injector-info {
-    text-align: justify;
+    text-align: left;
     padding: 10px !important;
+}
+
+.injector-info-line {
+    min-height: 20px;
+    line-height: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+    .injector-info-line small {
+        display: block;
+        line-height: inherit;
+    }
+
+/* Left information column */
+
+table.table th:first-child,
+table.table td:first-child {
+    white-space: nowrap;
+    width: 1%;
 }
 
 
