@@ -26,12 +26,212 @@
         line-height: inherit;
     }
 
-/* Left information column */
+
+/* Sticky left information column */
 
 table.table th:first-child,
 table.table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 20;
     white-space: nowrap;
     width: 1%;
+    background-color: #fff;
+    border-right: 3px solid #111 !important;
+}
+
+
+/* Sticky horizontal information */
+
+table.table thead {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background-color: #fff;
+}
+
+    table.table thead tr:last-child th {
+        border-bottom: 3px solid #111 !important;
+    }
+
+
+    /* Top-left intersection */
+
+    table.table thead th:first-child {
+        z-index: 40;
+        background-color: #fff;
+        border-right: 3px solid #111 !important;
+    }
+
+
+/* Test header */
+
+table.table .test-header td:first-child {
+    z-index: 22;
+    background-color: #e6e6e6;
+    border-right: 3px solid #111 !important;
+}
+
+
+/* Back to top */
+
+.back-to-top-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    height: 44px;
+    min-width: 44px;
+    padding: 0 14px;
+    background-color: #fff;
+    color: #212529;
+    border: 1px solid #ced4da;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease, gap 0.2s ease;
+}
+
+    .back-to-top-toast.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+.back-to-top-toast-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.back-to-top-toast-text {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    transition: max-width 0.25s ease, opacity 0.2s ease, margin-left 0.25s ease;
+}
+
+.back-to-top-toast:hover .back-to-top-toast-text {
+    max-width: 150px;
+    opacity: 1;
+    margin-left: 8px;
+}
+
+
+/* Analysis validation */
+
+.analysis-top-controls {
+    display: flex;
+    align-items: flex-start;
+    gap: 120px;
+    flex-wrap: nowrap;
+    overflow: visible;
+    margin-bottom: 1.5rem;
+}
+
+.analysis-pdf-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.analysis-validation-toast {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 460px;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid;
+    border-radius: 6px;
+}
+
+.analysis-validation-toast-warning {
+    background: #fff3cd;
+    border-color: #ffecb5;
+    color: #664d03;
+}
+
+.analysis-validation-toast-success {
+    background: #d1e7dd;
+    border-color: #badbcc;
+    color: #0f5132;
+}
+
+.analysis-validation-message {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+
+/* Validation details */
+
+.analysis-validation-details {
+    flex: 0 0 auto;
+}
+
+    .analysis-validation-details summary {
+        list-style: none;
+        cursor: pointer;
+    }
+
+        .analysis-validation-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+.analysis-validation-details-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 1000;
+    width: min(760px, calc(100vw - 32px));
+    max-height: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    background: #fff;
+    color: #212529;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    white-space: normal;
+}
+
+    .analysis-validation-details-panel li {
+        margin-bottom: 6px;
+    }
+
+
+/* Validation detail navigation */
+
+.analysis-validation-detail-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+    .analysis-validation-detail-row > span {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+.analysis-validation-jump {
+    flex: 0 0 auto;
+}
+
+.analysis-scroll-target {
+    scroll-margin-top: 90px;
 }
 
 

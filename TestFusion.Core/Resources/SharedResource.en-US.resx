@@ -480,4 +480,49 @@
   <data name="DebugLogNoEntries" xml:space="preserve">
     <value>No log entries found</value>
   </data>
+  <data name="AnalysisValidationSuccessTitle" xml:space="preserve">
+    <value>Validation passed</value>
+  </data>
+  <data name="AnalysisValidationSuccess" xml:space="preserve">
+    <value>Injector part number, brand, type, tests and test limits match.</value>
+  </data>
+  <data name="AnalysisValidationErrorTitle" xml:space="preserve">
+    <value>Differences found</value>
+  </data>
+  <data name="AnalysisValidationPartNumberMismatch" xml:space="preserve">
+    <value>The injector part number is not the same for all selected injectors.</value>
+  </data>
+  <data name="AnalysisValidationBrandMismatch" xml:space="preserve">
+    <value>The brand is not the same for all selected injectors.</value>
+  </data>
+  <data name="AnalysisValidationTypeMismatch" xml:space="preserve">
+    <value>The type is not the same for all selected injectors.</value>
+  </data>
+  <data name="AnalysisValidationTestMissing" xml:space="preserve">
+    <value>Test '{0}' is not present for all selected injectors.</value>
+  </data>
+  <data name="AnalysisValidationTestNameMismatch" xml:space="preserve">
+    <value>The test name for test '{0}' does not match for all selected injectors.</value>
+  </data>
+  <data name="AnalysisValidationTestTypeMismatch" xml:space="preserve">
+    <value>The test type for test '{0}' does not match for all selected injectors.</value>
+  </data>
+  <data name="AnalysisValidationTestLimitsMismatch" xml:space="preserve">
+    <value>The tanks or limits for test '{0}' do not match for all selected injectors.</value>
+  </data>
+  <data name="AnalysisValidationAccuracyWarning" xml:space="preserve">
+    <value>There are differences between the selected tests. Be aware that this can affect the accuracy of the comparison</value>
+  </data>
+  <data name="AnalysisValidationShowDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="AnalysisValidationExactDifferences" xml:space="preserve">
+    <value>Exact differences</value>
+  </data>
+  <data name="AnalysisValidationGoToDifference" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="ButtonBackToTop" xml:space="preserve">
+    <value>Back to top</value>
+  </data>
 </root>

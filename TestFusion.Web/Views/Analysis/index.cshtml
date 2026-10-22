@@ -2,6 +2,8 @@
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
 @using TestFusion.Core.Interfaces
+@using TestFusion.Core.Models.TestResult
+@using TestFusion.Core.Models.WebModels
 @inject ITimeZoneService TimeZoneService
 @inject IStringLocalizer<SharedResource> Localizer
 
@@ -47,6 +49,8 @@
         customerSegmentStartIndexes.Add(customerStartIndex);
         customerStartIndex += group.Injectors.Count;
     }
+
+    var comparisonValidation = ValidateComparison(Model.Injectors, Localizer);
 }
 
 @functions {
@@ -97,80 +101,586 @@
 
         return normalized.ToUpperInvariant();
     }
+
+    public sealed class ComparisonValidationDetail
+    {
+        public string Message { get; init; } = "";
+        public string TargetId { get; init; } = "";
+    }
+
+    public sealed class ComparisonValidationResult
+    {
+        public List<string> Errors { get; } = new();
+        public List<ComparisonValidationDetail> Details { get; } = new();
+        public bool IsValid => Errors.Count == 0;
+    }
+
+    private sealed class ComparisonTestEntry
+    {
+        public TestResultViewModel Injector { get; init; } = null!;
+        public TestModel Test { get; init; } = null!;
+    }
+
+    public ComparisonValidationResult ValidateComparison(
+        List<TestResultViewModel> injectors,
+        IStringLocalizer<SharedResource> localizer)
+    {
+        var result = new ComparisonValidationResult();
+
+        if (injectors.Count <= 1)
+            return result;
+
+        var referenceInjector = injectors[0];
+
+        var partNumberMismatches = injectors
+            .Skip(1)
+            .Where(injector => !ComparisonValueEquals(
+                injector.Data.PartNumber,
+                referenceInjector.Data.PartNumber))
+            .ToList();
+
+        if (partNumberMismatches.Count > 0)
+        {
+            result.Errors.Add(localizer["AnalysisValidationPartNumberMismatch"]);
+
+            foreach (var injector in partNumberMismatches)
+            {
+                result.Details.Add(new ComparisonValidationDetail
+                {
+                    TargetId = "comparison-general-info",
+                    Message =
+                        $"{GetInjectorComparisonName(injector)} — PartNumber: " +
+                        $"{DisplayComparisonValue(referenceInjector.Data.PartNumber)} ≠ " +
+                        $"{DisplayComparisonValue(injector.Data.PartNumber)}"
+                });
+            }
+        }
+
+        var partBrandMismatches = injectors
+            .Skip(1)
+            .Where(injector => !ComparisonValueEquals(
+                injector.Data.PartBrand,
+                referenceInjector.Data.PartBrand))
+            .ToList();
+
+        if (partBrandMismatches.Count > 0)
+        {
+            result.Errors.Add(localizer["AnalysisValidationBrandMismatch"]);
+
+            foreach (var injector in partBrandMismatches)
+            {
+                result.Details.Add(new ComparisonValidationDetail
+                {
+                    TargetId = "comparison-general-info",
+                    Message =
+                        $"{GetInjectorComparisonName(injector)} — PartBrand: " +
+                        $"{DisplayComparisonValue(referenceInjector.Data.PartBrand)} ≠ " +
+                        $"{DisplayComparisonValue(injector.Data.PartBrand)}"
+                });
+            }
+        }
+
+        var partTypeMismatches = injectors
+            .Skip(1)
+            .Where(injector => !ComparisonValueEquals(
+                injector.Data.PartType,
+                referenceInjector.Data.PartType))
+            .ToList();
+
+        if (partTypeMismatches.Count > 0)
+        {
+            result.Errors.Add(localizer["AnalysisValidationTypeMismatch"]);
+
+            foreach (var injector in partTypeMismatches)
+            {
+                result.Details.Add(new ComparisonValidationDetail
+                {
+                    TargetId = "comparison-general-info",
+                    Message =
+                        $"{GetInjectorComparisonName(injector)} — PartType: " +
+                        $"{DisplayComparisonValue(referenceInjector.Data.PartType)} ≠ " +
+                        $"{DisplayComparisonValue(injector.Data.PartType)}"
+                });
+            }
+        }
+
+        var allTestIds = injectors
+            .SelectMany(injector => injector.Data.Tests)
+            .Select(test => test.TestId)
+            .Distinct()
+            .OrderBy(testId => testId)
+            .ToList();
+
+        foreach (var testId in allTestIds)
+        {
+            var targetId = $"comparison-test-{testId}";
+
+            var availableTests = injectors
+                .Select(injector => new
+                {
+                    Injector = injector,
+                    Test = injector.Data.Tests.FirstOrDefault(test => test.TestId == testId)
+                })
+                .ToList();
+
+            var firstAvailableTest = availableTests
+                .FirstOrDefault(entry => entry.Test != null)?
+                .Test;
+
+            if (firstAvailableTest == null)
+                continue;
+
+            var displayName = NormalizeTestName(firstAvailableTest.TestName);
+
+            var missingInjectors = availableTests
+                .Where(entry => entry.Test == null)
+                .Select(entry => entry.Injector)
+                .ToList();
+
+            if (missingInjectors.Count > 0)
+            {
+                result.Errors.Add(localizer["AnalysisValidationTestMissing", displayName]);
+
+                foreach (var injector in missingInjectors)
+                {
+                    result.Details.Add(new ComparisonValidationDetail
+                    {
+                        TargetId = targetId,
+                        Message = $"{GetInjectorComparisonName(injector)} — {displayName} — test ontbreekt"
+                    });
+                }
+
+                continue;
+            }
+
+            var testsWithDefinition = availableTests
+                .Where(entry => entry.Test != null && entry.Test.TestStatus != 1)
+                .Select(entry => new ComparisonTestEntry
+                {
+                    Injector = entry.Injector,
+                    Test = entry.Test!
+                })
+                .ToList();
+
+            if (testsWithDefinition.Count <= 1)
+                continue;
+
+            var canonicalTestName = testsWithDefinition
+                .Select(entry => NormalizeTestName(entry.Test.TestName))
+                .GroupBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(group => group.Count())
+                .First()
+                .Key;
+
+            var testNameMismatches = testsWithDefinition
+                .Where(entry => !ComparisonValueEquals(
+                    NormalizeTestName(entry.Test.TestName),
+                    canonicalTestName))
+                .ToList();
+
+            if (testNameMismatches.Count > 0)
+            {
+                result.Errors.Add(localizer["AnalysisValidationTestNameMismatch", canonicalTestName]);
+
+                foreach (var entry in testNameMismatches)
+                {
+                    result.Details.Add(new ComparisonValidationDetail
+                    {
+                        TargetId = targetId,
+                        Message =
+                            $"{GetInjectorComparisonName(entry.Injector)} — {canonicalTestName} — TestName: " +
+                            $"{DisplayComparisonValue(canonicalTestName)} ≠ " +
+                            $"{DisplayComparisonValue(NormalizeTestName(entry.Test.TestName))}"
+                    });
+                }
+            }
+
+            var knownTestTypeEntries = testsWithDefinition
+                .Where(entry => !string.IsNullOrWhiteSpace(entry.Test.TestType))
+                .ToList();
+
+            if (knownTestTypeEntries.Count > 1)
+            {
+                var canonicalTestType = knownTestTypeEntries
+                    .Select(entry => NormalizeComparisonValue(entry.Test.TestType))
+                    .GroupBy(type => type, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(group => group.Count())
+                    .First()
+                    .Key;
+
+                var testTypeMismatches = knownTestTypeEntries
+                    .Where(entry => !ComparisonValueEquals(
+                        entry.Test.TestType,
+                        canonicalTestType))
+                    .ToList();
+
+                if (testTypeMismatches.Count > 0)
+                {
+                    result.Errors.Add(localizer["AnalysisValidationTestTypeMismatch", canonicalTestName]);
+
+                    foreach (var entry in testTypeMismatches)
+                    {
+                        result.Details.Add(new ComparisonValidationDetail
+                        {
+                            TargetId = targetId,
+                            Message =
+                                $"{GetInjectorComparisonName(entry.Injector)} — {canonicalTestName} — TestType: " +
+                                $"{DisplayComparisonValue(canonicalTestType)} ≠ " +
+                                $"{DisplayComparisonValue(entry.Test.TestType)}"
+                        });
+                    }
+                }
+            }
+
+            var definitionGroups = testsWithDefinition
+                .GroupBy(entry => GetSubTestDefinitionSignature(entry.Test))
+                .OrderByDescending(group => group.Count())
+                .ToList();
+
+            if (definitionGroups.Count > 1)
+            {
+                result.Errors.Add(localizer["AnalysisValidationTestLimitsMismatch", canonicalTestName]);
+
+                var referenceDefinition = definitionGroups[0].First();
+
+                foreach (var entry in definitionGroups
+                    .Skip(1)
+                    .SelectMany(group => group))
+                {
+                    var differences = GetSubTestDefinitionDifferences(
+                        referenceDefinition.Test,
+                        entry.Test);
+
+                    foreach (var difference in differences)
+                    {
+                        result.Details.Add(new ComparisonValidationDetail
+                        {
+                            TargetId = targetId,
+                            Message =
+                                $"{GetInjectorComparisonName(entry.Injector)} — " +
+                                $"{canonicalTestName} — {difference}"
+                        });
+                    }
+                }
+            }
+        }
+
+        result.Details.Sort((left, right) =>
+            StringComparer.OrdinalIgnoreCase.Compare(left.Message, right.Message));
+
+        return result;
+    }
+
+    private string GetSubTestDefinitionSignature(TestModel test)
+    {
+        return string.Join("||",
+            test.SubTests
+                .OrderBy(subTest => subTest.TankPosition)
+                .ThenBy(subTest => NormalizeComparisonValue(subTest.TankName))
+                .Select(subTest => string.Join("|",
+                    subTest.TankPosition,
+                    NormalizeComparisonValue(subTest.TankName),
+                    subTest.Min.ToString(CultureInfo.InvariantCulture),
+                    subTest.Max.ToString(CultureInfo.InvariantCulture),
+                    subTest.BlueMin.ToString(CultureInfo.InvariantCulture),
+                    subTest.BlueMax.ToString(CultureInfo.InvariantCulture),
+                    subTest.YellowMin.ToString(CultureInfo.InvariantCulture),
+                    subTest.YellowMax.ToString(CultureInfo.InvariantCulture),
+                    subTest.TolBlue.ToString(CultureInfo.InvariantCulture),
+                    NormalizeComparisonValue(subTest.ProcentMin),
+                    NormalizeComparisonValue(subTest.ProcentMax),
+                    NormalizeComparisonValue(subTest.ProcentText))));
+    }
+
+    private List<string> GetSubTestDefinitionDifferences(
+        TestModel referenceTest,
+        TestModel otherTest)
+    {
+        var differences = new List<string>();
+
+        var positions = referenceTest.SubTests
+            .Select(subTest => subTest.TankPosition)
+            .Union(otherTest.SubTests.Select(subTest => subTest.TankPosition))
+            .Distinct()
+            .OrderBy(position => position)
+            .ToList();
+
+        foreach (var position in positions)
+        {
+            var referenceSubTests = referenceTest.SubTests
+                .Where(subTest => subTest.TankPosition == position)
+                .OrderBy(subTest => NormalizeComparisonValue(subTest.TankName))
+                .ToList();
+
+            var otherSubTests = otherTest.SubTests
+                .Where(subTest => subTest.TankPosition == position)
+                .OrderBy(subTest => NormalizeComparisonValue(subTest.TankName))
+                .ToList();
+
+            if (referenceSubTests.Count != otherSubTests.Count)
+            {
+                differences.Add(
+                    $"TankPosition {position} — aantal tanks: " +
+                    $"{referenceSubTests.Count} ≠ {otherSubTests.Count}");
+                continue;
+            }
+
+            for (var i = 0; i < referenceSubTests.Count; i++)
+            {
+                var reference = referenceSubTests[i];
+                var other = otherSubTests[i];
+
+                AddDifference(differences, position, "TankName",
+                    DisplayComparisonValue(reference.TankName),
+                    DisplayComparisonValue(other.TankName));
+
+                AddDifference(differences, position, "Min",
+                    reference.Min.ToString(CultureInfo.CurrentCulture),
+                    other.Min.ToString(CultureInfo.CurrentCulture));
+
+                AddDifference(differences, position, "Max",
+                    reference.Max.ToString(CultureInfo.CurrentCulture),
+                    other.Max.ToString(CultureInfo.CurrentCulture));
+
+                AddDifference(differences, position, "BlueMin",
+                    reference.BlueMin.ToString(CultureInfo.CurrentCulture),
+                    other.BlueMin.ToString(CultureInfo.CurrentCulture));
+
+                AddDifference(differences, position, "BlueMax",
+                    reference.BlueMax.ToString(CultureInfo.CurrentCulture),
+                    other.BlueMax.ToString(CultureInfo.CurrentCulture));
+
+                AddDifference(differences, position, "YellowMin",
+                    reference.YellowMin.ToString(CultureInfo.CurrentCulture),
+                    other.YellowMin.ToString(CultureInfo.CurrentCulture));
+
+                AddDifference(differences, position, "YellowMax",
+                    reference.YellowMax.ToString(CultureInfo.CurrentCulture),
+                    other.YellowMax.ToString(CultureInfo.CurrentCulture));
+
+                AddDifference(differences, position, "TolBlue",
+                    reference.TolBlue.ToString(CultureInfo.CurrentCulture),
+                    other.TolBlue.ToString(CultureInfo.CurrentCulture));
+
+                AddDifference(differences, position, "ProcentMin",
+                    DisplayComparisonValue(reference.ProcentMin),
+                    DisplayComparisonValue(other.ProcentMin));
+
+                AddDifference(differences, position, "ProcentMax",
+                    DisplayComparisonValue(reference.ProcentMax),
+                    DisplayComparisonValue(other.ProcentMax));
+
+                AddDifference(differences, position, "ProcentText",
+                    DisplayComparisonValue(reference.ProcentText),
+                    DisplayComparisonValue(other.ProcentText));
+            }
+        }
+
+        return differences;
+    }
+
+    private void AddDifference(
+        List<string> differences,
+        int position,
+        string field,
+        string referenceValue,
+        string otherValue)
+    {
+        if (!string.Equals(referenceValue, otherValue, StringComparison.OrdinalIgnoreCase))
+        {
+            differences.Add(
+                $"TankPosition {position} — {field}: " +
+                $"{referenceValue} ≠ {otherValue}");
+        }
+    }
+
+    private List<string> GetDistinctValues(IEnumerable<string?> values)
+    {
+        return values
+            .Select(DisplayComparisonValue)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private string DisplayComparisonValue(string? value)
+    {
+        var normalized = NormalizeComparisonValue(value);
+        return string.IsNullOrWhiteSpace(normalized) ? "-" : normalized;
+    }
+
+    private string GetInjectorComparisonName(TestResultViewModel injector)
+    {
+        var customerName = string.IsNullOrWhiteSpace(injector.Data.CustomerName)
+            ? "-"
+            : NormalizeComparisonValue(injector.Data.CustomerName);
+
+        var dateTime = TimeZoneService.FormatForUser(
+            injector.Data.TimeOffTesting,
+            "dd-MM-yyyy HH:mm");
+
+        return $"{customerName} - {dateTime}";
+    }
+
+    private bool ComparisonValueEquals(string? first, string? second)
+    {
+        return string.Equals(
+            NormalizeComparisonValue(first),
+            NormalizeComparisonValue(second),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string NormalizeComparisonValue(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        var withoutHtml = System.Text.RegularExpressions.Regex.Replace(value, "<.*?>", " ");
+        var decoded = System.Net.WebUtility.HtmlDecode(withoutHtml);
+
+        return System.Text.RegularExpressions.Regex
+            .Replace(decoded, @"\s+", " ")
+            .Trim();
+    }
 }
 
 <link rel="stylesheet" href="~/css/analysis.css" />
 
+<div class="main-body">
 
-<div class="d-flex justify-content-between align-items-center mb-4 main-body">
-
-    <h2 class="mb-0">
+    <h2 class="mb-3">
         @Localizer["InjectorComparison"]
     </h2>
 
-    <form asp-controller="Analysis"
-          asp-action="GeneratePdf"
-          method="post"
-          class="d-flex align-items-center gap-2">
+    <div class="analysis-top-controls">
 
-        @foreach (var id in Model.SelectedIds)
+        <form asp-controller="Analysis"
+              asp-action="GeneratePdf"
+              method="post"
+              class="analysis-pdf-form">
+
+            @foreach (var id in Model.SelectedIds)
+            {
+                <input type="hidden"
+                       name="selectedIds"
+                       value="@id" />
+            }
+
+            <select name="layoutMode"
+                    id="layoutMode"
+                    class="form-select">
+
+                @if (selectedLayoutMode == "Compact")
+                {
+                    <option value="Compact" selected>
+                        @Localizer["PDFOptionCompact"]
+                    </option>
+                }
+                else
+                {
+                    <option value="Compact">
+                        @Localizer["PDFOptionCompact"]
+                    </option>
+                }
+
+                @if (selectedLayoutMode == "KeepTestTogether")
+                {
+                    <option value="KeepTestTogether" selected>
+                        @Localizer["PDFOptionKeepTestTogether"]
+                    </option>
+                }
+                else
+                {
+                    <option value="KeepTestTogether">
+                        @Localizer["PDFOptionKeepTestTogether"]
+                    </option>
+                }
+
+                @if (selectedLayoutMode == "OneTestPerPage")
+                {
+                    <option value="OneTestPerPage" selected>
+                        @Localizer["PDFOptionOneTestPerPage"]
+                    </option>
+                }
+                else
+                {
+                    <option value="OneTestPerPage">
+                        @Localizer["PDFOptionOneTestPerPage"]
+                    </option>
+                }
+
+            </select>
+
+            <button type="submit"
+                    class="btn btn-primary text-nowrap">
+                @Localizer["ButtonPDFDownload"]
+            </button>
+
+        </form>
+
+        @if (!comparisonValidation.IsValid)
         {
-            <input type="hidden"
-                   name="selectedIds"
-                   value="@id" />
+            <div class="analysis-validation-toast analysis-validation-toast-warning"
+                 role="alert">
+
+                <div class="analysis-validation-message">
+                    <strong>
+                        @Localizer["AnalysisValidationErrorTitle"]
+                    </strong>
+
+                    <small>
+                        @Localizer["AnalysisValidationAccuracyWarning"]@Localizer["SymbolDot"]
+                    </small>
+                </div>
+
+                <details class="analysis-validation-details">
+                    <summary class="btn btn-sm btn-outline-warning text-nowrap">
+                        @Localizer["AnalysisValidationShowDetails"]
+                    </summary>
+
+                    <div class="analysis-validation-details-panel">
+
+                        <strong class="d-block mb-2">
+                            @Localizer["AnalysisValidationExactDifferences"]
+                        </strong>
+
+                        <ul class="mb-0 ps-3">
+                            @foreach (var detail in comparisonValidation.Details)
+                            {
+                                <li class="analysis-validation-detail-row">
+                                    <span>@detail.Message</span>
+
+                                    <a href="#@detail.TargetId"
+                                       class="btn btn-sm btn-outline-secondary text-nowrap analysis-validation-jump">
+                                        @Localizer["AnalysisValidationGoToDifference"]
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+
+                    </div>
+                </details>
+
+            </div>
+        }
+        else
+        {
+            <div class="analysis-validation-toast analysis-validation-toast-success"
+                 role="status">
+
+                <div class="analysis-validation-message">
+                    <strong>
+                        @Localizer["AnalysisValidationSuccessTitle"]
+                    </strong>
+
+                    <small>
+                        @Localizer["AnalysisValidationSuccess"]@Localizer["SymbolDot"]
+                    </small>
+                </div>
+
+            </div>
         }
 
-        <select name="layoutMode"
-                id="layoutMode"
-                class="form-select">
-
-            @if (selectedLayoutMode == "Compact")
-            {
-                <option value="Compact" selected>
-                    @Localizer["PDFOptionCompact"]
-                </option>
-            }
-            else
-            {
-                <option value="Compact">
-                    @Localizer["PDFOptionCompact"]
-                </option>
-            }
-
-            @if (selectedLayoutMode == "KeepTestTogether")
-            {
-                <option value="KeepTestTogether" selected>
-                    @Localizer["PDFOptionKeepTestTogether"]
-                </option>
-            }
-            else
-            {
-                <option value="KeepTestTogether">
-                    @Localizer["PDFOptionKeepTestTogether"]
-                </option>
-            }
-
-            @if (selectedLayoutMode == "OneTestPerPage")
-            {
-                <option value="OneTestPerPage" selected>
-                    @Localizer["PDFOptionOneTestPerPage"]
-                </option>
-            }
-            else
-            {
-                <option value="OneTestPerPage">
-                    @Localizer["PDFOptionOneTestPerPage"]
-                </option>
-            }
-
-        </select>
-
-        <button type="submit"
-                class="btn btn-primary">
-            @Localizer["ButtonPDFDownload"]
-        </button>
-
-    </form>
+    </div>
 
 </div>
 
@@ -180,7 +690,7 @@
     <thead>
 
         <!-- General information -->
-        <tr class="info-row">
+        <tr id="comparison-general-info" class="info-row analysis-scroll-target">
 
             <th class="info-column">
 
@@ -399,7 +909,7 @@
 
 
             <!-- Test header -->
-            <tr class="test-header">
+            <tr id="comparison-test-@test.TestId" class="test-header analysis-scroll-target">
 
                 <td>
 
@@ -564,6 +1074,15 @@
                                         NormalizeTestName(t.TestName)
                                         == normalizedTest);
 
+                            var actualTest = injector.Data.Tests
+                                .FirstOrDefault(t =>
+                                    t.TestId == test.TestId);
+
+                            var actualSub = actualTest?.SubTests
+                                .FirstOrDefault(s =>
+                                    s.TankPosition == tank.TankPosition &&
+                                    s.TankName == tank.TankName);
+
                             var sub = injector.Data.Tests
                                 .Where(t =>
                                     NormalizeTestName(t.TestName)
@@ -605,6 +1124,34 @@
                             else
                             {
                                 <td class="result-@sub.ResultColor @segmentClass">
+
+                                    @if (actualTest != null && actualSub != null)
+                                    {
+                                        var debugAverage = (actualSub.Min + actualSub.Max) / 2;
+                                        var debugTolerance = debugAverage - actualSub.Min;
+
+                                        <div>
+                                            <strong>DEBUG</strong><br />
+                                            TestId: @actualTest.TestId<br />
+                                            TestName: @actualTest.TestName<br />
+                                            TestType: @actualTest.TestType<br />
+                                            Tank: @actualSub.TankName<br />
+                                            Position: @actualSub.TankPosition<br />
+                                            Min: @actualSub.Min<br />
+                                            Max: @actualSub.Max<br />
+                                            Limit: @debugAverage +/- @debugTolerance<br />
+                                            BlueMin: @actualSub.BlueMin<br />
+                                            BlueMax: @actualSub.BlueMax<br />
+                                            YellowMin: @actualSub.YellowMin<br />
+                                            YellowMax: @actualSub.YellowMax<br />
+                                            TolBlue: @actualSub.TolBlue<br />
+                                            ProcentMin: @actualSub.ProcentMin<br />
+                                            ProcentMax: @actualSub.ProcentMax<br />
+                                            ProcentText: @actualSub.ProcentText
+                                        </div>
+
+                                        <hr />
+                                    }
 
                                     @if (sub.Results == null ||
                                          sub.Results.Count == 0)
@@ -694,9 +1241,51 @@
 
 </table>
 
+<button type="button"
+        id="backToTopToast"
+        class="back-to-top-toast"
+        aria-label="@Localizer["ButtonBackToTop"]">
+
+    <span class="back-to-top-toast-icon">
+        ↑
+    </span>
+
+    <span class="back-to-top-toast-text">
+        @Localizer["ButtonBackToTop"]
+    </span>
+
+</button>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+
+        const backToTopToast =
+            document.getElementById("backToTopToast");
+
+        if (backToTopToast) {
+            const updateBackToTopToast = function () {
+                backToTopToast.classList.toggle(
+                    "show",
+                    window.scrollY > 250
+                );
+            };
+
+            window.addEventListener(
+                "scroll",
+                updateBackToTopToast,
+                { passive: true }
+            );
+
+            backToTopToast.addEventListener("click", function () {
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+            });
+
+            updateBackToTopToast();
+        }
+
 
         const layoutSelect =
             document.getElementById("layoutMode");
@@ -712,7 +1301,6 @@
             sessionStorage.getItem(storageKey);
 
         if (savedLayout) {
-
             const optionExists =
                 Array.from(layoutSelect.options)
                     .some(option =>
@@ -725,7 +1313,6 @@
         }
 
         layoutSelect.addEventListener("change", function () {
-
             sessionStorage.setItem(
                 storageKey,
                 layoutSelect.value
