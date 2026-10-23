@@ -16,6 +16,9 @@
         Context.Request.Query["layoutMode"].FirstOrDefault()
         ?? "Compact";
 
+    var showDebugInformation = false;
+    var groupTestsByBaseName = true;
+
     var matchCustomerName = true;
     var matchCustomerPhone = true;
     var matchCustomerMail = true;
@@ -50,12 +53,30 @@
         customerStartIndex += group.Injectors.Count;
     }
 
-    var comparisonValidation = ValidateComparison(Model.Injectors, Localizer);
+    var displayTests = Model.AllTests
+        .GroupBy(
+            test => NormalizeTestName(test.TestName, groupTestsByBaseName),
+            StringComparer.OrdinalIgnoreCase)
+        .Select(group => group.First())
+        .ToList();
+
+    var comparisonValidation = ValidateComparison(Model.Injectors, Localizer, groupTestsByBaseName);
 }
 
 @functions {
-    public string NormalizeTestName(string name)
-        => name.Replace(" : SKIPPED", "").Trim();
+    public string NormalizeTestName(string name, bool groupTestsByBaseName)
+    {
+        var normalizedName = name.Replace(" : SKIPPED", "").Trim();
+
+        if (!groupTestsByBaseName)
+            return normalizedName;
+
+        var separatorIndex = normalizedName.IndexOf(':');
+
+        return separatorIndex >= 0
+            ? normalizedName[..separatorIndex].Trim()
+            : normalizedName;
+    }
 
     public string GetCustomerKey(
         string? name,
@@ -123,7 +144,8 @@
 
     public ComparisonValidationResult ValidateComparison(
         List<TestResultViewModel> injectors,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        bool groupTestsByBaseName)
     {
         var result = new ComparisonValidationResult();
 
@@ -147,7 +169,7 @@
             {
                 result.Details.Add(new ComparisonValidationDetail
                 {
-                    TargetId = "comparison-general-info",
+                    TargetId = GetGeneralValidationTargetId(injector),
                     Message =
                         $"{GetInjectorComparisonName(injector)} — PartNumber: " +
                         $"{DisplayComparisonValue(referenceInjector.Data.PartNumber)} ≠ " +
@@ -171,7 +193,7 @@
             {
                 result.Details.Add(new ComparisonValidationDetail
                 {
-                    TargetId = "comparison-general-info",
+                    TargetId = GetGeneralValidationTargetId(injector),
                     Message =
                         $"{GetInjectorComparisonName(injector)} — PartBrand: " +
                         $"{DisplayComparisonValue(referenceInjector.Data.PartBrand)} ≠ " +
@@ -195,7 +217,7 @@
             {
                 result.Details.Add(new ComparisonValidationDetail
                 {
-                    TargetId = "comparison-general-info",
+                    TargetId = GetGeneralValidationTargetId(injector),
                     Message =
                         $"{GetInjectorComparisonName(injector)} — PartType: " +
                         $"{DisplayComparisonValue(referenceInjector.Data.PartType)} ≠ " +
@@ -213,8 +235,6 @@
 
         foreach (var testId in allTestIds)
         {
-            var targetId = $"comparison-test-{testId}";
-
             var availableTests = injectors
                 .Select(injector => new
                 {
@@ -230,7 +250,7 @@
             if (firstAvailableTest == null)
                 continue;
 
-            var displayName = NormalizeTestName(firstAvailableTest.TestName);
+            var displayName = NormalizeTestName(firstAvailableTest.TestName, groupTestsByBaseName);
 
             var missingInjectors = availableTests
                 .Where(entry => entry.Test == null)
@@ -245,7 +265,7 @@
                 {
                     result.Details.Add(new ComparisonValidationDetail
                     {
-                        TargetId = targetId,
+                        TargetId = GetValidationTargetId(testId, injector),
                         Message = $"{GetInjectorComparisonName(injector)} — {displayName} — test ontbreekt"
                     });
                 }
@@ -266,7 +286,7 @@
                 continue;
 
             var canonicalTestName = testsWithDefinition
-                .Select(entry => NormalizeTestName(entry.Test.TestName))
+                .Select(entry => NormalizeTestName(entry.Test.TestName, groupTestsByBaseName))
                 .GroupBy(name => name, StringComparer.OrdinalIgnoreCase)
                 .OrderByDescending(group => group.Count())
                 .First()
@@ -274,7 +294,7 @@
 
             var testNameMismatches = testsWithDefinition
                 .Where(entry => !ComparisonValueEquals(
-                    NormalizeTestName(entry.Test.TestName),
+                    NormalizeTestName(entry.Test.TestName, groupTestsByBaseName),
                     canonicalTestName))
                 .ToList();
 
@@ -286,11 +306,11 @@
                 {
                     result.Details.Add(new ComparisonValidationDetail
                     {
-                        TargetId = targetId,
+                        TargetId = GetValidationTargetId(testId, entry.Injector),
                         Message =
                             $"{GetInjectorComparisonName(entry.Injector)} — {canonicalTestName} — TestName: " +
                             $"{DisplayComparisonValue(canonicalTestName)} ≠ " +
-                            $"{DisplayComparisonValue(NormalizeTestName(entry.Test.TestName))}"
+                            $"{DisplayComparisonValue(NormalizeTestName(entry.Test.TestName, groupTestsByBaseName))}"
                     });
                 }
             }
@@ -322,7 +342,7 @@
                     {
                         result.Details.Add(new ComparisonValidationDetail
                         {
-                            TargetId = targetId,
+                            TargetId = GetValidationTargetId(testId, entry.Injector),
                             Message =
                                 $"{GetInjectorComparisonName(entry.Injector)} — {canonicalTestName} — TestType: " +
                                 $"{DisplayComparisonValue(canonicalTestType)} ≠ " +
@@ -355,7 +375,7 @@
                     {
                         result.Details.Add(new ComparisonValidationDetail
                         {
-                            TargetId = targetId,
+                            TargetId = GetValidationTargetId(testId, entry.Injector),
                             Message =
                                 $"{GetInjectorComparisonName(entry.Injector)} — " +
                                 $"{canonicalTestName} — {difference}"
@@ -521,6 +541,28 @@
         return $"{customerName} - {dateTime}";
     }
 
+    private string GetGeneralValidationTargetId(TestResultViewModel injector)
+    {
+        return $"comparison-general-injector-{GetInjectorTargetKey(injector)}";
+    }
+
+    private string GetValidationTargetId(int testId, TestResultViewModel injector)
+    {
+        return $"comparison-test-{testId}-injector-{GetInjectorTargetKey(injector)}";
+    }
+
+    private string GetInjectorTargetKey(TestResultViewModel injector)
+    {
+        var rawValue = !string.IsNullOrWhiteSpace(injector.Data.Id)
+            ? injector.Data.Id
+            : $"{injector.Data.CustomerName}-{injector.Data.TimeOffTesting:yyyyMMddHHmmssfff}";
+
+        return System.Text.RegularExpressions.Regex.Replace(
+            rawValue,
+            @"[^a-zA-Z0-9_-]",
+            "-");
+    }
+
     private bool ComparisonValueEquals(string? first, string? second)
     {
         return string.Equals(
@@ -545,392 +587,329 @@
 
 <link rel="stylesheet" href="~/css/analysis.css" />
 
-<div class="main-body">
+<div class="analysis-horizontal-scope">
 
-    <h2 class="mb-3">
-        @Localizer["InjectorComparison"]
-    </h2>
+    <div class="analysis-page-toolbar">
+        <div class="analysis-page-toolbar-content">
 
-    <div class="analysis-top-controls">
+            <h2 class="analysis-page-title">
+                @Localizer["InjectorComparison"]
+            </h2>
 
-        <form asp-controller="Analysis"
-              asp-action="GeneratePdf"
-              method="post"
-              class="analysis-pdf-form">
+            <div class="analysis-top-controls">
 
-            @foreach (var id in Model.SelectedIds)
-            {
-                <input type="hidden"
-                       name="selectedIds"
-                       value="@id" />
-            }
+                <form asp-controller="Analysis"
+                      asp-action="GeneratePdf"
+                      method="post"
+                      class="analysis-pdf-form">
 
-            <select name="layoutMode"
-                    id="layoutMode"
-                    class="form-select">
+                    @foreach (var id in Model.SelectedIds)
+                    {
+                        <input type="hidden"
+                               name="selectedIds"
+                               value="@id" />
+                    }
 
-                @if (selectedLayoutMode == "Compact")
+                    <select name="layoutMode"
+                            id="layoutMode"
+                            class="form-select">
+
+                        @if (selectedLayoutMode == "Compact")
+                        {
+                            <option value="Compact" selected>
+                                @Localizer["PDFOptionCompact"]
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="Compact">
+                                @Localizer["PDFOptionCompact"]
+                            </option>
+                        }
+
+                        @if (selectedLayoutMode == "KeepTestTogether")
+                        {
+                            <option value="KeepTestTogether" selected>
+                                @Localizer["PDFOptionKeepTestTogether"]
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="KeepTestTogether">
+                                @Localizer["PDFOptionKeepTestTogether"]
+                            </option>
+                        }
+
+                        @if (selectedLayoutMode == "OneTestPerPage")
+                        {
+                            <option value="OneTestPerPage" selected>
+                                @Localizer["PDFOptionOneTestPerPage"]
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="OneTestPerPage">
+                                @Localizer["PDFOptionOneTestPerPage"]
+                            </option>
+                        }
+
+                    </select>
+
+                    <button type="submit"
+                            class="btn btn-primary text-nowrap">
+                        @Localizer["ButtonPDFDownload"]
+                    </button>
+
+                </form>
+
+                @if (!comparisonValidation.IsValid)
                 {
-                    <option value="Compact" selected>
-                        @Localizer["PDFOptionCompact"]
-                    </option>
-                }
-                else
-                {
-                    <option value="Compact">
-                        @Localizer["PDFOptionCompact"]
-                    </option>
-                }
+                    <div class="analysis-validation-toast analysis-validation-toast-warning"
+                         role="alert">
 
-                @if (selectedLayoutMode == "KeepTestTogether")
-                {
-                    <option value="KeepTestTogether" selected>
-                        @Localizer["PDFOptionKeepTestTogether"]
-                    </option>
-                }
-                else
-                {
-                    <option value="KeepTestTogether">
-                        @Localizer["PDFOptionKeepTestTogether"]
-                    </option>
-                }
+                        <div class="analysis-validation-message">
+                            <strong>
+                                @Localizer["AnalysisValidationErrorTitle"]
+                            </strong>
 
-                @if (selectedLayoutMode == "OneTestPerPage")
-                {
-                    <option value="OneTestPerPage" selected>
-                        @Localizer["PDFOptionOneTestPerPage"]
-                    </option>
-                }
-                else
-                {
-                    <option value="OneTestPerPage">
-                        @Localizer["PDFOptionOneTestPerPage"]
-                    </option>
-                }
+                            <small>
+                                @Localizer["AnalysisValidationAccuracyWarning"]@Localizer["SymbolDot"]
+                            </small>
+                        </div>
 
-            </select>
+                        <details class="analysis-validation-details">
+                            <summary class="btn btn-sm btn-outline-warning text-nowrap">
+                                @Localizer["AnalysisValidationShowDetails"]
+                            </summary>
 
-            <button type="submit"
-                    class="btn btn-primary text-nowrap">
-                @Localizer["ButtonPDFDownload"]
-            </button>
+                            <div class="analysis-validation-details-panel">
 
-        </form>
+                                <strong class="d-block mb-2">
+                                    @Localizer["AnalysisValidationExactDifferences"]
+                                </strong>
 
-        @if (!comparisonValidation.IsValid)
-        {
-            <div class="analysis-validation-toast analysis-validation-toast-warning"
-                 role="alert">
+                                <ul class="mb-0 ps-4">
+                                    @foreach (var detail in comparisonValidation.Details)
+                                    {
+                                        <li class="analysis-validation-detail-row">
+                                            <span>@detail.Message</span>
 
-                <div class="analysis-validation-message">
-                    <strong>
-                        @Localizer["AnalysisValidationErrorTitle"]
-                    </strong>
+                                            <a href="#@detail.TargetId"
+                                               data-scroll-target="@detail.TargetId"
+                                               class="btn btn-sm btn-outline-secondary text-nowrap analysis-validation-jump">
+                                                @Localizer["AnalysisValidationGoToDifference"]
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
 
-                    <small>
-                        @Localizer["AnalysisValidationAccuracyWarning"]@Localizer["SymbolDot"]
-                    </small>
-                </div>
-
-                <details class="analysis-validation-details">
-                    <summary class="btn btn-sm btn-outline-warning text-nowrap">
-                        @Localizer["AnalysisValidationShowDetails"]
-                    </summary>
-
-                    <div class="analysis-validation-details-panel">
-
-                        <strong class="d-block mb-2">
-                            @Localizer["AnalysisValidationExactDifferences"]
-                        </strong>
-
-                        <ul class="mb-0 ps-3">
-                            @foreach (var detail in comparisonValidation.Details)
-                            {
-                                <li class="analysis-validation-detail-row">
-                                    <span>@detail.Message</span>
-
-                                    <a href="#@detail.TargetId"
-                                       class="btn btn-sm btn-outline-secondary text-nowrap analysis-validation-jump">
-                                        @Localizer["AnalysisValidationGoToDifference"]
-                                    </a>
-                                </li>
-                            }
-                        </ul>
+                            </div>
+                        </details>
 
                     </div>
-                </details>
+                }
+                else
+                {
+                    <div class="analysis-validation-toast analysis-validation-toast-success"
+                         role="status">
+
+                        <div class="analysis-validation-message">
+                            <strong>
+                                @Localizer["AnalysisValidationSuccessTitle"]
+                            </strong>
+
+                            <small>
+                                @Localizer["AnalysisValidationSuccess"]@Localizer["SymbolDot"]
+                            </small>
+                        </div>
+
+                    </div>
+                }
 
             </div>
-        }
-        else
-        {
-            <div class="analysis-validation-toast analysis-validation-toast-success"
-                 role="status">
 
-                <div class="analysis-validation-message">
-                    <strong>
-                        @Localizer["AnalysisValidationSuccessTitle"]
-                    </strong>
-
-                    <small>
-                        @Localizer["AnalysisValidationSuccess"]@Localizer["SymbolDot"]
-                    </small>
-                </div>
-
-            </div>
-        }
-
+        </div>
     </div>
 
-</div>
 
+    <table class="table table-bordered table-striped analysis-table">
 
-<table class="table table-bordered table-striped main-body">
+        <thead>
 
-    <thead>
+            <!-- General information -->
+            <tr id="comparison-general-info" class="info-row analysis-scroll-target">
 
-        <!-- General information -->
-        <tr id="comparison-general-info" class="info-row analysis-scroll-target">
-
-            <th class="info-column">
-
-                <strong>
-                    @Localizer["Injector"]:
-                </strong>
-
-                <br />
-
-                <small>
-                    @Localizer["InjectorPartNumber"]:
-                    @orderedInjectors.FirstOrDefault()?.Data.PartNumber
-                </small>
-
-                <br />
-
-                <small>
-                    @Localizer["InjectorBrand"]:
-                    @orderedInjectors.FirstOrDefault()?.Data.PartBrand
-                </small>
-
-                <br />
-
-                <small>
-                    @Localizer["InjectorType"]:
-                    @orderedInjectors.FirstOrDefault()?.Data.PartType
-                </small>
-
-                <br />
-
-            </th>
-
-
-            @foreach (var customerGroup in customerGroups)
-            {
-                var customer = customerGroup.Injectors[0].Data;
-
-                <th class="info-column customer-segment-start"
-                    colspan="@customerGroup.Injectors.Count">
+                <th class="info-column">
 
                     <strong>
-                        @Localizer["Customer"]:
+                        @Localizer["Injector"]:
                     </strong>
 
                     <br />
 
                     <small>
-                        @Localizer["CustomerName"]:
-                        @customer.CustomerName
+                        @Localizer["InjectorPartNumber"]:
+                        @orderedInjectors.FirstOrDefault()?.Data.PartNumber
                     </small>
-
-                    <br />
-
-                    @if (!string.IsNullOrWhiteSpace(customer.CustomerPhone))
-                    {
-                        <small>
-                            @Localizer["CustomerPhoneNumber"]:
-                            @customer.CustomerPhone
-                        </small>
-                    }
-
-                    <br />
-
-                    @if (!string.IsNullOrWhiteSpace(customer.CustomerMail))
-                    {
-                        <small>
-                            @Localizer["CustomerMail"]:
-                            @customer.CustomerMail
-                        </small>
-                    }
-
-                    <br />
-
-                    @if (!string.IsNullOrWhiteSpace(customer.CustomerNotes))
-                    {
-                        <small>
-                            @Localizer["CustomerNote"]:
-                            @customer.CustomerNotes
-                        </small>
-                    }
-
-                    <br />
-
-                </th>
-            }
-
-        </tr>
-
-
-        <!-- Injector information -->
-        <tr>
-
-            <th class="info-row">
-
-                <br />
-
-                <small>
-                    @Localizer["InjectorTimeOffTesting"]:
-                </small>
-
-                <br />
-
-                <small>
-                    @Localizer["InjectorSerialNumber"]:
-                </small>
-
-                <br />
-
-                <small>
-                    @Localizer["InjectorNote"]:
-                </small>
-
-            </th>
-
-
-            @for (var injectorIndex = 0; injectorIndex < orderedInjectors.Count; injectorIndex++)
-            {
-                var injector = orderedInjectors[injectorIndex];
-
-                var segmentClass =
-                    customerSegmentStartIndexes.Contains(injectorIndex)
-                        ? "customer-segment-start"
-                        : "";
-
-                <th class="injector-info @segmentClass">
 
                     <br />
 
                     <small>
-                        @TimeZoneService.FormatForUser(
-                            injector.Data.TimeOffTesting,
-                            "dd-MM-yyyy HH:mm")
+                        @Localizer["InjectorBrand"]:
+                        @orderedInjectors.FirstOrDefault()?.Data.PartBrand
                     </small>
 
                     <br />
 
-                    @if (!string.IsNullOrWhiteSpace(injector.Data.InjectorSerialNumber))
-                    {
-                        <small>
-                            @injector.Data.InjectorSerialNumber
-                        </small>
-                    }
+                    <small>
+                        @Localizer["InjectorType"]:
+                        @orderedInjectors.FirstOrDefault()?.Data.PartType
+                    </small>
 
                     <br />
 
-                    @if (!string.IsNullOrWhiteSpace(injector.Data.TestNotes))
-                    {
-                        <small>
-                            @Html.Raw(injector.Data.TestNotes)
-                        </small>
-                    }
-
                 </th>
-            }
-
-        </tr>
 
 
-        <!-- Test / tank header -->
-        <tr>
+                @foreach (var customerGroup in customerGroups)
+                {
+                    var customer = customerGroup.Injectors[0].Data;
 
-            <th>
-
-                <br />
-                <br />
-
-                <div class="info-row">
-                    @Localizer["TestTestNameAndTank"]
-                </div>
-
-            </th>
-
-
-            @for (var injectorIndex = 0; injectorIndex < orderedInjectors.Count; injectorIndex++)
-            {
-                var segmentClass =
-                    customerSegmentStartIndexes.Contains(injectorIndex)
-                        ? "customer-segment-start"
-                        : "";
-
-                <th class="@segmentClass"></th>
-            }
-
-        </tr>
-
-    </thead>
-
-
-    <tbody>
-
-        @foreach (var test in Model.AllTests)
-        {
-            var normalizedTest =
-                NormalizeTestName(test.TestName);
-
-            var injectorTests = orderedInjectors
-                .Select(injector =>
-                    injector.NormalizedTests.FirstOrDefault(t =>
-                        NormalizeTestName(t.TestName) == normalizedTest))
-                .ToList();
-
-            var hasAnyNonSkippedTest =
-                injectorTests.Any(t =>
-                    t != null &&
-                    !t.IsSkipped);
-
-            var tankSubData = orderedInjectors
-                .SelectMany(injector => injector.Data.Tests)
-                .Where(t =>
-                    NormalizeTestName(t.TestName) == normalizedTest &&
-                    t.TestStatus != 1)
-                .SelectMany(t => t.SubTests)
-                .GroupBy(t => t.TankName)
-                .Select(g => g.First())
-                .ToList();
-
-
-            <!-- Test header -->
-            <tr id="comparison-test-@test.TestId" class="test-header analysis-scroll-target">
-
-                <td>
-
-                    <div>
+                    <th class="info-column customer-segment-start"
+                        colspan="@customerGroup.Injectors.Count">
 
                         <strong>
-                            @normalizedTest
+                            @Localizer["Customer"]:
                         </strong>
 
                         <br />
 
                         <small>
-                            @Localizer["TestType"]:
-                            @(string.IsNullOrWhiteSpace(test.TestType)
-                                ? "-"
-                                : test.TestType)
+                            @Localizer["CustomerName"]:
+                            @customer.CustomerName
                         </small>
 
+                        <br />
+
+                        @if (!string.IsNullOrWhiteSpace(customer.CustomerPhone))
+                        {
+                            <small>
+                                @Localizer["CustomerPhoneNumber"]:
+                                @customer.CustomerPhone
+                            </small>
+                        }
+
+                        <br />
+
+                        @if (!string.IsNullOrWhiteSpace(customer.CustomerMail))
+                        {
+                            <small>
+                                @Localizer["CustomerMail"]:
+                                @customer.CustomerMail
+                            </small>
+                        }
+
+                        <br />
+
+                        @if (!string.IsNullOrWhiteSpace(customer.CustomerNotes))
+                        {
+                            <small>
+                                @Localizer["CustomerNote"]:
+                                @customer.CustomerNotes
+                            </small>
+                        }
+
+                        <br />
+
+                    </th>
+                }
+
+            </tr>
+
+
+            <!-- Injector information -->
+            <tr>
+
+                <th class="info-row">
+
+                    <br />
+
+                    <small>
+                        @Localizer["InjectorTimeOffTesting"]:
+                    </small>
+
+                    <br />
+
+                    <small>
+                        @Localizer["InjectorSerialNumber"]:
+                    </small>
+
+                    <br />
+
+                    <small>
+                        @Localizer["InjectorNote"]:
+                    </small>
+
+                </th>
+
+
+                @for (var injectorIndex = 0; injectorIndex < orderedInjectors.Count; injectorIndex++)
+                {
+                    var injector = orderedInjectors[injectorIndex];
+
+                    var segmentClass =
+                        customerSegmentStartIndexes.Contains(injectorIndex)
+                            ? "customer-segment-start"
+                            : "";
+
+                    <th id="@GetGeneralValidationTargetId(injector)"
+                        class="injector-info @segmentClass analysis-scroll-target">
+
+                        <br />
+
+                        <small>
+                            @TimeZoneService.FormatForUser(
+                                injector.Data.TimeOffTesting,
+                                "dd-MM-yyyy HH:mm")
+                        </small>
+
+                        <br />
+
+                        @if (!string.IsNullOrWhiteSpace(injector.Data.InjectorSerialNumber))
+                        {
+                            <small>
+                                @injector.Data.InjectorSerialNumber
+                            </small>
+                        }
+
+                        <br />
+
+                        @if (!string.IsNullOrWhiteSpace(injector.Data.TestNotes))
+                        {
+                            <small>
+                                @Html.Raw(injector.Data.TestNotes)
+                            </small>
+                        }
+
+                    </th>
+                }
+
+            </tr>
+
+
+            <!-- Test / tank header -->
+            <tr>
+
+                <th>
+
+                    <br />
+                    <br />
+
+                    <div class="info-row">
+                        @Localizer["TestTestNameAndTank"]
                     </div>
 
-                </td>
+                </th>
 
 
                 @for (var injectorIndex = 0; injectorIndex < orderedInjectors.Count; injectorIndex++)
@@ -940,306 +919,403 @@
                             ? "customer-segment-start"
                             : "";
 
-                    <td class="@segmentClass"></td>
+                    <th class="@segmentClass"></th>
                 }
 
             </tr>
 
+        </thead>
 
-            @if (hasAnyNonSkippedTest)
+
+        <tbody>
+
+            @foreach (var test in displayTests)
             {
-                <tr class="tank-row">
+                var normalizedTest =
+                    NormalizeTestName(test.TestName, groupTestsByBaseName);
+
+                var injectorTests = orderedInjectors
+                    .Select(injector =>
+                        injector.NormalizedTests.FirstOrDefault(t =>
+                            NormalizeTestName(t.TestName, groupTestsByBaseName) == normalizedTest))
+                    .ToList();
+
+                var hasAnyNonSkippedTest =
+                    injectorTests.Any(t =>
+                        t != null &&
+                        !t.IsSkipped);
+
+                var tankSubData = orderedInjectors
+                    .SelectMany(injector => injector.Data.Tests)
+                    .Where(t =>
+                        NormalizeTestName(t.TestName, groupTestsByBaseName) == normalizedTest &&
+                        t.TestStatus != 1)
+                    .SelectMany(t => t.SubTests)
+                    .GroupBy(t => t.TankName)
+                    .Select(g => g.First())
+                    .ToList();
+
+
+                <!-- Test header -->
+                <tr id="comparison-test-@test.TestId" class="test-header analysis-scroll-target">
 
                     <td>
 
-                        <small>
-                            @Localizer["TestResponseTime"]:
-                        </small>
+                        <div>
+
+                            <strong>
+                                @normalizedTest
+                            </strong>
+
+                            <br />
+
+                            <small>
+                                @Localizer["TestType"]:
+                                @(string.IsNullOrWhiteSpace(test.TestType)
+                                    ? "-"
+                                    : test.TestType)
+                            </small>
+
+                        </div>
 
                     </td>
 
 
-                    @for (var i = 0; i < injectorTests.Count; i++)
+                    @for (var injectorIndex = 0; injectorIndex < orderedInjectors.Count; injectorIndex++)
                     {
-                        var injectorTest = injectorTests[i];
+                        var injector = orderedInjectors[injectorIndex];
 
                         var segmentClass =
-                            customerSegmentStartIndexes.Contains(i)
+                            customerSegmentStartIndexes.Contains(injectorIndex)
                                 ? "customer-segment-start"
                                 : "";
 
-                        if (injectorTest == null ||
-                            injectorTest.IsSkipped)
-                        {
-                            <td class="@segmentClass">
-                                -
-                            </td>
-                        }
-                        else
-                        {
-                            <td class="@segmentClass">
-                                @injectorTest.Response @Localizer["SecondIndicator"]
-                            </td>
-                        }
-                    }
+                        var validationTargetId =
+                            GetValidationTargetId(test.TestId, injector);
 
-                </tr>
-            }
-            else
-            {
-                <tr class="skipped-row">
-
-                    <td></td>
-
-                    @for (var i = 0; i < orderedInjectors.Count; i++)
-                    {
-                        var segmentClass =
-                            customerSegmentStartIndexes.Contains(i)
-                                ? "customer-segment-start"
-                                : "";
-
-                        <td class="skipped-cell @segmentClass">
-
-                            <strong>
-                                @Localizer["TestSkipped"]
-                            </strong>
-
+                        <td id="@validationTargetId"
+                            class="@segmentClass analysis-scroll-target">
                         </td>
                     }
 
                 </tr>
-            }
 
 
-            @if (hasAnyNonSkippedTest)
-            {
-                <!-- Tank / result rows -->
-                @foreach (var tank in tankSubData)
+                @if (hasAnyNonSkippedTest)
                 {
                     <tr class="tank-row">
 
-                        <!-- Tank information -->
                         <td>
 
-                            @{
-                                var average =
-                                    (tank.Min + tank.Max) / 2;
-
-                                var tolerance =
-                                    average - tank.Min;
-                            }
-
-                            <strong>
-                                @tank.TankName
-                            </strong>
-
-                            <br />
-
                             <small>
-                                @Localizer["TestMin"]:
-                                @tank.Min
-                            </small>
-
-                            <br />
-
-                            <small>
-                                @Localizer["TestMax"]:
-                                @tank.Max
-                            </small>
-
-                            <br />
-
-                            <small>
-                                @Localizer["TestLimit"]:
-                                @average +/- @tolerance
+                                @Localizer["TestResponseTime"]:
                             </small>
 
                         </td>
 
 
-                        <!-- Injector results -->
-                        @for (var injectorIndex = 0; injectorIndex < orderedInjectors.Count; injectorIndex++)
+                        @for (var i = 0; i < injectorTests.Count; i++)
                         {
-                            var injector =
-                                orderedInjectors[injectorIndex];
+                            var injectorTest = injectorTests[i];
 
                             var segmentClass =
-                                customerSegmentStartIndexes.Contains(injectorIndex)
+                                customerSegmentStartIndexes.Contains(i)
                                     ? "customer-segment-start"
                                     : "";
-
-                            var injectorTest =
-                                injector.NormalizedTests
-                                    .FirstOrDefault(t =>
-                                        NormalizeTestName(t.TestName)
-                                        == normalizedTest);
-
-                            var actualTest = injector.Data.Tests
-                                .FirstOrDefault(t =>
-                                    t.TestId == test.TestId);
-
-                            var actualSub = actualTest?.SubTests
-                                .FirstOrDefault(s =>
-                                    s.TankPosition == tank.TankPosition &&
-                                    s.TankName == tank.TankName);
-
-                            var sub = injector.Data.Tests
-                                .Where(t =>
-                                    NormalizeTestName(t.TestName)
-                                    == normalizedTest)
-                                .SelectMany(t => t.SubTests)
-                                .FirstOrDefault(s =>
-                                    s.TankName == tank.TankName);
-
 
                             if (injectorTest == null ||
                                 injectorTest.IsSkipped)
                             {
-                                <td class="skipped-cell @segmentClass">
-
-                                    <div class="skipped-content">
-
-                                        <strong>
-                                            @Localizer["TestSkipped"]
-                                        </strong>
-
-                                    </div>
-
-                                </td>
-                            }
-                            else if (sub == null)
-                            {
-                                <td class="skipped-cell @segmentClass">
-
-                                    <div class="skipped-content">
-
-                                        <strong>
-                                            @Localizer["TestSkipped"]
-                                        </strong>
-
-                                    </div>
-
+                                <td class="@segmentClass">
+                                    -
                                 </td>
                             }
                             else
                             {
-                                <td class="result-@sub.ResultColor @segmentClass">
-
-                                    @if (actualTest != null && actualSub != null)
-                                    {
-                                        var debugAverage = (actualSub.Min + actualSub.Max) / 2;
-                                        var debugTolerance = debugAverage - actualSub.Min;
-
-                                        <div>
-                                            <strong>DEBUG</strong><br />
-                                            TestId: @actualTest.TestId<br />
-                                            TestName: @actualTest.TestName<br />
-                                            TestType: @actualTest.TestType<br />
-                                            Tank: @actualSub.TankName<br />
-                                            Position: @actualSub.TankPosition<br />
-                                            Min: @actualSub.Min<br />
-                                            Max: @actualSub.Max<br />
-                                            Limit: @debugAverage +/- @debugTolerance<br />
-                                            BlueMin: @actualSub.BlueMin<br />
-                                            BlueMax: @actualSub.BlueMax<br />
-                                            YellowMin: @actualSub.YellowMin<br />
-                                            YellowMax: @actualSub.YellowMax<br />
-                                            TolBlue: @actualSub.TolBlue<br />
-                                            ProcentMin: @actualSub.ProcentMin<br />
-                                            ProcentMax: @actualSub.ProcentMax<br />
-                                            ProcentText: @actualSub.ProcentText
-                                        </div>
-
-                                        <hr />
-                                    }
-
-                                    @if (sub.Results == null ||
-                                         sub.Results.Count == 0)
-                                    {
-                                        <strong>
-                                            @Localizer["TestNoResults"]
-                                        </strong>
-                                    }
-                                    else
-                                    {
-                                        var results =
-                                            sub.Results;
-
-                                        var resultMinCalculated =
-                                            results.Min();
-
-                                        var resultAverageCalculated =
-                                            results.Average();
-
-                                        var resultMaxCalculated =
-                                            results.Max();
-
-
-                                        <div>
-
-                                            <strong>
-                                                @Localizer["TestMin"]:
-                                            </strong>
-
-                                            @resultMinCalculated
-                                            @sub.ResultMin
-
-                                        </div>
-
-
-                                        <div>
-
-                                            <strong>
-                                                @Localizer["TestAvg"]:
-                                            </strong>
-
-                                            @resultAverageCalculated.ToString("0.0")
-                                            @sub.ResultAverage
-
-                                        </div>
-
-
-                                        <div>
-
-                                            <strong>
-                                                @Localizer["TestMax"]:
-                                            </strong>
-
-                                            @resultMaxCalculated
-                                            @sub.ResultMax
-
-                                        </div>
-
-
-                                        <br />
-
-
-                                        <div>
-
-                                            <strong>
-                                                @Localizer["TestResults"]:
-                                            </strong>
-
-                                            @string.Join(
-                                                " | ",
-                                                sub.Results
-                                            )
-
-                                        </div>
-                                    }
-
+                                <td class="@segmentClass">
+                                    @injectorTest.Response @Localizer["SecondIndicator"]
                                 </td>
                             }
                         }
 
                     </tr>
                 }
+                else
+                {
+                    <tr class="skipped-row">
+
+                        <td></td>
+
+                        @for (var i = 0; i < orderedInjectors.Count; i++)
+                        {
+                            var segmentClass =
+                                customerSegmentStartIndexes.Contains(i)
+                                    ? "customer-segment-start"
+                                    : "";
+
+                            <td class="skipped-cell @segmentClass">
+
+                                <strong>
+                                    @Localizer["TestSkipped"]
+                                </strong>
+
+                            </td>
+                        }
+
+                    </tr>
+                }
+
+
+                @if (hasAnyNonSkippedTest)
+                {
+                    <!-- Tank / result rows -->
+                    @foreach (var tank in tankSubData)
+                    {
+                        <tr class="tank-row">
+
+                            <!-- Tank information -->
+                            <td>
+
+                                @{
+                                    var average =
+                                        (tank.Min + tank.Max) / 2;
+
+                                    var tolerance =
+                                        average - tank.Min;
+                                }
+
+                                <strong>
+                                    @tank.TankName
+                                </strong>
+
+                                <br />
+
+                                <small>
+                                    @Localizer["TestMin"]:
+                                    @tank.Min
+                                </small>
+
+                                <br />
+
+                                <small>
+                                    @Localizer["TestMax"]:
+                                    @tank.Max
+                                </small>
+
+                                <br />
+
+                                <small>
+                                    @Localizer["TestLimit"]:
+                                    @average +/- @tolerance
+                                </small>
+
+                            </td>
+
+
+                            <!-- Injector results -->
+                            @for (var injectorIndex = 0; injectorIndex < orderedInjectors.Count; injectorIndex++)
+                            {
+                                var injector =
+                                    orderedInjectors[injectorIndex];
+
+                                var segmentClass =
+                                    customerSegmentStartIndexes.Contains(injectorIndex)
+                                        ? "customer-segment-start"
+                                        : "";
+
+                                var injectorTest =
+                                    injector.NormalizedTests
+                                        .FirstOrDefault(t =>
+                                            NormalizeTestName(t.TestName, groupTestsByBaseName)
+                                            == normalizedTest);
+
+                                var actualTest = injector.Data.Tests
+                                    .FirstOrDefault(t =>
+                                        t.TestId == test.TestId);
+
+                                var actualSub = actualTest?.SubTests
+                                    .FirstOrDefault(s =>
+                                        s.TankPosition == tank.TankPosition &&
+                                        s.TankName == tank.TankName);
+
+                                var sub = injector.Data.Tests
+                                    .Where(t =>
+                                        NormalizeTestName(t.TestName, groupTestsByBaseName)
+                                        == normalizedTest)
+                                    .SelectMany(t => t.SubTests)
+                                    .FirstOrDefault(s =>
+                                        s.TankName == tank.TankName);
+
+
+                                if (injectorTest == null ||
+                                    injectorTest.IsSkipped)
+                                {
+                                    <td class="skipped-cell @segmentClass">
+
+                                        <div class="skipped-content">
+
+                                            <strong>
+                                                @Localizer["TestSkipped"]
+                                            </strong>
+
+                                        </div>
+
+                                    </td>
+                                }
+                                else if (sub == null)
+                                {
+                                    <td class="skipped-cell @segmentClass">
+
+                                        <div class="skipped-content">
+
+                                            <strong>
+                                                @Localizer["TestSkipped"]
+                                            </strong>
+
+                                        </div>
+
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="result-@sub.ResultColor @segmentClass">
+
+                                        @if (showDebugInformation &&
+                                             actualTest != null &&
+                                             actualSub != null)
+                                        {
+                                            var debugAverage = (actualSub.Min + actualSub.Max) / 2;
+                                            var debugTolerance = debugAverage - actualSub.Min;
+
+                                            <div>
+                                                <strong>DEBUG</strong><br />
+                                                TestId: @actualTest.TestId<br />
+                                                TestName: @actualTest.TestName<br />
+                                                TestType: @actualTest.TestType<br />
+                                                Tank: @actualSub.TankName<br />
+                                                Position: @actualSub.TankPosition<br />
+                                                Min: @actualSub.Min<br />
+                                                Max: @actualSub.Max<br />
+                                                Limit: @debugAverage +/- @debugTolerance<br />
+                                                BlueMin: @actualSub.BlueMin<br />
+                                                BlueMax: @actualSub.BlueMax<br />
+                                                YellowMin: @actualSub.YellowMin<br />
+                                                YellowMax: @actualSub.YellowMax<br />
+                                                TolBlue: @actualSub.TolBlue<br />
+                                                ProcentMin: @actualSub.ProcentMin<br />
+                                                ProcentMax: @actualSub.ProcentMax<br />
+                                                ProcentText: @actualSub.ProcentText
+                                            </div>
+
+                                            <hr />
+                                        }
+
+                                        @if (sub.Results == null ||
+                                             sub.Results.Count == 0)
+                                        {
+                                            <strong>
+                                                @Localizer["TestNoResults"]
+                                            </strong>
+                                        }
+                                        else
+                                        {
+                                            var results =
+                                                sub.Results;
+
+                                            var resultMinCalculated =
+                                                results.Min();
+
+                                            var resultAverageCalculated =
+                                                results.Average();
+
+                                            var resultMaxCalculated =
+                                                results.Max();
+
+
+                                            <div>
+
+                                                <strong>
+                                                    @Localizer["TestMin"]:
+                                                </strong>
+
+                                                @resultMinCalculated
+                                                @sub.ResultMin
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <strong>
+                                                    @Localizer["TestAvg"]:
+                                                </strong>
+
+                                                @resultAverageCalculated.ToString("0.0")
+                                                @sub.ResultAverage
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <strong>
+                                                    @Localizer["TestMax"]:
+                                                </strong>
+
+                                                @resultMaxCalculated
+                                                @sub.ResultMax
+
+                                            </div>
+
+
+                                            <br />
+
+
+                                            <div>
+
+                                                <strong>
+                                                    @Localizer["TestResults"]:
+                                                </strong>
+
+                                                @string.Join(
+                                                    " | ",
+                                                    sub.Results
+                                                )
+
+                                            </div>
+                                        }
+
+                                    </td>
+                                }
+                            }
+
+                        </tr>
+                    }
+                }
             }
-        }
 
-    </tbody>
+        </tbody>
 
-</table>
+    </table>
+
+</div>
+
+
+<button type="button"
+        id="backToLeftToast"
+        class="back-to-left-toast"
+        aria-label="@Localizer["ButtonBackToLeft"]">
+
+    <span class="back-to-left-toast-icon">
+        ←
+    </span>
+
+    <span class="back-to-left-toast-text">
+        @Localizer["ButtonBackToLeft"]
+    </span>
+
+</button>
+
 
 <button type="button"
         id="backToTopToast"
@@ -1256,8 +1332,111 @@
 
 </button>
 
+
+<button type="button"
+        id="backToStartToast"
+        class="back-to-start-toast"
+        aria-label="@Localizer["ButtonBackToStart"]">
+
+    <span class="back-to-start-toast-icon">
+        ↖
+    </span>
+
+    <span class="back-to-start-toast-text">
+        @Localizer["ButtonBackToStart"]
+    </span>
+
+</button>
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+
+        const validationDetails =
+            document.querySelector(".analysis-validation-details");
+
+        if (validationDetails) {
+            document.addEventListener("click", function (event) {
+                if (!validationDetails.open) {
+                    return;
+                }
+
+                const clickedInside =
+                    validationDetails.contains(event.target);
+
+                if (!clickedInside) {
+                    validationDetails.removeAttribute("open");
+                }
+            });
+        }
+
+        const validationJumpButtons =
+            document.querySelectorAll(".analysis-validation-jump");
+
+        validationJumpButtons.forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                const targetId =
+                    button.dataset.scrollTarget;
+
+                const target =
+                    document.getElementById(targetId);
+
+                if (!target) {
+                    return;
+                }
+
+                const details =
+                    button.closest("details");
+
+                if (details) {
+                    details.removeAttribute("open");
+                }
+
+                target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                    inline: "center"
+                });
+
+                window.history.replaceState(
+                    {},
+                    "",
+                    `#${targetId}`
+                );
+            });
+        });
+
+
+        const backToLeftToast =
+            document.getElementById("backToLeftToast");
+
+        if (backToLeftToast) {
+            const updateBackToLeftToast = function () {
+                backToLeftToast.classList.toggle(
+                    "show",
+                    window.scrollX > 100
+                );
+            };
+
+            window.addEventListener(
+                "scroll",
+                updateBackToLeftToast,
+                { passive: true }
+            );
+
+            backToLeftToast.addEventListener("click", function () {
+                window.scrollTo({
+                    left: 0,
+                    top: window.scrollY,
+                    behavior: "smooth"
+                });
+            });
+
+            updateBackToLeftToast();
+        }
+
 
         const backToTopToast =
             document.getElementById("backToTopToast");
@@ -1286,51 +1465,78 @@
             updateBackToTopToast();
         }
 
+        const backToStartToast =
+            document.getElementById("backToStartToast");
+
+        if (backToStartToast) {
+            const updateBackToStartToast = function () {
+                backToStartToast.classList.toggle(
+                    "show",
+                    window.scrollX > 100 ||
+                    window.scrollY > 250
+                );
+            };
+
+            window.addEventListener(
+                "scroll",
+                updateBackToStartToast,
+                { passive: true }
+            );
+
+            backToStartToast.addEventListener("click", function () {
+                window.scrollTo({
+                    left: 0,
+                    top: 0,
+                    behavior: "smooth"
+                });
+            });
+
+            updateBackToStartToast();
+        }
+
 
         const layoutSelect =
             document.getElementById("layoutMode");
 
-        if (!layoutSelect) {
-            return;
-        }
+        if (layoutSelect) {
+            const storageKey =
+                "analysisPdfLayoutMode";
 
-        const storageKey =
-            "analysisPdfLayoutMode";
+            const savedLayout =
+                sessionStorage.getItem(storageKey);
 
-        const savedLayout =
-            sessionStorage.getItem(storageKey);
+            if (savedLayout) {
+                const optionExists =
+                    Array.from(layoutSelect.options)
+                        .some(option =>
+                            option.value === savedLayout);
 
-        if (savedLayout) {
-            const optionExists =
-                Array.from(layoutSelect.options)
-                    .some(option =>
-                        option.value === savedLayout);
-
-            if (optionExists) {
-                layoutSelect.value =
-                    savedLayout;
+                if (optionExists) {
+                    layoutSelect.value =
+                        savedLayout;
+                }
             }
+
+            layoutSelect.addEventListener("change", function () {
+                sessionStorage.setItem(
+                    storageKey,
+                    layoutSelect.value
+                );
+
+                const url =
+                    new URL(window.location.href);
+
+                url.searchParams.set(
+                    "layoutMode",
+                    layoutSelect.value
+                );
+
+                window.history.replaceState(
+                    {},
+                    "",
+                    url
+                );
+            });
         }
-
-        layoutSelect.addEventListener("change", function () {
-            sessionStorage.setItem(
-                storageKey,
-                layoutSelect.value
-            );
-
-            const url =
-                new URL(window.location.href);
-
-            url.searchParams.set(
-                "layoutMode",
-                layoutSelect.value
-            );
-
-            window.history.replaceState(
-                {},
-                "",
-                url
-            );
-        });
     });
 </script>

@@ -525,4 +525,10 @@
   <data name="ButtonBackToTop" xml:space="preserve">
     <value>Back to top</value>
   </data>
+  <data name="ButtonBackToLeft" xml:space="preserve">
+    <value>Back to left</value>
+  </data>
+  <data name="ButtonBackToStart" xml:space="preserve">
+    <value>Back to top left</value>
+  </data>
 </root>
