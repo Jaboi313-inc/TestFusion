@@ -1361,33 +1361,36 @@
                     return;
                 }
 
-                const clickedInside =
-                    validationDetails.contains(event.target);
-
-                if (!clickedInside) {
+                if (!validationDetails.contains(event.target)) {
                     validationDetails.removeAttribute("open");
                 }
             });
         }
 
+
         function clearAnalysisHighlights() {
             const analysisTable =
                 document.querySelector(".analysis-table");
 
-            if (analysisTable) {
-                analysisTable.classList.remove("analysis-has-highlight");
+            if (!analysisTable) {
+                return;
             }
 
-            document.querySelectorAll(
-                ".analysis-highlight-row, .analysis-highlight-column, .analysis-highlight-target"
+            analysisTable.classList.remove("analysis-has-highlight");
+
+            analysisTable.querySelectorAll(
+                ".analysis-highlight-row, .analysis-highlight-column, .analysis-highlight-target, .analysis-highlight-target-first, .analysis-highlight-target-last"
             ).forEach(element => {
                 element.classList.remove(
                     "analysis-highlight-row",
                     "analysis-highlight-column",
-                    "analysis-highlight-target"
+                    "analysis-highlight-target",
+                    "analysis-highlight-target-first",
+                    "analysis-highlight-target-last"
                 );
             });
         }
+
 
         function initializeValidationJumpButtons() {
             const validationJumpButtons =
@@ -1397,49 +1400,54 @@
                 button.addEventListener("click", function (event) {
                     event.preventDefault();
 
-                    const targetId = button.dataset.scrollTarget;
-                    const target = document.getElementById(targetId);
+                    const targetId =
+                        button.dataset.scrollTarget;
 
-                    if (!target) return;
+                    const target =
+                        document.getElementById(targetId);
 
                     const analysisTable =
                         document.querySelector(".analysis-table");
 
-                    if (!analysisTable) return;
+                    if (!target || !analysisTable) {
+                        return;
+                    }
 
-                    // Remove previous highlight
-                    analysisTable.classList.remove("analysis-has-highlight");
+                    clearAnalysisHighlights();
 
-                    analysisTable.querySelectorAll(
-                        ".analysis-highlight-row, .analysis-highlight-column, .analysis-highlight-target"
-                    ).forEach(element => {
-                        element.classList.remove(
-                            "analysis-highlight-row",
-                            "analysis-highlight-column",
-                            "analysis-highlight-target"
-                        );
-                    });
+                    const targetCell =
+                        target.closest("td, th");
 
-                    const targetCell = target.closest("td, th");
-                    const targetRow = target.closest("tr");
+                    const targetRow =
+                        target.closest("tr");
 
-                    if (!targetCell || !targetRow) return;
+                    if (!targetCell || !targetRow) {
+                        return;
+                    }
 
-                    const columnIndex = targetCell.cellIndex;
+                    const columnIndex =
+                        targetCell.cellIndex;
 
-                    // Find the first row of the complete test
-                    let firstTestRow = targetRow;
+
+                    /* Find complete test */
+
+                    let firstTestRow =
+                        targetRow;
 
                     while (
                         firstTestRow.previousElementSibling &&
                         !firstTestRow.classList.contains("test-header")
                     ) {
-                        firstTestRow = firstTestRow.previousElementSibling;
+                        firstTestRow =
+                            firstTestRow.previousElementSibling;
                     }
 
-                    // Collect all rows belonging to this test
+
+                    /* Collect test header, response time and tanks */
+
                     const testRows = [];
-                    let currentRow = firstTestRow;
+                    let currentRow =
+                        firstTestRow;
 
                     while (currentRow) {
                         if (
@@ -1450,48 +1458,110 @@
                         }
 
                         testRows.push(currentRow);
-                        currentRow = currentRow.nextElementSibling;
+
+                        currentRow =
+                            currentRow.nextElementSibling;
                     }
 
-                    // Highlight the COMPLETE logical test row:
-                    // test header + response time + all tanks
+
+                    /* Highlight complete logical test row */
+
                     testRows.forEach(row => {
                         row.querySelectorAll("td, th").forEach(cell => {
                             cell.classList.add("analysis-highlight-row");
                         });
                     });
 
-                    // Highlight the complete injector column
+
+                    /* Highlight complete injector column */
+
                     analysisTable.querySelectorAll("tr").forEach(row => {
-                        const cell = row.cells[columnIndex];
+                        const cell =
+                            row.cells[columnIndex];
 
                         if (cell) {
                             cell.classList.add("analysis-highlight-column");
                         }
                     });
 
-                    // Strong highlight on the intersection:
-                    // complete test + selected injector
+
+                    /* Highlight intersection */
+
+                    const highlightedTargetCells = [];
+
                     testRows.forEach(row => {
-                        const cell = row.cells[columnIndex];
+                        const cell =
+                            row.cells[columnIndex];
 
                         if (cell) {
                             cell.classList.add("analysis-highlight-target");
+                            highlightedTargetCells.push(cell);
                         }
                     });
 
+                    if (highlightedTargetCells.length > 0) {
+                        highlightedTargetCells[0]
+                            .classList.add("analysis-highlight-target-first");
+
+                        highlightedTargetCells[
+                            highlightedTargetCells.length - 1
+                        ].classList.add("analysis-highlight-target-last");
+                    }
+
                     analysisTable.classList.add("analysis-has-highlight");
 
-                    const details = button.closest("details");
+
+                    /* Close validation details */
+
+                    const details =
+                        button.closest("details");
 
                     if (details) {
                         details.removeAttribute("open");
                     }
 
-                    target.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center",
-                        inline: "center"
+
+                    /* Scroll selected test to the top */
+
+                    const navbar =
+                        document.querySelector("header");
+
+                    const tableHeader =
+                        analysisTable.querySelector("thead");
+
+                    const navbarHeight =
+                        navbar?.getBoundingClientRect().height ?? 0;
+
+                    const tableHeaderHeight =
+                        tableHeader?.getBoundingClientRect().height ?? 0;
+
+                    const firstTestCell =
+                        firstTestRow.cells[columnIndex] ?? firstTestRow;
+
+                    const firstTestRect =
+                        firstTestCell.getBoundingClientRect();
+
+                    const targetRect =
+                        targetCell.getBoundingClientRect();
+
+                    const topOffset =
+                        navbarHeight + tableHeaderHeight;
+
+                    const scrollTop =
+                        firstTestRect.top +
+                        window.scrollY -
+                        topOffset;
+
+                    const scrollLeft =
+                        targetRect.left +
+                        window.scrollX -
+                        (window.innerWidth / 2) +
+                        (targetRect.width / 2);
+
+                    window.scrollTo({
+                        top: Math.max(0, scrollTop),
+                        left: Math.max(0, scrollLeft),
+                        behavior: "smooth"
                     });
 
                     window.history.replaceState(
@@ -1504,6 +1574,7 @@
         }
 
         initializeValidationJumpButtons();
+
 
         const backToLeftToast =
             document.getElementById("backToLeftToast");
@@ -1533,6 +1604,7 @@
             updateBackToLeftToast();
         }
 
+
         const backToTopToast =
             document.getElementById("backToTopToast");
 
@@ -1552,6 +1624,7 @@
 
             backToTopToast.addEventListener("click", function () {
                 window.scrollTo({
+                    left: window.scrollX,
                     top: 0,
                     behavior: "smooth"
                 });
@@ -1559,6 +1632,7 @@
 
             updateBackToTopToast();
         }
+
 
         const backToStartToast =
             document.getElementById("backToStartToast");
@@ -1588,6 +1662,7 @@
 
             updateBackToStartToast();
         }
+
 
         const layoutSelect =
             document.getElementById("layoutMode");
