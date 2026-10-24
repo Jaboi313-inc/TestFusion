@@ -191,6 +191,95 @@
 }
 
 
+/* Validation Go To highlight */
+
+.analysis-table td,
+.analysis-table th {
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+
+/* Dim the complete table */
+
+.analysis-table.analysis-has-highlight td,
+.analysis-table.analysis-has-highlight th {
+    opacity: 0.22;
+    filter: saturate(0.45);
+}
+
+
+/* Complete logical test row */
+
+.analysis-table.analysis-has-highlight .analysis-highlight-row {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+    .analysis-table.analysis-has-highlight .analysis-highlight-row::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        background-color: rgba(255, 193, 7, 0.18);
+        pointer-events: none;
+    }
+
+
+/* Complete selected injector column */
+
+.analysis-table.analysis-has-highlight .analysis-highlight-column {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+    .analysis-table.analysis-has-highlight .analysis-highlight-column::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 21;
+        background-color: rgba(255, 193, 7, 0.12);
+        pointer-events: none;
+    }
+
+
+/* Selected injector inside selected logical test row */
+
+.analysis-table.analysis-has-highlight .analysis-highlight-target {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+    .analysis-table.analysis-has-highlight .analysis-highlight-target::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        background-color: rgba(255, 193, 7, 0.34);
+        pointer-events: none;
+    }
+
+
+/* Make the selected test block look like one section */
+
+.analysis-table.analysis-has-highlight
+.test-header
+.analysis-highlight-target {
+    box-shadow: inset 4px 0 0 #f0ad00, inset -4px 0 0 #f0ad00, inset 0 4px 0 #f0ad00;
+}
+
+.analysis-table.analysis-has-highlight
+.test-header ~ tr
+.analysis-highlight-target {
+    box-shadow: inset 4px 0 0 #f0ad00, inset -4px 0 0 #f0ad00;
+}
+
+.analysis-table.analysis-has-highlight
+.tank-row:last-of-type
+.analysis-highlight-target {
+    box-shadow: inset 4px 0 0 #f0ad00, inset -4px 0 0 #f0ad00, inset 0 -4px 0 #f0ad00;
+}
+
+
 /* Sticky horizontal information */
 
 table.table thead {
@@ -343,7 +432,6 @@ table.table tbody > .test-header:first-child td {
     white-space: nowrap;
     transition: max-width 0.25s ease, opacity 0.2s ease;
 }
-
 
 .back-to-top-toast:hover,
 .back-to-top-toast:focus-visible,

@@ -1370,44 +1370,140 @@
             });
         }
 
-        const validationJumpButtons =
-            document.querySelectorAll(".analysis-validation-jump");
+        function clearAnalysisHighlights() {
+            const analysisTable =
+                document.querySelector(".analysis-table");
 
-        validationJumpButtons.forEach(button => {
-            button.addEventListener("click", function (event) {
-                event.preventDefault();
+            if (analysisTable) {
+                analysisTable.classList.remove("analysis-has-highlight");
+            }
 
-                const targetId =
-                    button.dataset.scrollTarget;
-
-                const target =
-                    document.getElementById(targetId);
-
-                if (!target) {
-                    return;
-                }
-
-                const details =
-                    button.closest("details");
-
-                if (details) {
-                    details.removeAttribute("open");
-                }
-
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center",
-                    inline: "center"
-                });
-
-                window.history.replaceState(
-                    {},
-                    "",
-                    `#${targetId}`
+            document.querySelectorAll(
+                ".analysis-highlight-row, .analysis-highlight-column, .analysis-highlight-target"
+            ).forEach(element => {
+                element.classList.remove(
+                    "analysis-highlight-row",
+                    "analysis-highlight-column",
+                    "analysis-highlight-target"
                 );
             });
-        });
+        }
 
+        function initializeValidationJumpButtons() {
+            const validationJumpButtons =
+                document.querySelectorAll(".analysis-validation-jump");
+
+            validationJumpButtons.forEach(button => {
+                button.addEventListener("click", function (event) {
+                    event.preventDefault();
+
+                    const targetId = button.dataset.scrollTarget;
+                    const target = document.getElementById(targetId);
+
+                    if (!target) return;
+
+                    const analysisTable =
+                        document.querySelector(".analysis-table");
+
+                    if (!analysisTable) return;
+
+                    // Remove previous highlight
+                    analysisTable.classList.remove("analysis-has-highlight");
+
+                    analysisTable.querySelectorAll(
+                        ".analysis-highlight-row, .analysis-highlight-column, .analysis-highlight-target"
+                    ).forEach(element => {
+                        element.classList.remove(
+                            "analysis-highlight-row",
+                            "analysis-highlight-column",
+                            "analysis-highlight-target"
+                        );
+                    });
+
+                    const targetCell = target.closest("td, th");
+                    const targetRow = target.closest("tr");
+
+                    if (!targetCell || !targetRow) return;
+
+                    const columnIndex = targetCell.cellIndex;
+
+                    // Find the first row of the complete test
+                    let firstTestRow = targetRow;
+
+                    while (
+                        firstTestRow.previousElementSibling &&
+                        !firstTestRow.classList.contains("test-header")
+                    ) {
+                        firstTestRow = firstTestRow.previousElementSibling;
+                    }
+
+                    // Collect all rows belonging to this test
+                    const testRows = [];
+                    let currentRow = firstTestRow;
+
+                    while (currentRow) {
+                        if (
+                            currentRow !== firstTestRow &&
+                            currentRow.classList.contains("test-header")
+                        ) {
+                            break;
+                        }
+
+                        testRows.push(currentRow);
+                        currentRow = currentRow.nextElementSibling;
+                    }
+
+                    // Highlight the COMPLETE logical test row:
+                    // test header + response time + all tanks
+                    testRows.forEach(row => {
+                        row.querySelectorAll("td, th").forEach(cell => {
+                            cell.classList.add("analysis-highlight-row");
+                        });
+                    });
+
+                    // Highlight the complete injector column
+                    analysisTable.querySelectorAll("tr").forEach(row => {
+                        const cell = row.cells[columnIndex];
+
+                        if (cell) {
+                            cell.classList.add("analysis-highlight-column");
+                        }
+                    });
+
+                    // Strong highlight on the intersection:
+                    // complete test + selected injector
+                    testRows.forEach(row => {
+                        const cell = row.cells[columnIndex];
+
+                        if (cell) {
+                            cell.classList.add("analysis-highlight-target");
+                        }
+                    });
+
+                    analysisTable.classList.add("analysis-has-highlight");
+
+                    const details = button.closest("details");
+
+                    if (details) {
+                        details.removeAttribute("open");
+                    }
+
+                    target.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                        inline: "center"
+                    });
+
+                    window.history.replaceState(
+                        {},
+                        "",
+                        `#${targetId}`
+                    );
+                });
+            });
+        }
+
+        initializeValidationJumpButtons();
 
         const backToLeftToast =
             document.getElementById("backToLeftToast");
@@ -1436,7 +1532,6 @@
 
             updateBackToLeftToast();
         }
-
 
         const backToTopToast =
             document.getElementById("backToTopToast");
@@ -1493,7 +1588,6 @@
 
             updateBackToStartToast();
         }
-
 
         const layoutSelect =
             document.getElementById("layoutMode");
