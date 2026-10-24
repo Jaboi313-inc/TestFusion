@@ -189,26 +189,65 @@
 
 .analysis-table td,
 .analysis-table th {
-    transition: opacity 0.2s ease, filter 0.2s ease;
+    transition: opacity 0.2s ease, filter 0.2s ease, color 0.2s ease;
 }
 
 
-/* Dim everything outside the selected test and injector */
+/* Dim normal table cells */
 
-.analysis-table.analysis-has-highlight td,
-.analysis-table.analysis-has-highlight th {
+.analysis-table.analysis-has-highlight td:not(:first-child),
+.analysis-table.analysis-has-highlight th:not(:first-child) {
     opacity: 0.20;
     filter: saturate(0.40);
 }
 
 
-/* Complete logical test:
-   test title + test info + response time + all tanks */
+/* Keep sticky information column solid */
+
+.analysis-table.analysis-has-highlight tr > td:first-child,
+.analysis-table.analysis-has-highlight tr > th:first-child {
+    opacity: 1 !important;
+    filter: none !important;
+    background-color: #fff;
+}
+
+
+    /* Dim only text in sticky information column */
+
+    .analysis-table.analysis-has-highlight
+    tr > td:first-child:not(.analysis-highlight-row),
+    .analysis-table.analysis-has-highlight
+    tr > th:first-child:not(.analysis-highlight-row) {
+        color: rgba(33, 37, 41, 0.20) !important;
+    }
+
+        .analysis-table.analysis-has-highlight
+        tr > td:first-child:not(.analysis-highlight-row) *,
+        .analysis-table.analysis-has-highlight
+        tr > th:first-child:not(.analysis-highlight-row) * {
+            color: rgba(33, 37, 41, 0.20) !important;
+        }
+
+
+/* Keep test headers solid grey */
+
+.analysis-table.analysis-has-highlight
+.test-header > td:first-child {
+    background-color: #e6e6e6 !important;
+}
+
+
+/* Complete selected logical test row */
 
 .analysis-table.analysis-has-highlight .analysis-highlight-row {
     opacity: 1 !important;
     filter: none !important;
+    color: inherit !important;
 }
+
+    .analysis-table.analysis-has-highlight .analysis-highlight-row * {
+        color: inherit;
+    }
 
     .analysis-table.analysis-has-highlight .analysis-highlight-row::after {
         content: "";
@@ -217,6 +256,23 @@
         z-index: 20;
         background-color: rgba(255, 193, 7, 0.15);
         pointer-events: none;
+    }
+
+
+/* Make selected sticky info text readable */
+
+.analysis-table.analysis-has-highlight
+tr > td:first-child.analysis-highlight-row,
+.analysis-table.analysis-has-highlight
+tr > th:first-child.analysis-highlight-row {
+    color: #111 !important;
+}
+
+    .analysis-table.analysis-has-highlight
+    tr > td:first-child.analysis-highlight-row *,
+    .analysis-table.analysis-has-highlight
+    tr > th:first-child.analysis-highlight-row * {
+        color: inherit !important;
     }
 
 
@@ -237,7 +293,7 @@
     }
 
 
-/* Selected injector inside selected complete test */
+/* Selected injector inside selected logical test */
 
 .analysis-table.analysis-has-highlight .analysis-highlight-target {
     opacity: 1 !important;
@@ -255,16 +311,18 @@
     }
 
 
-/* Top of the complete selected test block */
+/* Top border of complete selected test block */
 
-.analysis-table.analysis-has-highlight .analysis-highlight-target-first {
+.analysis-table.analysis-has-highlight
+.analysis-highlight-target-first {
     box-shadow: inset 4px 0 0 #f0ad00, inset -4px 0 0 #f0ad00, inset 0 4px 0 #f0ad00;
 }
 
 
-/* Bottom of the complete selected test block */
+/* Bottom border of complete selected test block */
 
-.analysis-table.analysis-has-highlight .analysis-highlight-target-last {
+.analysis-table.analysis-has-highlight
+.analysis-highlight-target-last {
     box-shadow: inset 4px 0 0 #f0ad00, inset -4px 0 0 #f0ad00, inset 0 -4px 0 #f0ad00;
 }
 
