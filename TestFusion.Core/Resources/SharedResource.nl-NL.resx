@@ -480,4 +480,55 @@
   <data name="DebugLogNoEntries" xml:space="preserve">
     <value>Geen logregels gevonden</value>
   </data>
+  <data name="AnalysisValidationSuccessTitle" xml:space="preserve">
+    <value>Controle geslaagd</value>
+  </data>
+  <data name="AnalysisValidationSuccess" xml:space="preserve">
+    <value>Verstuivernummer, merk, type, tests en testlimieten komen overeen.</value>
+  </data>
+  <data name="AnalysisValidationErrorTitle" xml:space="preserve">
+    <value>Verschillen gevonden</value>
+  </data>
+  <data name="AnalysisValidationPartNumberMismatch" xml:space="preserve">
+    <value>Het verstuivernummer is niet voor alle geselecteerde verstuivers hetzelfde.</value>
+  </data>
+  <data name="AnalysisValidationBrandMismatch" xml:space="preserve">
+    <value>Het merk is niet voor alle geselecteerde verstuivers hetzelfde.</value>
+  </data>
+  <data name="AnalysisValidationTypeMismatch" xml:space="preserve">
+    <value>Het type is niet voor alle geselecteerde verstuivers hetzelfde.</value>
+  </data>
+  <data name="AnalysisValidationTestMissing" xml:space="preserve">
+    <value>Test '{0}' is niet bij alle geselecteerde verstuivers aanwezig.</value>
+  </data>
+  <data name="AnalysisValidationTestNameMismatch" xml:space="preserve">
+    <value>De testnaam van test '{0}' komt niet bij alle geselecteerde verstuivers overeen.</value>
+  </data>
+  <data name="AnalysisValidationTestTypeMismatch" xml:space="preserve">
+    <value>Het testtype van test '{0}' komt niet bij alle geselecteerde verstuivers overeen.</value>
+  </data>
+  <data name="AnalysisValidationTestLimitsMismatch" xml:space="preserve">
+    <value>De tanks of limieten van test '{0}' komen niet bij alle geselecteerde verstuivers overeen.</value>
+  </data>
+  <data name="AnalysisValidationAccuracyWarning" xml:space="preserve">
+    <value>Er zijn verschillen tussen de geselecteerde tests. Let op de accuraatheid van de vergelijking</value>
+  </data>
+  <data name="AnalysisValidationShowDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="AnalysisValidationExactDifferences" xml:space="preserve">
+    <value>Exacte verschillen</value>
+  </data>
+  <data name="AnalysisValidationGoToDifference" xml:space="preserve">
+    <value>Toon</value>
+  </data>
+  <data name="ButtonBackToTop" xml:space="preserve">
+    <value>Naar boven</value>
+  </data>
+  <data name="ButtonBackToLeft" xml:space="preserve">
+    <value>Naar links</value>
+  </data>
+  <data name="ButtonBackToStart" xml:space="preserve">
+    <value>Naar linksboven</value>
+  </data>
 </root>
