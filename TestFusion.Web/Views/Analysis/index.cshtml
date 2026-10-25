@@ -1357,9 +1357,7 @@
 
         if (validationDetails) {
             document.addEventListener("click", function (event) {
-                if (!validationDetails.open) {
-                    return;
-                }
+                if (!validationDetails.open) return;
 
                 if (!validationDetails.contains(event.target)) {
                     validationDetails.removeAttribute("open");
@@ -1372,9 +1370,7 @@
             const analysisTable =
                 document.querySelector(".analysis-table");
 
-            if (!analysisTable) {
-                return;
-            }
+            if (!analysisTable) return;
 
             analysisTable.classList.remove("analysis-has-highlight");
 
@@ -1409,9 +1405,7 @@
                     const analysisTable =
                         document.querySelector(".analysis-table");
 
-                    if (!target || !analysisTable) {
-                        return;
-                    }
+                    if (!target || !analysisTable) return;
 
                     clearAnalysisHighlights();
 
@@ -1421,9 +1415,7 @@
                     const targetRow =
                         target.closest("tr");
 
-                    if (!targetCell || !targetRow) {
-                        return;
-                    }
+                    if (!targetCell || !targetRow) return;
 
                     const columnIndex =
                         targetCell.cellIndex;
@@ -1446,6 +1438,7 @@
                     /* Collect test title, response time and all tanks */
 
                     const testRows = [];
+
                     let currentRow =
                         firstTestRow;
 
@@ -1464,7 +1457,7 @@
                     }
 
 
-                    /* Highlight complete logical test row */
+                    /* Highlight complete logical test */
 
                     testRows.forEach(row => {
                         row.querySelectorAll("td, th").forEach(cell => {
@@ -1511,7 +1504,7 @@
                     analysisTable.classList.add("analysis-has-highlight");
 
 
-                    /* Close details */
+                    /* Close validation details */
 
                     const details =
                         button.closest("details");
@@ -1571,6 +1564,59 @@
         }
 
         initializeValidationJumpButtons();
+
+
+        /* Reset highlight when clicking outside selected test */
+
+        document.addEventListener("click", function (event) {
+            const analysisTable =
+                document.querySelector(".analysis-table");
+
+            if (
+                !analysisTable ||
+                !analysisTable.classList.contains("analysis-has-highlight")
+            ) {
+                return;
+            }
+
+            const clickedInsideSelectedTest =
+                event.target.closest(".analysis-highlight-row");
+
+            if (clickedInsideSelectedTest) {
+                return;
+            }
+
+            const clickedValidationDetails =
+                event.target.closest(".analysis-validation-details");
+
+            if (clickedValidationDetails) {
+                return;
+            }
+
+            const clickedNavigationButton =
+                event.target.closest(
+                    "#backToLeftToast, #backToTopToast, #backToStartToast"
+                );
+
+            if (clickedNavigationButton) {
+                return;
+            }
+
+            clearAnalysisHighlights();
+        });
+
+
+        /* Reset highlight with Escape */
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key !== "Escape") return;
+
+            clearAnalysisHighlights();
+
+            if (validationDetails?.open) {
+                validationDetails.removeAttribute("open");
+            }
+        });
 
 
         const backToLeftToast =
