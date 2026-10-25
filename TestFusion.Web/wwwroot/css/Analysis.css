@@ -189,11 +189,11 @@
 
 .analysis-table td,
 .analysis-table th {
-    transition: opacity 0.2s ease, filter 0.2s ease, color 0.2s ease;
+    transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
 
-/* Dim normal table cells */
+/* Dim normal cells */
 
 .analysis-table.analysis-has-highlight td:not(:first-child),
 .analysis-table.analysis-has-highlight th:not(:first-child) {
@@ -212,7 +212,7 @@
 }
 
 
-    /* Dim only text in sticky information column */
+    /* Dim only the text in the sticky information column */
 
     .analysis-table.analysis-has-highlight
     tr > td:first-child:not(.analysis-highlight-row),
@@ -237,17 +237,13 @@
 }
 
 
-/* Complete selected logical test row */
+/* Complete selected logical test:
+   title + info + response time + all tanks */
 
 .analysis-table.analysis-has-highlight .analysis-highlight-row {
     opacity: 1 !important;
     filter: none !important;
-    color: inherit !important;
 }
-
-    .analysis-table.analysis-has-highlight .analysis-highlight-row * {
-        color: inherit;
-    }
 
     .analysis-table.analysis-has-highlight .analysis-highlight-row::after {
         content: "";
@@ -259,21 +255,15 @@
     }
 
 
-/* Make selected sticky info text readable */
+/* Selected first column stays readable */
 
 .analysis-table.analysis-has-highlight
 tr > td:first-child.analysis-highlight-row,
 .analysis-table.analysis-has-highlight
 tr > th:first-child.analysis-highlight-row {
-    color: #111 !important;
+    opacity: 1 !important;
+    filter: none !important;
 }
-
-    .analysis-table.analysis-has-highlight
-    tr > td:first-child.analysis-highlight-row *,
-    .analysis-table.analysis-has-highlight
-    tr > th:first-child.analysis-highlight-row * {
-        color: inherit !important;
-    }
 
 
 /* Complete selected injector column */
@@ -293,7 +283,7 @@ tr > th:first-child.analysis-highlight-row {
     }
 
 
-/* Selected injector inside selected logical test */
+/* Selected injector inside selected complete test */
 
 .analysis-table.analysis-has-highlight .analysis-highlight-target {
     opacity: 1 !important;
@@ -311,7 +301,7 @@ tr > th:first-child.analysis-highlight-row {
     }
 
 
-/* Top border of complete selected test block */
+/* Top of selected test block */
 
 .analysis-table.analysis-has-highlight
 .analysis-highlight-target-first {
@@ -319,7 +309,7 @@ tr > th:first-child.analysis-highlight-row {
 }
 
 
-/* Bottom border of complete selected test block */
+/* Bottom of selected test block */
 
 .analysis-table.analysis-has-highlight
 .analysis-highlight-target-last {
