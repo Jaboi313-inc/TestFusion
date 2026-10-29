@@ -22,43 +22,44 @@ namespace TestFusion.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("TestFusion.Core.Models.StoredJsonModel", b =>
+            modelBuilder.Entity("TestFusion.Core.Models.ApplicationSettings", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CarbonXEmailEncrypted")
                         .HasColumnType("text");
 
-                    b.Property<string>("Json")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<string>("CarbonXPasswordEncrypted")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("GroupTestsByBaseName")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("MatchCustomerMail")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("MatchCustomerName")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("MatchCustomerNotes")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("MatchCustomerPhone")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PdfMaxInjectorsPerPage")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("ShowDebugInformation")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
-                    b.ToTable("stored_jsons", (string)null);
-                });
-
-            modelBuilder.Entity("TestFusion.Core.Models.TestListItemModel", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("DateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PartBrand")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PartNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PartType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("test_items", (string)null);
+                    b.ToTable("application_settings", (string)null);
                 });
 
             modelBuilder.Entity("TestFusion.Core.Models.TestReportModel", b =>

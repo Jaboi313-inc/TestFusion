@@ -1,16 +1,37 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
-using TestFusion.Data;
+using TestFusion.Core.Models.WebModels;
 
-namespace TestFusion.Web.Controllers
+namespace TestFusion.Web.Controllers;
+
+public class SettingsController : Controller
 {
-    public class SettingsController : Controller
-    {
+    private readonly ISettingsService _settingsService;
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+    public SettingsController(ISettingsService settingsService)
+    {
+        _settingsService = settingsService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index()
+    {
+        var model = await _settingsService.GetForEditAsync();
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Index(SettingsViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        await _settingsService.UpdateAsync(model);
+
+        TempData["Success"] = "Instellingen zijn opgeslagen.";
+
+        return RedirectToAction(nameof(Index));
     }
 }

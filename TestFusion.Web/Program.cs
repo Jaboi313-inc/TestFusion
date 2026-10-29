@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.AspNetCore.DataProtection;
 using Serilog;
 using Serilog.Formatting.Compact;
 using System.Globalization;
@@ -65,6 +66,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(postgresConnection));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.AddDataProtection();
+
+builder.Services.AddScoped<ISecretProtector, SecretProtector>();
+
+builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {

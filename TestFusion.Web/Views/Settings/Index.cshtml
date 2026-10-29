@@ -1,16 +1,80 @@
-﻿@using System.Globalization
-@using Microsoft.Extensions.Localization
-@using TestFusion.Core
-@inject IStringLocalizer<SharedResource> Localizer
+﻿@model TestFusion.Core.Models.WebModels.SettingsViewModel
 
 @{
-    ViewData["Title"] = Localizer["PageTitleSettings"];
+    ViewData["Title"] = "Instellingen";
 }
 
+<h2>Instellingen</h2>
 
-<link rel="stylesheet" href="~/css/settings.css" />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
 
+<form asp-action="Index" method="post">
 
-<div class="top-bar-left">
-    <h2>Instellingen</h2>
-</div>
+    <h4>Analyse</h4>
+
+    <div class="form-check">
+        <input asp-for="ShowDebugInformation" class="form-check-input" />
+        <label asp-for="ShowDebugInformation" class="form-check-label">Debuginformatie tonen</label>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="GroupTestsByBaseName" class="form-check-input" />
+        <label asp-for="GroupTestsByBaseName" class="form-check-label">Tests groeperen op basisnaam</label>
+    </div>
+
+    <h4>Klantgroepering</h4>
+
+    <div class="form-check">
+        <input asp-for="MatchCustomerName" class="form-check-input" />
+        <label asp-for="MatchCustomerName" class="form-check-label">Naam vergelijken</label>
+    </div>
+
+    <div class="form-check">
+        <input asp-for="MatchCustomerPhone" class="form-check-input" />
+        <label asp-for="MatchCustomerPhone" class="form-check-label">Telefoonnummer vergelijken</label>
+    </div>
+
+    <div class="form-check">
+        <input asp-for="MatchCustomerMail" class="form-check-input" />
+        <label asp-for="MatchCustomerMail" class="form-check-label">E-mailadres vergelijken</label>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="MatchCustomerNotes" class="form-check-input" />
+        <label asp-for="MatchCustomerNotes" class="form-check-label">Notities vergelijken</label>
+    </div>
+
+    <h4>PDF</h4>
+
+    <div class="mb-3">
+        <label asp-for="PdfMaxInjectorsPerPage" class="form-label">Maximaal aantal verstuivers per pagina</label>
+        <input asp-for="PdfMaxInjectorsPerPage" type="number" min="1" max="20" class="form-control" />
+    </div>
+
+    <h4>CarbonX</h4>
+
+    <div class="mb-3">
+        <label asp-for="CarbonXEmail" class="form-label">E-mailadres</label>
+        <input asp-for="CarbonXEmail" type="email" autocomplete="off" class="form-control" />
+    </div>
+
+    @if (Model.HasCarbonXPassword)
+    {
+        <div class="alert alert-info">
+            Er is een CarbonX-wachtwoord opgeslagen. Laat het veld leeg om het bestaande wachtwoord te behouden.
+        </div>
+    }
+
+    <div class="mb-3">
+        <label asp-for="NewCarbonXPassword" class="form-label">Nieuw wachtwoord</label>
+        <input asp-for="NewCarbonXPassword" type="password" autocomplete="new-password" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Opslaan</button>
+
+</form>
