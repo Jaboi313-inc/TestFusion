@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Services.Services;
@@ -166,7 +168,7 @@ public class AnalysisControllerTests
     }
 
     private static AnalysisController CreateController(TestFusion.Data.AppDbContext db)
-        => new(db, new TestStringLocalizer(), new TimeZoneService());
+        => new(db, new TestStringLocalizer(), new TimeZoneService(), new TestSettingsService());
 
     private static TestFusion.Core.Models.TestReportModel ToReport(TestResultModel result)
     {
