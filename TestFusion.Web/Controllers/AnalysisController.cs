@@ -17,15 +17,18 @@ namespace TestFusion.Web.Controllers
         private readonly AppDbContext _db;
         private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ITimeZoneService _timeZoneService;
+        private readonly ISettingsService _settingsService;
 
         public AnalysisController(
             AppDbContext db,
             IStringLocalizer<SharedResource> localizer,
-            ITimeZoneService timeZoneService)
+            ITimeZoneService timeZoneService,
+            ISettingsService settingsService)
         {
             _db = db;
             _localizer = localizer;
             _timeZoneService = timeZoneService;
+            _settingsService = settingsService;
         }
 
         [HttpPost]
@@ -156,7 +159,8 @@ namespace TestFusion.Web.Controllers
             {
                 Injectors = injectors,
                 AllTests = allTests,
-                SelectedIds = selectedIds
+                SelectedIds = selectedIds,
+                Settings = await _settingsService.GetAsync()
             };
         }
 

@@ -1,7 +1,10 @@
-﻿namespace TestFusion.Core.Models.WebModels;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TestFusion.Core.Models.WebModels;
 
 public class SettingsViewModel
 {
+    public string? ReturnUrl { get; set; }
     public bool ShowDebugInformation { get; set; }
     public bool GroupTestsByBaseName { get; set; }
 
@@ -10,9 +13,10 @@ public class SettingsViewModel
     public bool MatchCustomerMail { get; set; }
     public bool MatchCustomerNotes { get; set; }
 
+    [Range(1, 20, ErrorMessage = "Het aantal verstuivers moet tussen 1 en 20 liggen.")]
     public int PdfMaxInjectorsPerPage { get; set; }
 
-    public string CarbonXEmail { get; set; } = string.Empty;
+    public string? CarbonXEmail { get; set; }
     public bool HasCarbonXPassword { get; set; }
     public string? NewCarbonXPassword { get; set; }
 }

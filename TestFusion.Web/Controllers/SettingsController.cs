@@ -14,9 +14,10 @@ public class SettingsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? returnUrl)
     {
         var model = await _settingsService.GetForEditAsync();
+        model.ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null;
 
         return View(model);
     }
@@ -26,12 +27,16 @@ public class SettingsController : Controller
     public async Task<IActionResult> Index(SettingsViewModel model)
     {
         if (!ModelState.IsValid)
+        {
+            var currentSettings = await _settingsService.GetForEditAsync();
+            model.HasCarbonXPassword = currentSettings.HasCarbonXPassword;
             return View(model);
+        }
 
         await _settingsService.UpdateAsync(model);
 
         TempData["Success"] = "Instellingen zijn opgeslagen.";
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { returnUrl = model.ReturnUrl });
     }
 }

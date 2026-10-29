@@ -16,13 +16,13 @@
         Context.Request.Query["layoutMode"].FirstOrDefault()
         ?? "Compact";
 
-    var showDebugInformation = false;
-    var groupTestsByBaseName = true;
+    var showDebugInformation = Model.Settings.ShowDebugInformation;
+    var groupTestsByBaseName = Model.Settings.GroupTestsByBaseName;
 
-    var matchCustomerName = true;
-    var matchCustomerPhone = true;
-    var matchCustomerMail = true;
-    var matchCustomerNotes = true;
+    var matchCustomerName = Model.Settings.MatchCustomerName;
+    var matchCustomerPhone = Model.Settings.MatchCustomerPhone;
+    var matchCustomerMail = Model.Settings.MatchCustomerMail;
+    var matchCustomerNotes = Model.Settings.MatchCustomerNotes;
 
     var customerGroups = Model.Injectors
         .GroupBy(injector => GetCustomerKey(

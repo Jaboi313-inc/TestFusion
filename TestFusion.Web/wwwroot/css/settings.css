@@ -1,4 +1,12 @@
-﻿.settings-header {
+﻿.settings-page {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 10px 20px 40px;
+    box-sizing: border-box;
+}
+
+.settings-header {
     display: flex;
     align-items: center;
     padding: 20px;
@@ -7,3 +15,195 @@
     .settings-header h2 {
         margin: 0;
     }
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-section {
+    overflow: hidden;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.settings-section-header {
+    padding: 18px 20px;
+    background-color: #f3f3f3;
+    border-bottom: 1px solid #ddd;
+}
+
+    .settings-section-header h2 {
+        margin: 0 0 4px;
+        font-size: 1.2rem;
+        color: #1d1d1d;
+    }
+
+    .settings-section-header p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+.settings-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+}
+
+.settings-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+}
+
+    .settings-checkbox input {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        cursor: pointer;
+    }
+
+    .settings-checkbox span {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .settings-checkbox strong {
+        color: #222;
+        font-size: 0.95rem;
+    }
+
+    .settings-checkbox small {
+        color: #707070;
+        line-height: 1.4;
+    }
+
+.settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+    .settings-field label {
+        font-weight: 600;
+        color: #222;
+    }
+
+    .settings-field input {
+        width: 100%;
+        max-width: 450px;
+        padding: 10px 12px;
+        box-sizing: border-box;
+        font: inherit;
+        color: #222;
+        background-color: #fff;
+        border: 1px solid #c9c9c9;
+        border-radius: 5px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .settings-field input:focus {
+            border-color: #666;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+        }
+
+    .settings-field small {
+        color: #707070;
+        font-size: 0.85rem;
+    }
+
+.settings-field-error,
+.settings-validation {
+    color: #c62828;
+    font-size: 0.85rem;
+}
+
+    .settings-validation:empty {
+        display: none;
+    }
+
+.settings-message {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: 5px;
+}
+
+.settings-message-success {
+    color: #176b32;
+    background-color: #e8f5ec;
+    border: 1px solid #b9dfc4;
+}
+
+.settings-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+    padding: 10px 18px;
+    box-sizing: border-box;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.settings-button-primary {
+    color: #fff;
+    background-color: #222;
+    border-color: #222;
+}
+
+    .settings-button-primary:hover {
+        background-color: #3a3a3a;
+        border-color: #3a3a3a;
+    }
+
+.settings-button-secondary {
+    color: #222;
+    background-color: #fff;
+    border-color: #bbb;
+}
+
+    .settings-button-secondary:hover {
+        background-color: #eee;
+    }
+
+@media (max-width: 600px) {
+    .settings-page {
+        padding: 10px 10px 30px;
+    }
+
+    .settings-section-header,
+    .settings-section-content {
+        padding: 15px;
+    }
+
+    .settings-field input {
+        max-width: none;
+    }
+
+    .settings-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .settings-button {
+        width: 100%;
+    }
+}

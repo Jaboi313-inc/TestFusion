@@ -1,80 +1,156 @@
-﻿@model TestFusion.Core.Models.WebModels.SettingsViewModel
+﻿```cshtml
+@model TestFusion.Core.Models.WebModels.SettingsViewModel
 
 @{
     ViewData["Title"] = "Instellingen";
 }
 
-<h2>Instellingen</h2>
+<link rel="stylesheet" href="~/css/settings.css" />
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["Success"]
-    </div>
-}
-
-<form asp-action="Index" method="post">
-
-    <h4>Analyse</h4>
-
-    <div class="form-check">
-        <input asp-for="ShowDebugInformation" class="form-check-input" />
-        <label asp-for="ShowDebugInformation" class="form-check-label">Debuginformatie tonen</label>
+<div class="settings-page">
+    <div class="settings-header">
+        <div>
+            <h2>Instellingen</h2>
+            <p>Beheer de algemene instellingen van TestFusion.</p>
+        </div>
     </div>
 
-    <div class="form-check mb-3">
-        <input asp-for="GroupTestsByBaseName" class="form-check-input" />
-        <label asp-for="GroupTestsByBaseName" class="form-check-label">Tests groeperen op basisnaam</label>
-    </div>
-
-    <h4>Klantgroepering</h4>
-
-    <div class="form-check">
-        <input asp-for="MatchCustomerName" class="form-check-input" />
-        <label asp-for="MatchCustomerName" class="form-check-label">Naam vergelijken</label>
-    </div>
-
-    <div class="form-check">
-        <input asp-for="MatchCustomerPhone" class="form-check-input" />
-        <label asp-for="MatchCustomerPhone" class="form-check-label">Telefoonnummer vergelijken</label>
-    </div>
-
-    <div class="form-check">
-        <input asp-for="MatchCustomerMail" class="form-check-input" />
-        <label asp-for="MatchCustomerMail" class="form-check-label">E-mailadres vergelijken</label>
-    </div>
-
-    <div class="form-check mb-3">
-        <input asp-for="MatchCustomerNotes" class="form-check-input" />
-        <label asp-for="MatchCustomerNotes" class="form-check-label">Notities vergelijken</label>
-    </div>
-
-    <h4>PDF</h4>
-
-    <div class="mb-3">
-        <label asp-for="PdfMaxInjectorsPerPage" class="form-label">Maximaal aantal verstuivers per pagina</label>
-        <input asp-for="PdfMaxInjectorsPerPage" type="number" min="1" max="20" class="form-control" />
-    </div>
-
-    <h4>CarbonX</h4>
-
-    <div class="mb-3">
-        <label asp-for="CarbonXEmail" class="form-label">E-mailadres</label>
-        <input asp-for="CarbonXEmail" type="email" autocomplete="off" class="form-control" />
-    </div>
-
-    @if (Model.HasCarbonXPassword)
+    @if (TempData["Success"] != null)
     {
-        <div class="alert alert-info">
-            Er is een CarbonX-wachtwoord opgeslagen. Laat het veld leeg om het bestaande wachtwoord te behouden.
+        <div class="settings-message settings-message-success">
+            @TempData["Success"]
         </div>
     }
 
-    <div class="mb-3">
-        <label asp-for="NewCarbonXPassword" class="form-label">Nieuw wachtwoord</label>
-        <input asp-for="NewCarbonXPassword" type="password" autocomplete="new-password" class="form-control" />
-    </div>
+    <form asp-action="Index" method="post" class="settings-form">
+        <input asp-for="ReturnUrl" type="hidden" />
 
-    <button type="submit" class="btn btn-primary">Opslaan</button>
+        <div asp-validation-summary="All" class="settings-validation"></div>
 
-</form>
+        <section class="settings-section">
+            <div class="settings-section-header">
+                <h2>Analyse</h2>
+                <p>Instellingen voor het weergeven en groeperen van testresultaten.</p>
+            </div>
+
+            <div class="settings-section-content">
+                <label class="settings-checkbox">
+                    <input asp-for="ShowDebugInformation" />
+                    <span>
+                        <strong>Debuginformatie tonen</strong>
+                        <small>Toont extra technische informatie bij testresultaten.</small>
+                    </span>
+                </label>
+
+                <label class="settings-checkbox">
+                    <input asp-for="GroupTestsByBaseName" />
+                    <span>
+                        <strong>Tests groeperen op basisnaam</strong>
+                        <small>Groepeert varianten van dezelfde test onder één testnaam.</small>
+                    </span>
+                </label>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <div class="settings-section-header">
+                <h2>Klantgroepering</h2>
+                <p>Bepaal welke klantgegevens worden gebruikt om verstuivers te groeperen.</p>
+            </div>
+
+            <div class="settings-section-content">
+                <label class="settings-checkbox">
+                    <input asp-for="MatchCustomerName" />
+                    <span>
+                        <strong>Naam vergelijken</strong>
+                        <small>Gebruik de klantnaam bij het bepalen van dezelfde klant.</small>
+                    </span>
+                </label>
+
+                <label class="settings-checkbox">
+                    <input asp-for="MatchCustomerPhone" />
+                    <span>
+                        <strong>Telefoonnummer vergelijken</strong>
+                        <small>Gebruik het telefoonnummer bij het bepalen van dezelfde klant.</small>
+                    </span>
+                </label>
+
+                <label class="settings-checkbox">
+                    <input asp-for="MatchCustomerMail" />
+                    <span>
+                        <strong>E-mailadres vergelijken</strong>
+                        <small>Gebruik het e-mailadres bij het bepalen van dezelfde klant.</small>
+                    </span>
+                </label>
+
+                <label class="settings-checkbox">
+                    <input asp-for="MatchCustomerNotes" />
+                    <span>
+                        <strong>Notities vergelijken</strong>
+                        <small>Gebruik de klantnotities bij het bepalen van dezelfde klant.</small>
+                    </span>
+                </label>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <div class="settings-section-header">
+                <h2>PDF</h2>
+                <p>Instellingen voor het genereren van vergelijkings-PDF's.</p>
+            </div>
+
+            <div class="settings-section-content">
+                <div class="settings-field">
+                    <label asp-for="PdfMaxInjectorsPerPage">Maximaal aantal verstuivers per pagina</label>
+                    <input asp-for="PdfMaxInjectorsPerPage" type="number" min="1" max="8" />
+                    <span asp-validation-for="PdfMaxInjectorsPerPage" class="settings-field-error"></span>
+                    <small>Toegestaan: 1 tot en met 8 verstuivers per pagina.</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <div class="settings-section-header">
+                <h2>CarbonX</h2>
+                <p>Inloggegevens die TestFusion gebruikt om verbinding te maken met CarbonX.</p>
+            </div>
+
+            <div class="settings-section-content">
+                <div class="settings-field">
+                    <label asp-for="CarbonXEmail">E-mailadres</label>
+                    <input asp-for="CarbonXEmail" type="email" autocomplete="off" />
+                    <span asp-validation-for="CarbonXEmail" class="settings-field-error"></span>
+                </div>
+
+                <div class="settings-field">
+                    <label asp-for="NewCarbonXPassword">Wachtwoord</label>
+                    <input asp-for="NewCarbonXPassword" type="password" autocomplete="new-password" placeholder="Nieuw wachtwoord" />
+                    <span asp-validation-for="NewCarbonXPassword" class="settings-field-error"></span>
+
+                    @if (Model.HasCarbonXPassword)
+                    {
+                        <small>Er is al een wachtwoord opgeslagen. Laat dit veld leeg om het bestaande wachtwoord te behouden.</small>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <div class="settings-actions">
+            <button type="submit" class="settings-button settings-button-primary">Opslaan</button>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
+            {
+                <a href="@Model.ReturnUrl" class="settings-button settings-button-secondary">Terug</a>
+            }
+            else
+            {
+                <a asp-controller="Home" asp-action="Index" class="settings-button settings-button-secondary">Terug</a>
+            }
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+```
