@@ -1,5 +1,4 @@
-﻿```cshtml
-@model TestFusion.Core.Models.WebModels.SettingsViewModel
+﻿@model TestFusion.Core.Models.WebModels.SettingsViewModel
 
 @{
     ViewData["Title"] = "Instellingen";
@@ -9,10 +8,8 @@
 
 <div class="settings-page">
     <div class="settings-header">
-        <div>
-            <h2>Instellingen</h2>
-            <p>Beheer de algemene instellingen van TestFusion.</p>
-        </div>
+        <h2>Instellingen</h2>
+        <p>Beheer de algemene instellingen van TestFusion.</p>
     </div>
 
     @if (TempData["Success"] != null)
@@ -25,7 +22,10 @@
     <form asp-action="Index" method="post" class="settings-form">
         <input asp-for="ReturnUrl" type="hidden" />
 
-        <div asp-validation-summary="All" class="settings-validation"></div>
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="settings-validation"></div>
+        }
 
         <section class="settings-section">
             <div class="settings-section-header">
@@ -102,9 +102,9 @@
             <div class="settings-section-content">
                 <div class="settings-field">
                     <label asp-for="PdfMaxInjectorsPerPage">Maximaal aantal verstuivers per pagina</label>
-                    <input asp-for="PdfMaxInjectorsPerPage" type="number" min="1" max="8" />
+                    <input asp-for="PdfMaxInjectorsPerPage" type="number" min="1" max="10" />
                     <span asp-validation-for="PdfMaxInjectorsPerPage" class="settings-field-error"></span>
-                    <small>Toegestaan: 1 tot en met 8 verstuivers per pagina.</small>
+                    <small>Toegestaan: 1 tot en met 10 verstuivers per pagina.</small>
                 </div>
             </div>
         </section>
@@ -153,4 +153,3 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-```

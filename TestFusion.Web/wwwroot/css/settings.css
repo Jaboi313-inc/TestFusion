@@ -7,22 +7,27 @@
 }
 
 .settings-header {
-    display: flex;
-    align-items: center;
     padding: 20px;
 }
 
     .settings-header h2 {
+        margin: 0 0 8px;
+    }
+
+    .settings-header p {
         margin: 0;
+        color: #666;
     }
 
 .settings-form {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
 }
 
 .settings-section {
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     background-color: #fff;
     border: 1px solid #ddd;
@@ -49,6 +54,7 @@
 
 .settings-section-content {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 16px;
     padding: 20px;
@@ -66,6 +72,7 @@
         height: 18px;
         margin-top: 2px;
         cursor: pointer;
+        flex-shrink: 0;
     }
 
     .settings-checkbox span {
@@ -97,7 +104,6 @@
 
     .settings-field input {
         width: 100%;
-        max-width: 450px;
         padding: 10px 12px;
         box-sizing: border-box;
         font: inherit;
@@ -119,18 +125,19 @@
         font-size: 0.85rem;
     }
 
-.settings-field-error,
-.settings-validation {
+.settings-field-error {
     color: #c62828;
     font-size: 0.85rem;
 }
 
-    .settings-validation:empty {
-        display: none;
-    }
+.settings-validation {
+    grid-column: 1 / -1;
+    color: #c62828;
+    font-size: 0.85rem;
+}
 
 .settings-message {
-    margin-bottom: 20px;
+    margin: 0 0 20px;
     padding: 12px 16px;
     border-radius: 5px;
 }
@@ -142,6 +149,7 @@
 }
 
 .settings-actions {
+    grid-column: 1 / -1;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -184,18 +192,29 @@
         background-color: #eee;
     }
 
+@media (max-width: 800px) {
+    .settings-form {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-validation,
+    .settings-actions {
+        grid-column: 1;
+    }
+}
+
 @media (max-width: 600px) {
     .settings-page {
         padding: 10px 10px 30px;
     }
 
-    .settings-section-header,
-    .settings-section-content {
+    .settings-header {
         padding: 15px;
     }
 
-    .settings-field input {
-        max-width: none;
+    .settings-section-header,
+    .settings-section-content {
+        padding: 15px;
     }
 
     .settings-actions {

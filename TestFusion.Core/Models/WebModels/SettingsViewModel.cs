@@ -13,7 +13,7 @@ public class SettingsViewModel
     public bool MatchCustomerMail { get; set; }
     public bool MatchCustomerNotes { get; set; }
 
-    [Range(1, 20, ErrorMessage = "Het aantal verstuivers moet tussen 1 en 20 liggen.")]
+    [Range(1, 10, ErrorMessage = "Het aantal verstuivers moet tussen 1 en 10 liggen.")]
     public int PdfMaxInjectorsPerPage { get; set; }
 
     public string? CarbonXEmail { get; set; }
