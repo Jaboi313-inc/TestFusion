@@ -136,15 +136,15 @@
         </section>
 
         <div class="settings-actions">
-            <button type="submit" class="settings-button settings-button-primary">Opslaan</button>
+            <button type="submit" id="settings-save" class="btn" disabled>Opslaan</button>
 
             @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
             {
-                <a href="@Model.ReturnUrl" class="settings-button settings-button-secondary">Terug</a>
+                <a href="@Model.ReturnUrl" class="btn settings-button-secondary">Terug</a>
             }
             else
             {
-                <a asp-controller="Home" asp-action="Index" class="settings-button settings-button-secondary">Terug</a>
+                <a asp-controller="Home" asp-action="Index" class="btn settings-button-secondary">Terug</a>
             }
         </div>
     </form>
@@ -152,4 +152,24 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector(".settings-form");
+            const saveButton = document.getElementById("settings-save");
+
+            if (!form || !saveButton)
+                return;
+
+            const getFormState = () => new URLSearchParams(new FormData(form)).toString();
+            const initialState = getFormState();
+
+            const updateSaveButton = () => {
+                saveButton.disabled = getFormState() === initialState;
+            };
+
+            form.addEventListener("input", updateSaveButton);
+            form.addEventListener("change", updateSaveButton);
+        });
+    </script>
 }
