@@ -8,5 +8,6 @@ public interface ISettingsService
     Task<ApplicationSettings> GetAsync();
     Task<SettingsViewModel> GetForEditAsync();
     Task UpdateAsync(SettingsViewModel model);
+    Task ResetToDefaultsAsync();
     Task<CarbonXCredentials> GetCarbonXCredentialsAsync();
 }

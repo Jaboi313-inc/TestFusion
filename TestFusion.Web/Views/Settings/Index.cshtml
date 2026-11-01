@@ -27,125 +27,186 @@
             <div asp-validation-summary="All" class="settings-validation"></div>
         }
 
-        <section class="settings-section">
-            <div class="settings-section-header">
-                <h2>Analyse</h2>
-                <p>Instellingen voor het weergeven en groeperen van testresultaten.</p>
-            </div>
+        <div class="settings-layout">
+            <aside class="settings-sidebar">
+                <nav class="settings-navigation">
+                    <a href="#settings-analysis" class="active">Analyse</a>
+                    <a href="#settings-debug">Debug</a>
+                    <a href="#settings-customer">Klantgroepering</a>
+                    <a href="#settings-pdf">PDF</a>
+                    <a href="#settings-carbonx">CarbonX</a>
+                </nav>
 
-            <div class="settings-section-content">
-                <label class="settings-checkbox">
-                    <input asp-for="ShowDebugInformation" />
-                    <span>
-                        <strong>Debuginformatie tonen</strong>
-                        <small>Toont extra technische informatie bij testresultaten.</small>
-                    </span>
-                </label>
+                <div class="settings-actions">
+                    <button type="submit" id="settings-save" class="btn" disabled>
+                        Opslaan
+                    </button>
 
-                <label class="settings-checkbox">
-                    <input asp-for="GroupTestsByBaseName" />
-                    <span>
-                        <strong>Tests groeperen op basisnaam</strong>
-                        <small>Groepeert varianten van dezelfde test onder één testnaam.</small>
-                    </span>
-                </label>
-            </div>
-        </section>
-
-        <section class="settings-section">
-            <div class="settings-section-header">
-                <h2>Klantgroepering</h2>
-                <p>Bepaal welke klantgegevens worden gebruikt om verstuivers te groeperen.</p>
-            </div>
-
-            <div class="settings-section-content">
-                <label class="settings-checkbox">
-                    <input asp-for="MatchCustomerName" />
-                    <span>
-                        <strong>Naam vergelijken</strong>
-                        <small>Gebruik de klantnaam bij het bepalen van dezelfde klant.</small>
-                    </span>
-                </label>
-
-                <label class="settings-checkbox">
-                    <input asp-for="MatchCustomerPhone" />
-                    <span>
-                        <strong>Telefoonnummer vergelijken</strong>
-                        <small>Gebruik het telefoonnummer bij het bepalen van dezelfde klant.</small>
-                    </span>
-                </label>
-
-                <label class="settings-checkbox">
-                    <input asp-for="MatchCustomerMail" />
-                    <span>
-                        <strong>E-mailadres vergelijken</strong>
-                        <small>Gebruik het e-mailadres bij het bepalen van dezelfde klant.</small>
-                    </span>
-                </label>
-
-                <label class="settings-checkbox">
-                    <input asp-for="MatchCustomerNotes" />
-                    <span>
-                        <strong>Notities vergelijken</strong>
-                        <small>Gebruik de klantnotities bij het bepalen van dezelfde klant.</small>
-                    </span>
-                </label>
-            </div>
-        </section>
-
-        <section class="settings-section">
-            <div class="settings-section-header">
-                <h2>PDF</h2>
-                <p>Instellingen voor het genereren van vergelijkings-PDF's.</p>
-            </div>
-
-            <div class="settings-section-content">
-                <div class="settings-field">
-                    <label asp-for="PdfMaxInjectorsPerPage">Maximaal aantal verstuivers per pagina</label>
-                    <input asp-for="PdfMaxInjectorsPerPage" type="number" min="1" max="10" />
-                    <span asp-validation-for="PdfMaxInjectorsPerPage" class="settings-field-error"></span>
-                    <small>Toegestaan: 1 tot en met 10 verstuivers per pagina.</small>
-                </div>
-            </div>
-        </section>
-
-        <section class="settings-section">
-            <div class="settings-section-header">
-                <h2>CarbonX</h2>
-                <p>Inloggegevens die TestFusion gebruikt om verbinding te maken met CarbonX.</p>
-            </div>
-
-            <div class="settings-section-content">
-                <div class="settings-field">
-                    <label asp-for="CarbonXEmail">E-mailadres</label>
-                    <input asp-for="CarbonXEmail" type="email" autocomplete="off" />
-                    <span asp-validation-for="CarbonXEmail" class="settings-field-error"></span>
-                </div>
-
-                <div class="settings-field">
-                    <label asp-for="NewCarbonXPassword">Wachtwoord</label>
-                    <input asp-for="NewCarbonXPassword" type="password" autocomplete="new-password" placeholder="Nieuw wachtwoord" />
-                    <span asp-validation-for="NewCarbonXPassword" class="settings-field-error"></span>
-
-                    @if (Model.HasCarbonXPassword)
+                    @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
                     {
-                        <small>Er is al een wachtwoord opgeslagen. Laat dit veld leeg om het bestaande wachtwoord te behouden.</small>
+                        <a href="@Model.ReturnUrl" class="btn settings-button-secondary">
+                            Terug
+                        </a>
                     }
+                    else
+                    {
+                        <a asp-controller="Home" asp-action="Index" class="btn settings-button-secondary">
+                            Terug
+                        </a>
+                    }
+
+                    <div class="settings-reset-area">
+                        <button type="submit"
+                                asp-action="ResetToDefaults"
+                                class="btn settings-button-reset"
+                                formnovalidate
+                                onclick="return confirm('Weet je zeker dat je de standaardinstellingen wilt herstellen? CarbonX-inloggegevens blijven behouden.');">
+                            Standaard herstellen
+                        </button>
+                    </div>
                 </div>
+            </aside>
+
+            <div class="settings-content">
+                <section id="settings-analysis" class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>Analyse</h2>
+                        <p>Instellingen voor het groeperen van testresultaten.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <label class="settings-checkbox">
+                            <input asp-for="GroupTestsByBaseName" />
+                            <span>
+                                <strong>Tests groeperen op basisnaam</strong>
+                                <small>Groepeert varianten van dezelfde test onder één testnaam.</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <section id="settings-debug" class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>Debug</h2>
+                        <p>Instellingen voor technische informatie en foutopsporing.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <label class="settings-checkbox">
+                            <input asp-for="ShowDebugInformation" />
+                            <span>
+                                <strong>Debuginformatie tonen</strong>
+                                <small>Toont extra technische informatie bij testresultaten.</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <section id="settings-customer" class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>Klantgroepering</h2>
+                        <p>Bepaal welke klantgegevens worden gebruikt om verstuivers te groeperen.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <label class="settings-checkbox">
+                            <input asp-for="MatchCustomerName" />
+                            <span>
+                                <strong>Naam vergelijken</strong>
+                                <small>Gebruik de klantnaam bij het bepalen van dezelfde klant.</small>
+                            </span>
+                        </label>
+
+                        <label class="settings-checkbox">
+                            <input asp-for="MatchCustomerPhone" />
+                            <span>
+                                <strong>Telefoonnummer vergelijken</strong>
+                                <small>Gebruik het telefoonnummer bij het bepalen van dezelfde klant.</small>
+                            </span>
+                        </label>
+
+                        <label class="settings-checkbox">
+                            <input asp-for="MatchCustomerMail" />
+                            <span>
+                                <strong>E-mailadres vergelijken</strong>
+                                <small>Gebruik het e-mailadres bij het bepalen van dezelfde klant.</small>
+                            </span>
+                        </label>
+
+                        <label class="settings-checkbox">
+                            <input asp-for="MatchCustomerNotes" />
+                            <span>
+                                <strong>Notities vergelijken</strong>
+                                <small>Gebruik de klantnotities bij het bepalen van dezelfde klant.</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <section id="settings-pdf" class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>PDF</h2>
+                        <p>Instellingen voor het genereren van vergelijkings-PDF's.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <div class="settings-field">
+                            <label asp-for="PdfMaxInjectorsPerPage">
+                                Maximaal aantal verstuivers per pagina
+                            </label>
+
+                            <input asp-for="PdfMaxInjectorsPerPage"
+                                   type="number"
+                                   min="1"
+                                   max="10" />
+
+                            <span asp-validation-for="PdfMaxInjectorsPerPage"
+                                  class="settings-field-error"></span>
+
+                            <small>Toegestaan: 1 tot en met 10 verstuivers per pagina.</small>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="settings-carbonx" class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>CarbonX</h2>
+                        <p>Inloggegevens die TestFusion gebruikt om verbinding te maken met CarbonX.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <div class="settings-field">
+                            <label asp-for="CarbonXEmail">E-mailadres</label>
+
+                            <input asp-for="CarbonXEmail"
+                                   type="email"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="CarbonXEmail"
+                                  class="settings-field-error"></span>
+                        </div>
+
+                        <div class="settings-field">
+                            <label asp-for="NewCarbonXPassword">Wachtwoord</label>
+
+                            <input asp-for="NewCarbonXPassword"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   placeholder="Nieuw wachtwoord" />
+
+                            <span asp-validation-for="NewCarbonXPassword"
+                                  class="settings-field-error"></span>
+
+                            @if (Model.HasCarbonXPassword)
+                            {
+                                <small>
+                                    Er is al een wachtwoord opgeslagen. Laat dit veld leeg om het bestaande wachtwoord te behouden.
+                                </small>
+                            }
+                        </div>
+                    </div>
+                </section>
             </div>
-        </section>
-
-        <div class="settings-actions">
-            <button type="submit" id="settings-save" class="btn" disabled>Opslaan</button>
-
-            @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
-            {
-                <a href="@Model.ReturnUrl" class="btn settings-button-secondary">Terug</a>
-            }
-            else
-            {
-                <a asp-controller="Home" asp-action="Index" class="btn settings-button-secondary">Terug</a>
-            }
         </div>
     </form>
 </div>
@@ -154,22 +215,96 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", function () {
             const form = document.querySelector(".settings-form");
             const saveButton = document.getElementById("settings-save");
+            const navigationLinks = Array.from(document.querySelectorAll(".settings-navigation a"));
+            const sections = Array.from(document.querySelectorAll(".settings-section"));
 
-            if (!form || !saveButton)
+            if (!form || !saveButton) {
                 return;
+            }
 
-            const getFormState = () => new URLSearchParams(new FormData(form)).toString();
+            function getFormState() {
+                return new URLSearchParams(new FormData(form)).toString();
+            }
+
             const initialState = getFormState();
 
-            const updateSaveButton = () => {
+            function updateSaveButton() {
                 saveButton.disabled = getFormState() === initialState;
-            };
+            }
+
+            function getNavbarHeight() {
+                const value = getComputedStyle(document.documentElement).getPropertyValue("--navbar-height");
+                const height = parseFloat(value);
+
+                return Number.isNaN(height) ? 70 : height;
+            }
+
+            function setActiveNavigation(sectionId) {
+                navigationLinks.forEach(function (link) {
+                    link.classList.toggle("active", link.getAttribute("href") === "#" + sectionId);
+                });
+            }
+
+            function updateActiveNavigation() {
+                if (sections.length === 0) {
+                    return;
+                }
+
+                const activationLine = getNavbarHeight() + 40;
+                let activeSection = sections[0];
+
+                sections.forEach(function (section) {
+                    if (section.getBoundingClientRect().top <= activationLine) {
+                        activeSection = section;
+                    }
+                });
+
+                const scrollBottom = window.scrollY + window.innerHeight;
+                const pageBottom = document.documentElement.scrollHeight;
+
+                if (scrollBottom >= pageBottom - 5) {
+                    activeSection = sections[sections.length - 1];
+                }
+
+                setActiveNavigation(activeSection.id);
+            }
 
             form.addEventListener("input", updateSaveButton);
             form.addEventListener("change", updateSaveButton);
+
+            navigationLinks.forEach(function (link) {
+                link.addEventListener("click", function (event) {
+                    event.preventDefault();
+
+                    const href = link.getAttribute("href");
+
+                    if (!href) {
+                        return;
+                    }
+
+                    const sectionId = href.substring(1);
+                    const section = document.getElementById(sectionId);
+
+                    if (!section) {
+                        return;
+                    }
+
+                    setActiveNavigation(sectionId);
+
+                    section.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                });
+            });
+
+            window.addEventListener("scroll", updateActiveNavigation, { passive: true });
+            window.addEventListener("resize", updateActiveNavigation);
+
+            updateActiveNavigation();
         });
     </script>
 }

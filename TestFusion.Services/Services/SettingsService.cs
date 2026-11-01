@@ -8,12 +8,12 @@ namespace TestFusion.Services.Services;
 
 public class SettingsService : ISettingsService
 {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext _dbContext;
     private readonly ISecretProtector _secretProtector;
 
-    public SettingsService(AppDbContext context, ISecretProtector secretProtector)
+    public SettingsService(AppDbContext dbContext, ISecretProtector secretProtector)
     {
-        _context = context;
+        _dbContext = dbContext;
         _secretProtector = secretProtector;
     }
 
@@ -35,7 +35,9 @@ public class SettingsService : ISettingsService
             MatchCustomerMail = settings.MatchCustomerMail,
             MatchCustomerNotes = settings.MatchCustomerNotes,
             PdfMaxInjectorsPerPage = settings.PdfMaxInjectorsPerPage,
-            CarbonXEmail = string.IsNullOrWhiteSpace(settings.CarbonXEmailEncrypted) ? string.Empty : _secretProtector.Unprotect(settings.CarbonXEmailEncrypted),
+            CarbonXEmail = string.IsNullOrWhiteSpace(settings.CarbonXEmailEncrypted)
+                ? null
+                : _secretProtector.Unprotect(settings.CarbonXEmailEncrypted),
             HasCarbonXPassword = !string.IsNullOrWhiteSpace(settings.CarbonXPasswordEncrypted)
         };
     }
@@ -54,12 +56,21 @@ public class SettingsService : ISettingsService
 
         settings.CarbonXEmailEncrypted = string.IsNullOrWhiteSpace(model.CarbonXEmail)
             ? null
-            : _secretProtector.Protect(model.CarbonXEmail.Trim());
+            : _secretProtector.Protect(model.CarbonXEmail);
 
         if (!string.IsNullOrWhiteSpace(model.NewCarbonXPassword))
             settings.CarbonXPasswordEncrypted = _secretProtector.Protect(model.NewCarbonXPassword);
 
-        await _context.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task ResetToDefaultsAsync()
+    {
+        var settings = await GetSettingsAsync();
+
+        settings.ResetToDefaults();
+
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task<CarbonXCredentials> GetCarbonXCredentialsAsync()
@@ -68,32 +79,29 @@ public class SettingsService : ISettingsService
 
         return new CarbonXCredentials
         {
-            Email = string.IsNullOrWhiteSpace(settings.CarbonXEmailEncrypted) ? string.Empty : _secretProtector.Unprotect(settings.CarbonXEmailEncrypted),
-            Password = string.IsNullOrWhiteSpace(settings.CarbonXPasswordEncrypted) ? string.Empty : _secretProtector.Unprotect(settings.CarbonXPasswordEncrypted)
+            Email = string.IsNullOrWhiteSpace(settings.CarbonXEmailEncrypted)
+                ? string.Empty
+                : _secretProtector.Unprotect(settings.CarbonXEmailEncrypted),
+            Password = string.IsNullOrWhiteSpace(settings.CarbonXPasswordEncrypted)
+                ? string.Empty
+                : _secretProtector.Unprotect(settings.CarbonXPasswordEncrypted)
         };
     }
 
     private async Task<ApplicationSettings> GetSettingsAsync()
     {
-        var settings = await _context.ApplicationSettings.FirstOrDefaultAsync(x => x.Id == 1);
+        var settings = await _dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Id == 1);
 
         if (settings != null)
             return settings;
 
         settings = new ApplicationSettings
         {
-            Id = 1,
-            ShowDebugInformation = false,
-            GroupTestsByBaseName = true,
-            MatchCustomerName = true,
-            MatchCustomerPhone = true,
-            MatchCustomerMail = true,
-            MatchCustomerNotes = true,
-            PdfMaxInjectorsPerPage = 8
+            Id = 1
         };
 
-        _context.ApplicationSettings.Add(settings);
-        await _context.SaveChangesAsync();
+        _dbContext.ApplicationSettings.Add(settings);
+        await _dbContext.SaveChangesAsync();
 
         return settings;
     }

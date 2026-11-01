@@ -8,15 +8,10 @@ public class TestSettingsService : ISettingsService
 {
     public ApplicationSettings Settings { get; set; } = new()
     {
-        Id = 1,
-        ShowDebugInformation = false,
-        GroupTestsByBaseName = true,
-        MatchCustomerName = true,
-        MatchCustomerPhone = true,
-        MatchCustomerMail = true,
-        MatchCustomerNotes = true,
-        PdfMaxInjectorsPerPage = 8
+        Id = 1
     };
+
+    public CarbonXCredentials Credentials { get; set; } = new();
 
     public Task<ApplicationSettings> GetAsync()
     {
@@ -39,11 +34,26 @@ public class TestSettingsService : ISettingsService
 
     public Task UpdateAsync(SettingsViewModel model)
     {
+        Settings.ShowDebugInformation = model.ShowDebugInformation;
+        Settings.GroupTestsByBaseName = model.GroupTestsByBaseName;
+        Settings.MatchCustomerName = model.MatchCustomerName;
+        Settings.MatchCustomerPhone = model.MatchCustomerPhone;
+        Settings.MatchCustomerMail = model.MatchCustomerMail;
+        Settings.MatchCustomerNotes = model.MatchCustomerNotes;
+        Settings.PdfMaxInjectorsPerPage = model.PdfMaxInjectorsPerPage;
+
+        return Task.CompletedTask;
+    }
+
+    public Task ResetToDefaultsAsync()
+    {
+        Settings.ResetToDefaults();
+
         return Task.CompletedTask;
     }
 
     public Task<CarbonXCredentials> GetCarbonXCredentialsAsync()
     {
-        return Task.FromResult(new CarbonXCredentials());
+        return Task.FromResult(Credentials);
     }
 }

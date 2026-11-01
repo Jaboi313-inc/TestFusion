@@ -30,6 +30,7 @@ public class SettingsController : Controller
         {
             var currentSettings = await _settingsService.GetForEditAsync();
             model.HasCarbonXPassword = currentSettings.HasCarbonXPassword;
+
             return View(model);
         }
 
@@ -37,6 +38,23 @@ public class SettingsController : Controller
 
         TempData["Success"] = "Instellingen zijn opgeslagen.";
 
-        return RedirectToAction(nameof(Index), new { returnUrl = model.ReturnUrl });
+        return RedirectToAction(nameof(Index), new
+        {
+            returnUrl = model.ReturnUrl
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetToDefaults(string? returnUrl)
+    {
+        await _settingsService.ResetToDefaultsAsync();
+
+        TempData["Success"] = "De standaardinstellingen zijn hersteld.";
+
+        return RedirectToAction(nameof(Index), new
+        {
+            returnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null
+        });
     }
 }
