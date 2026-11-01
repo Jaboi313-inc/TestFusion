@@ -37,6 +37,7 @@ public class SettingsController : Controller
         await _settingsService.UpdateAsync(model);
 
         TempData["Success"] = "Instellingen zijn opgeslagen.";
+        TempData["SuccessDuration"] = 4000;
 
         return RedirectToAction(nameof(Index), new
         {
@@ -51,6 +52,7 @@ public class SettingsController : Controller
         await _settingsService.ResetToDefaultsAsync();
 
         TempData["Success"] = "De standaardinstellingen zijn hersteld.";
+        TempData["SuccessDuration"] = 6000;
 
         return RedirectToAction(nameof(Index), new
         {

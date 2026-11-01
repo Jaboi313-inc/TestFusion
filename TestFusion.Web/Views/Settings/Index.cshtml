@@ -2,6 +2,13 @@
 
 @{
     ViewData["Title"] = "Instellingen";
+
+    var successDuration = 5000;
+
+    if (TempData["SuccessDuration"] is int duration)
+    {
+        successDuration = duration;
+    }
 }
 
 <link rel="stylesheet" href="~/css/settings.css" />
@@ -14,8 +21,21 @@
 
     @if (TempData["Success"] != null)
     {
-        <div class="settings-message settings-message-success">
-            @TempData["Success"]
+        <div class="settings-message settings-message-success settings-message-temporary"
+             data-duration="@successDuration"
+             role="status"
+             aria-live="polite">
+            <div class="settings-message-content">
+                <span>@TempData["Success"]</span>
+
+                <button type="button"
+                        class="settings-message-close"
+                        aria-label="Melding sluiten">
+                    &times;
+                </button>
+            </div>
+
+            <div class="settings-message-progress"></div>
         </div>
     }
 
@@ -38,7 +58,10 @@
                 </nav>
 
                 <div class="settings-actions">
-                    <button type="submit" id="settings-save" class="btn" disabled>
+                    <button type="submit"
+                            id="settings-save"
+                            class="btn"
+                            disabled>
                         Opslaan
                     </button>
 
@@ -50,7 +73,9 @@
                     }
                     else
                     {
-                        <a asp-controller="Home" asp-action="Index" class="btn settings-button-secondary">
+                        <a asp-controller="Home"
+                           asp-action="Index"
+                           class="btn settings-button-secondary">
                             Terug
                         </a>
                     }
@@ -77,6 +102,7 @@
                     <div class="settings-section-content">
                         <label class="settings-checkbox">
                             <input asp-for="GroupTestsByBaseName" />
+
                             <span>
                                 <strong>Tests groeperen op basisnaam</strong>
                                 <small>Groepeert varianten van dezelfde test onder één testnaam.</small>
@@ -94,6 +120,7 @@
                     <div class="settings-section-content">
                         <label class="settings-checkbox">
                             <input asp-for="ShowDebugInformation" />
+
                             <span>
                                 <strong>Debuginformatie tonen</strong>
                                 <small>Toont extra technische informatie bij testresultaten.</small>
@@ -111,6 +138,7 @@
                     <div class="settings-section-content">
                         <label class="settings-checkbox">
                             <input asp-for="MatchCustomerName" />
+
                             <span>
                                 <strong>Naam vergelijken</strong>
                                 <small>Gebruik de klantnaam bij het bepalen van dezelfde klant.</small>
@@ -119,6 +147,7 @@
 
                         <label class="settings-checkbox">
                             <input asp-for="MatchCustomerPhone" />
+
                             <span>
                                 <strong>Telefoonnummer vergelijken</strong>
                                 <small>Gebruik het telefoonnummer bij het bepalen van dezelfde klant.</small>
@@ -127,6 +156,7 @@
 
                         <label class="settings-checkbox">
                             <input asp-for="MatchCustomerMail" />
+
                             <span>
                                 <strong>E-mailadres vergelijken</strong>
                                 <small>Gebruik het e-mailadres bij het bepalen van dezelfde klant.</small>
@@ -135,6 +165,7 @@
 
                         <label class="settings-checkbox">
                             <input asp-for="MatchCustomerNotes" />
+
                             <span>
                                 <strong>Notities vergelijken</strong>
                                 <small>Gebruik de klantnotities bij het bepalen van dezelfde klant.</small>
@@ -163,7 +194,9 @@
                             <span asp-validation-for="PdfMaxInjectorsPerPage"
                                   class="settings-field-error"></span>
 
-                            <small>Toegestaan: 1 tot en met 10 verstuivers per pagina.</small>
+                            <small>
+                                Toegestaan: 1 tot en met 10 verstuivers per pagina.
+                            </small>
                         </div>
                     </div>
                 </section>
@@ -176,7 +209,9 @@
 
                     <div class="settings-section-content">
                         <div class="settings-field">
-                            <label asp-for="CarbonXEmail">E-mailadres</label>
+                            <label asp-for="CarbonXEmail">
+                                E-mailadres
+                            </label>
 
                             <input asp-for="CarbonXEmail"
                                    type="email"
@@ -187,7 +222,9 @@
                         </div>
 
                         <div class="settings-field">
-                            <label asp-for="NewCarbonXPassword">Wachtwoord</label>
+                            <label asp-for="NewCarbonXPassword">
+                                Wachtwoord
+                            </label>
 
                             <input asp-for="NewCarbonXPassword"
                                    type="password"
@@ -220,23 +257,54 @@
             const saveButton = document.getElementById("settings-save");
             const navigationLinks = Array.from(document.querySelectorAll(".settings-navigation a"));
             const sections = Array.from(document.querySelectorAll(".settings-section"));
+            const message = document.querySelector(".settings-message-temporary");
 
-            if (!form || !saveButton) {
-                return;
+            if (form && saveButton) {
+                function getFormState() {
+                    return new URLSearchParams(new FormData(form)).toString();
+                }
+
+                const initialState = getFormState();
+
+                function updateSaveButton() {
+                    saveButton.disabled = getFormState() === initialState;
+                }
+
+                form.addEventListener("input", updateSaveButton);
+                form.addEventListener("change", updateSaveButton);
             }
 
-            function getFormState() {
-                return new URLSearchParams(new FormData(form)).toString();
-            }
+            if (message) {
+                const closeButton = message.querySelector(".settings-message-close");
+                const duration = parseInt(message.dataset.duration || "5000", 10);
+                let hideTimeout;
 
-            const initialState = getFormState();
+                message.style.setProperty("--message-duration", duration + "ms");
 
-            function updateSaveButton() {
-                saveButton.disabled = getFormState() === initialState;
+                function hideMessage() {
+                    window.clearTimeout(hideTimeout);
+                    message.classList.add("is-hiding");
+
+                    window.setTimeout(function () {
+                        message.remove();
+                    }, 300);
+                }
+
+                requestAnimationFrame(function () {
+                    message.classList.add("is-counting");
+                });
+
+                hideTimeout = window.setTimeout(hideMessage, duration);
+
+                if (closeButton) {
+                    closeButton.addEventListener("click", hideMessage);
+                }
             }
 
             function getNavbarHeight() {
-                const value = getComputedStyle(document.documentElement).getPropertyValue("--navbar-height");
+                const value = getComputedStyle(document.documentElement)
+                    .getPropertyValue("--navbar-height");
+
                 const height = parseFloat(value);
 
                 return Number.isNaN(height) ? 70 : height;
@@ -244,7 +312,10 @@
 
             function setActiveNavigation(sectionId) {
                 navigationLinks.forEach(function (link) {
-                    link.classList.toggle("active", link.getAttribute("href") === "#" + sectionId);
+                    link.classList.toggle(
+                        "active",
+                        link.getAttribute("href") === "#" + sectionId
+                    );
                 });
             }
 
@@ -271,9 +342,6 @@
 
                 setActiveNavigation(activeSection.id);
             }
-
-            form.addEventListener("input", updateSaveButton);
-            form.addEventListener("change", updateSaveButton);
 
             navigationLinks.forEach(function (link) {
                 link.addEventListener("click", function (event) {

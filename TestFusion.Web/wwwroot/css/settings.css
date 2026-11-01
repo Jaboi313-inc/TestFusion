@@ -238,8 +238,9 @@
 }
 
 .settings-message {
+    position: relative;
     margin-bottom: 20px;
-    padding: 12px 16px;
+    overflow: hidden;
     border-radius: 5px;
 }
 
@@ -247,6 +248,77 @@
     color: #176b32;
     background-color: #e8f5ec;
     border: 1px solid #b9dfc4;
+}
+
+.settings-message-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 44px;
+    padding: 0 12px 0 16px;
+}
+
+.settings-message-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    flex-shrink: 0;
+    color: #176b32;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+    .settings-message-close:hover {
+        background-color: rgba(23, 107, 50, 0.1);
+    }
+
+.settings-message-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 4px;
+    background-color: #4caf6a;
+    transform: scaleX(1);
+    transform-origin: left center;
+}
+
+.settings-message-temporary {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 100px;
+    transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease, margin 0.3s ease;
+}
+
+    .settings-message-temporary.is-counting .settings-message-progress {
+        animation: settings-message-countdown var(--message-duration) linear forwards;
+    }
+
+    .settings-message-temporary.is-hiding {
+        opacity: 0;
+        transform: translateY(-8px);
+        max-height: 0;
+        margin-bottom: 0;
+        border-width: 0;
+    }
+
+@keyframes settings-message-countdown {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
 }
 
 @media (max-width: 800px) {
@@ -289,6 +361,15 @@
         width: auto;
         flex: 1;
     }
+
+    .settings-reset-area {
+        display: flex;
+        flex: 1;
+    }
+
+        .settings-reset-area .btn {
+            width: 100%;
+        }
 
     .settings-section {
         scroll-margin-top: calc(var(--navbar-height, 70px) + 120px);
