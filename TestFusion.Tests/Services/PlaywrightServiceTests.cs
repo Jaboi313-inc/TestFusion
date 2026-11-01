@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using TestFusion.Services;
 using TestFusion.Services.Models;
+using TestFusion.Tests.Helpers;
 
 namespace TestFusion.Tests.Services;
 
@@ -56,7 +57,7 @@ public class PlaywrightServiceTests
         var service = new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(new SiteSettings()),
-            Options.Create(new AuthSettings()));
+            new TestSettingsService());
 
         var initializeBrowser = typeof(PlaywrightService).GetMethod(
             "InitializeBrowser",
@@ -111,7 +112,7 @@ public class PlaywrightServiceTests
         return new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(new SiteSettings()),
-            Options.Create(new AuthSettings()));
+            new TestSettingsService());
     }
 
     private static PlaywrightService CreateLiveService()
@@ -143,6 +144,6 @@ public class PlaywrightServiceTests
         return new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(siteSettings),
-            Options.Create(authSettings));
+            new TestSettingsService());
     }
 }
