@@ -7,6 +7,8 @@ public class DebugViewModel
     public List<TestReportModel> TestReports { get; set; } = [];
     public List<DebugLogEntry> Logs { get; set; } = [];
 
+    public bool ShowDebugInformation { get; set; }
+
     public string JsonId { get; set; } = string.Empty;
 
     public string? RawJson { get; set; }

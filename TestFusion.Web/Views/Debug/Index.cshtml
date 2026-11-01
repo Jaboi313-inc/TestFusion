@@ -1,0 +1,868 @@
+﻿@using System.Text.Json
+@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@model TestFusion.Web.Models.DebugViewModel
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["PageTitleDebug"];
+
+    var confirmDeleteAll =
+        JsonSerializer.Serialize(
+            Localizer["DebugConfirmDeleteAll"].Value +
+            Localizer["SymbolQuestionmark"].Value);
+
+    var confirmDeleteSelected =
+        JsonSerializer.Serialize(
+            Localizer["DebugConfirmDeleteSelected"].Value +
+            Localizer["SymbolQuestionmark"].Value);
+
+    var totalLogCount = Model.Logs.Count;
+
+    var webLogCount = Model.Logs.Count(x =>
+        x.Application.Equals("Web", StringComparison.OrdinalIgnoreCase));
+
+    var workerLogCount = Model.Logs.Count(x =>
+        x.Application.Equals("Worker", StringComparison.OrdinalIgnoreCase));
+
+    var informationLogCount = Model.Logs.Count(x =>
+        x.Level.Equals("Information", StringComparison.OrdinalIgnoreCase));
+
+    var warningLogCount = Model.Logs.Count(x =>
+        x.Level.Equals("Warning", StringComparison.OrdinalIgnoreCase));
+
+    var errorLogCount = Model.Logs.Count(x =>
+        x.Level.Equals("Error", StringComparison.OrdinalIgnoreCase));
+
+    var debugLogCount = Model.Logs.Count(x =>
+        x.Level.Equals("Debug", StringComparison.OrdinalIgnoreCase));
+}
+
+@functions {
+    private static string FormatJson(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+
+            return JsonSerializer.Serialize(
+                document.RootElement,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+        }
+        catch (JsonException)
+        {
+            return json;
+        }
+    }
+}
+
+<link rel="stylesheet"
+      href="~/css/debug.css"
+      asp-append-version="true" />
+
+
+<div class="debug-page">
+
+    <div class="debug-header">
+        <h2>@Localizer["PageTitleDebug"]</h2>
+    </div>
+
+    <div class="debug-quick-nav">
+
+        <a href="#settings"
+           class="btn">
+            Instellingen
+        </a>
+
+        <a href="#json-viewer"
+           class="btn">
+            @Localizer["DebugJsonViewer"]
+        </a>
+
+        <a href="#database"
+           class="btn">
+            @Localizer["DebugDatabase"]
+        </a>
+
+        <a href="#logs"
+           class="btn">
+            @Localizer["Logs"]
+        </a>
+
+    </div>
+
+
+    @if (TempData["DebugMessage"] != null)
+    {
+        <div class="debug-message">
+            @TempData["DebugMessage"]
+        </div>
+    }
+
+
+    <section class="debug-section"
+             id="settings">
+
+        <div class="debug-section-header">
+            <h3>Instellingen</h3>
+            <p>Instellingen voor technische informatie en foutopsporing.</p>
+        </div>
+
+        <form asp-controller="Debug"
+              asp-action="UpdateDebugSettings"
+              method="post"
+              class="debug-settings-form">
+
+            @Html.AntiForgeryToken()
+
+            <label class="debug-settings-checkbox">
+                <input asp-for="ShowDebugInformation" />
+
+                <span>
+                    <strong>Debuginformatie tonen</strong>
+                    <small>Toont extra technische informatie bij testresultaten en gegenereerde PDF's.</small>
+                </span>
+            </label>
+
+            <button type="submit"
+                    class="btn">
+                Opslaan
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <section class="debug-section"
+             id="json-viewer">
+
+        <div class="debug-section-header">
+            <h3>@Localizer["DebugJsonViewer"]</h3>
+            <p>@Localizer["DebugJsonViewerDescription"]@Localizer["SymbolDot"]</p>
+        </div>
+
+
+        <form asp-controller="Debug"
+              asp-action="Index"
+              method="get"
+              class="json-viewer-form">
+
+            <label for="json-id">
+                @Localizer["DebugTestId"]
+            </label>
+
+            <div class="json-viewer-input-row">
+
+                <input type="text"
+                       id="json-id"
+                       name="id"
+                       value="@Model.JsonId"
+                       class="debug-input"
+                       required />
+
+                <button type="submit"
+                        class="btn">
+                    @Localizer["DebugViewJson"]
+                </button>
+
+            </div>
+
+        </form>
+
+
+        @if (!string.IsNullOrWhiteSpace(Model.JsonId))
+        {
+            @if (!string.IsNullOrWhiteSpace(Model.JsonError))
+            {
+                <div class="json-status json-status-error">
+                    @Localizer["DebugRawProcessedLoadError", Model.JsonError]@Localizer["SymbolDot"]
+                </div>
+            }
+
+
+            @if (!Model.StoredJsonFound)
+            {
+                <div class="json-status json-status-warning">
+                    @Localizer["DebugStoredJsonNotFound", Model.JsonId]@Localizer["SymbolDot"]
+                </div>
+            }
+            else if (Model.ProcessedMatchesStored == true)
+            {
+                <div class="json-status json-status-equal">
+                    @Localizer["DebugProcessedStoredEqual"]@Localizer["SymbolDot"]
+                </div>
+            }
+            else if (Model.ProcessedMatchesStored == false)
+            {
+                <div class="json-status json-status-different">
+                    @Localizer["DebugProcessedStoredDifferent"]@Localizer["SymbolDot"]
+                </div>
+            }
+
+
+            <div class="json-preview-grid">
+
+                <div class="json-preview-card">
+
+                    <div class="json-preview-header">
+
+                        <h4>@Localizer["DebugRawJson"]</h4>
+
+                        <a asp-controller="Debug"
+                           asp-action="DownloadRawJson"
+                           asp-route-id="@Model.JsonId"
+                           class="btn"
+                           title="@($"{Localizer["DebugRawJsonDownloadDescription"]}{Localizer["SymbolDot"]}")">
+                            @Localizer["DebugDownload"]
+                        </a>
+
+                    </div>
+
+                    <pre>@(Model.RawJson ?? $"{Localizer["DebugRawJsonLoadFailed"]}{Localizer["SymbolDot"]}")</pre>
+
+                </div>
+
+
+                <div class="json-preview-card">
+
+                    <div class="json-preview-header">
+
+                        <h4>@Localizer["DebugProcessedJson"]</h4>
+
+                        <a asp-controller="Debug"
+                           asp-action="DownloadProcessedJson"
+                           asp-route-id="@Model.JsonId"
+                           class="btn"
+                           title="@($"{Localizer["DebugProcessedJsonDownloadDescription"]}{Localizer["SymbolDot"]}")">
+                            @Localizer["DebugDownload"]
+                        </a>
+
+                    </div>
+
+                    <pre>@(Model.ProcessedJson ?? $"{Localizer["DebugProcessedJsonLoadFailed"]}{Localizer["SymbolDot"]}")</pre>
+
+                </div>
+
+
+                <div class="json-preview-card">
+
+                    <div class="json-preview-header">
+
+                        <h4>@Localizer["DebugStoredJson"]</h4>
+
+                        @if (Model.StoredJsonFound)
+                        {
+                            <a asp-controller="Debug"
+                               asp-action="DownloadStoredJson"
+                               asp-route-id="@Model.JsonId"
+                               class="btn"
+                               title="@($"{Localizer["DebugStoredJsonDownloadDescription"]}{Localizer["SymbolDot"]}")">
+                                @Localizer["DebugDownload"]
+                            </a>
+                        }
+
+                    </div>
+
+                    <pre>@(Model.StoredJson ?? $"{Localizer["DebugStoredJsonNotAvailable"]}{Localizer["SymbolDot"]}")</pre>
+
+                </div>
+
+            </div>
+        }
+
+    </section>
+
+
+    <section class="debug-section"
+         id="database">
+
+        <div class="database-header">
+
+            <div>
+                <h3>@Localizer["DebugDatabase"]</h3>
+
+                <p>
+                    @Localizer["Total"]:
+                    <span class="database-count">
+                        @Model.TestReports.Count
+                    </span>
+                </p>
+            </div>
+
+
+            <div class="debug-actions">
+
+                <button type="submit"
+                        form="database-selection-form"
+                        id="delete-selected"
+                        class="btn debug-danger-button"
+                        disabled>
+                    @Localizer["DebugDeleteSelected"]
+                </button>
+
+
+                <form asp-controller="Debug"
+                      asp-action="ClearTestReports"
+                      method="post"
+                      onsubmit="return confirm(@Html.Raw(confirmDeleteAll));">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="confirmed"
+                           value="true" />
+
+                    <button type="submit"
+                            class="btn debug-danger-button">
+                        @Localizer["DebugDeleteAll"]
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        @if (Model.TestReports.Count == 0)
+        {
+            <p class="debug-empty">
+                @Localizer["DebugNoTestReports"]@Localizer["SymbolDot"]
+            </p>
+        }
+        else
+        {
+            <form asp-controller="Debug"
+                  asp-action="DeleteSelectedTestReports"
+                  method="post"
+                  id="database-selection-form"
+                  onsubmit="return confirm(@Html.Raw(confirmDeleteSelected));">
+
+                @Html.AntiForgeryToken()
+
+
+                <div class="debug-table-wrapper">
+
+                    <table class="debug-table">
+
+                        <thead>
+
+                            <tr class="debug-group-header">
+
+                                <th class="debug-checkbox-column"
+                                    rowspan="2">
+
+                                    <input type="checkbox"
+                                           id="select-all-rows"
+                                           aria-label="@Localizer["DebugSelectAllRows"]" />
+
+                                </th>
+
+                                <th colspan="5">
+                                    @Localizer["Injector"]
+                                </th>
+
+                                <th colspan="4">
+                                    @Localizer["Customer"]
+                                </th>
+
+                                <th colspan="3">
+                                    @Localizer["FilterSectionTest"]
+                                </th>
+
+                            </tr>
+
+
+                            <tr>
+                                <th>@Localizer["DebugId"]</th>
+                                <th>@Localizer["InjectorDateTime"]</th>
+                                <th>@Localizer["InjectorPartNumber"]</th>
+                                <th>@Localizer["InjectorBrand"]</th>
+                                <th>@Localizer["InjectorType"]</th>
+                                <th>@Localizer["CustomerName"]</th>
+                                <th>@Localizer["CustomerPhoneNumber"]</th>
+                                <th>@Localizer["CustomerMail"]</th>
+                                <th>@Localizer["CustomerNote"]</th>
+                                <th>@Localizer["TestNote"]</th>
+                                <th>@Localizer["InjectorSerialNumber"]</th>
+                                <th>@Localizer["DebugJson"]</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            @foreach (var report in Model.TestReports)
+                            {
+                                <tr>
+
+                                    <td class="debug-checkbox-column">
+                                        <input type="checkbox"
+                                               name="selectedIds"
+                                               value="@report.Id"
+                                               class="row-checkbox"
+                                               aria-label="@Localizer["DebugSelectTestReport", report.Id]" />
+                                    </td>
+
+                                    <td class="debug-table-id">
+                                        @report.Id
+                                    </td>
+
+                                    <td class="debug-table-date">
+                                        @report.TimeOffTesting.ToString("dd-MM-yyyy HH:mm:ss zzz")
+                                    </td>
+
+                                    <td>@report.PartNumber</td>
+                                    <td>@report.PartBrand</td>
+                                    <td>@report.PartType</td>
+                                    <td>@report.CustomerName</td>
+                                    <td>@report.CustomerPhone</td>
+                                    <td>@report.CustomerMail</td>
+
+                                    <td class="debug-table-notes">
+                                        @report.CustomerNotes
+                                    </td>
+
+                                    <td class="debug-table-notes">
+                                        @report.TestNotes
+                                    </td>
+
+                                    <td>@report.InjectorSerialNumber</td>
+
+                                    <td>
+
+                                        <details class="debug-json-details">
+
+                                            <summary>
+                                                @Localizer["DebugViewJson"]
+                                            </summary>
+
+                                            <div class="debug-json-actions">
+
+                                                <a asp-controller="Debug"
+                                                   asp-action="DownloadStoredJson"
+                                                   asp-route-id="@report.Id"
+                                                   class="btn"
+                                                   title="@($"{Localizer["DebugStoredJsonDownloadDescription"]}{Localizer["SymbolDot"]}")">
+                                                    @Localizer["DebugDownloadJson"]
+                                                </a>
+
+                                            </div>
+
+                                            <pre>@FormatJson(report.Json)</pre>
+
+                                        </details>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </form>
+        }
+
+    </section>
+
+
+    <section class="debug-section"
+         id="logs">
+
+        <div class="logs-header">
+
+            <div>
+                <h3>@Localizer["Logs"]</h3>
+
+                <p>
+                    @Localizer["DebugLogsDescription"]@Localizer["SymbolDot"]
+                </p>
+            </div>
+
+
+            <a asp-controller="Debug"
+               asp-action="Index"
+               asp-route-id="@Model.JsonId"
+               class="btn">
+                @Localizer["ButtonRefresh"]
+            </a>
+
+        </div>
+
+
+        <div class="log-filters">
+
+            <div class="log-filter">
+                <label for="log-source-filter">
+                    @Localizer["Source"]
+                </label>
+
+                <select id="log-source-filter"
+                        class="debug-input">
+
+                    <option value="">
+                        @Localizer["All"] (@totalLogCount)
+                    </option>
+
+                    <option value="Web">
+                        @Localizer["Web"] (@webLogCount)
+                    </option>
+
+                    <option value="Worker">
+                        @Localizer["Worker"] (@workerLogCount)
+                    </option>
+
+                </select>
+            </div>
+
+
+            <div class="log-filter">
+                <label for="log-level-filter">
+                    @Localizer["Level"]
+                </label>
+
+                <select id="log-level-filter"
+                        class="debug-input">
+
+                    <option value="">
+                        @Localizer["All"] (@totalLogCount)
+                    </option>
+
+                    <option value="Information">
+                        @Localizer["DebugLogInformation"] (@informationLogCount)
+                    </option>
+
+                    <option value="Warning">
+                        @Localizer["DebugLogWarning"] (@warningLogCount)
+                    </option>
+
+                    <option value="Error">
+                        @Localizer["DebugLogError"] (@errorLogCount)
+                    </option>
+
+                    <option value="Debug">
+                        @Localizer["DebugLogDebug"] (@debugLogCount)
+                    </option>
+
+                </select>
+            </div>
+
+
+            <div class="log-filter log-filter-search">
+                <label for="log-search">
+                    @Localizer["Search"]
+                </label>
+
+                <input type="text"
+                       id="log-search"
+                       class="debug-input"
+                       placeholder="@Localizer["DebugLogSearchPlaceholder"]" />
+            </div>
+
+        </div>
+
+
+        <div class="log-count">
+            @Localizer["Total"]:
+            <span id="visible-log-count">
+                @Model.Logs.Count
+            </span>
+        </div>
+
+
+        <div id="log-list"
+             class="log-list">
+
+            @foreach (var log in Model.Logs)
+            {
+                var levelClass =
+                    log.Level.ToLowerInvariant() switch
+                    {
+                        "error" or "fatal" => "log-entry-error",
+                        "warning" => "log-entry-warning",
+                        "debug" or "verbose" => "log-entry-debug",
+                        _ => "log-entry-information"
+                    };
+
+                <article class="log-entry @levelClass"
+                         data-source="@log.Application"
+                         data-level="@log.Level">
+
+                    <div class="log-entry-main">
+
+                        <time class="log-time"
+                              datetime="@log.Timestamp.ToString("O")">
+                            @log.Timestamp.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss")
+                        </time>
+
+                        <span class="log-application">
+                            @log.Application
+                        </span>
+
+                        <span class="log-level">
+                            @log.Level
+                        </span>
+
+                        <span class="log-source">
+                            @log.SourceContext
+                        </span>
+
+                        <span class="log-message">
+                            @log.Message
+                        </span>
+
+                    </div>
+
+
+                    @if (!string.IsNullOrWhiteSpace(log.Exception) ||
+                         log.Properties.Count > 0)
+                    {
+                        <details class="log-details">
+
+                            <summary>
+                                @Localizer["DebugLogDetails"]
+                            </summary>
+
+
+                            @if (!string.IsNullOrWhiteSpace(log.Exception))
+                            {
+                                <div class="log-detail-block">
+
+                                    <strong>
+                                        @Localizer["DebugLogException"]
+                                    </strong>
+
+                                    <pre>@log.Exception</pre>
+
+                                </div>
+                            }
+
+
+                            @if (log.Properties.Count > 0)
+                            {
+                                <div class="log-detail-block">
+
+                                    <strong>
+                                        @Localizer["DebugLogProperties"]
+                                    </strong>
+
+                                    <dl class="log-properties">
+
+                                        @foreach (var property in log.Properties)
+                                        {
+                                            <dt>@property.Key</dt>
+                                            <dd>@property.Value</dd>
+                                        }
+
+                                    </dl>
+
+                                </div>
+                            }
+
+                        </details>
+                    }
+
+                </article>
+            }
+
+        </div>
+
+
+        <p id="no-visible-logs"
+           class="debug-empty"
+           style="display: @(Model.Logs.Count == 0 ? "block" : "none");">
+            @Localizer["DebugLogNoEntries"]@Localizer["SymbolDot"]
+        </p>
+
+    </section>
+
+</div>
+
+
+<script>
+    const quickNavLinks =
+        document.querySelectorAll('.debug-quick-nav a[href^="#"]');
+
+    quickNavLinks.forEach(link => {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            const target =
+                document.querySelector(this.getAttribute('href'));
+
+            if (!target) {
+                return;
+            }
+
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
+    });
+
+
+    const rowCheckboxes =
+        document.querySelectorAll('.row-checkbox');
+
+    const selectAllRows =
+        document.getElementById('select-all-rows');
+
+    const deleteSelectedButton =
+        document.getElementById('delete-selected');
+
+
+    function updateDatabaseSelection() {
+        const selectedCount =
+            Array.from(rowCheckboxes)
+                .filter(checkbox => checkbox.checked)
+                .length;
+
+        if (deleteSelectedButton) {
+            deleteSelectedButton.disabled =
+                selectedCount === 0;
+        }
+
+        if (!selectAllRows) {
+            return;
+        }
+
+        selectAllRows.checked =
+            rowCheckboxes.length > 0 &&
+            selectedCount === rowCheckboxes.length;
+
+        selectAllRows.indeterminate =
+            selectedCount > 0 &&
+            selectedCount < rowCheckboxes.length;
+    }
+
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener(
+            'change',
+            updateDatabaseSelection
+        );
+    });
+
+
+    if (selectAllRows) {
+        selectAllRows.addEventListener(
+            'change',
+            function () {
+                rowCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+
+                updateDatabaseSelection();
+            }
+        );
+    }
+
+
+    const logEntries =
+        document.querySelectorAll('.log-entry');
+
+    const logSourceFilter =
+        document.getElementById('log-source-filter');
+
+    const logLevelFilter =
+        document.getElementById('log-level-filter');
+
+    const logSearch =
+        document.getElementById('log-search');
+
+    const visibleLogCount =
+        document.getElementById('visible-log-count');
+
+    const noVisibleLogs =
+        document.getElementById('no-visible-logs');
+
+
+    function updateLogFilters() {
+        const source =
+            logSourceFilter?.value ?? '';
+
+        const level =
+            logLevelFilter?.value ?? '';
+
+        const search =
+            (logSearch?.value ?? '')
+                .trim()
+                .toLowerCase();
+
+        let visibleCount = 0;
+
+        logEntries.forEach(entry => {
+            const matchesSource =
+                source === '' ||
+                entry.dataset.source === source;
+
+            const matchesLevel =
+                level === '' ||
+                entry.dataset.level === level;
+
+            const matchesSearch =
+                search === '' ||
+                entry.textContent
+                    .toLowerCase()
+                    .includes(search);
+
+            const visible =
+                matchesSource &&
+                matchesLevel &&
+                matchesSearch;
+
+            entry.style.display =
+                visible
+                    ? ''
+                    : 'none';
+
+            if (visible) {
+                visibleCount++;
+            }
+        });
+
+        if (visibleLogCount) {
+            visibleLogCount.textContent =
+                visibleCount;
+        }
+
+        if (noVisibleLogs) {
+            noVisibleLogs.style.display =
+                visibleCount === 0
+                    ? 'block'
+                    : 'none';
+        }
+    }
+
+
+    logSourceFilter?.addEventListener(
+        'change',
+        updateLogFilters);
+
+    logLevelFilter?.addEventListener(
+        'change',
+        updateLogFilters);
+
+    logSearch?.addEventListener(
+        'input',
+        updateLogFilters);
+
+
+    updateDatabaseSelection();
+    updateLogFilters();
+</script>

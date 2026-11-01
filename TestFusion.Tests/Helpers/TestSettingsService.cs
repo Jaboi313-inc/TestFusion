@@ -34,13 +34,19 @@ public class TestSettingsService : ISettingsService
 
     public Task UpdateAsync(SettingsViewModel model)
     {
-        Settings.ShowDebugInformation = model.ShowDebugInformation;
         Settings.GroupTestsByBaseName = model.GroupTestsByBaseName;
         Settings.MatchCustomerName = model.MatchCustomerName;
         Settings.MatchCustomerPhone = model.MatchCustomerPhone;
         Settings.MatchCustomerMail = model.MatchCustomerMail;
         Settings.MatchCustomerNotes = model.MatchCustomerNotes;
         Settings.PdfMaxInjectorsPerPage = model.PdfMaxInjectorsPerPage;
+
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateDebugAsync(bool showDebugInformation)
+    {
+        Settings.ShowDebugInformation = showDebugInformation;
 
         return Task.CompletedTask;
     }

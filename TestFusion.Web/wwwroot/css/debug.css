@@ -11,6 +11,21 @@
     }
 
 
+/* Quick navigation */
+
+.debug-quick-nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+    .debug-quick-nav .btn {
+        margin: 0;
+    }
+
+
 /* Sections */
 
 .debug-section {
@@ -19,6 +34,7 @@
     background-color: #f7f7f7;
     border: 1px solid #d8d8d8;
     border-radius: 8px;
+    scroll-margin-top: calc(var(--navbar-height, 70px) + 20px);
 }
 
 .debug-section-header {
@@ -26,8 +42,7 @@
 }
 
     .debug-section-header h3 {
-        margin-top: 0;
-        margin-bottom: 6px;
+        margin: 0 0 6px 0;
     }
 
     .debug-section-header p {
@@ -35,22 +50,47 @@
         color: #666666;
     }
 
-/* Quick navigation */
 
-.debug-quick-nav {
+/* Debug settings */
+
+.debug-settings-form {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
 }
 
-.debug-section {
-    scroll-margin-top: 20px;
+.debug-settings-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
 }
 
-html {
-    scroll-behavior: smooth;
-}
+    .debug-settings-checkbox input {
+        width: 18px;
+        height: 18px;
+        margin: 2px 0 0;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    .debug-settings-checkbox span {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .debug-settings-checkbox strong {
+        color: #222222;
+        font-size: 0.95rem;
+    }
+
+    .debug-settings-checkbox small {
+        color: #707070;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
 
 
 /* Actions */
@@ -115,6 +155,7 @@ html {
     flex: 1;
     min-width: 0;
     padding: 9px 12px;
+    box-sizing: border-box;
     font: inherit;
     background-color: #ffffff;
     color: #222222;
@@ -227,9 +268,9 @@ html {
 .debug-table-wrapper {
     width: 100%;
     overflow-x: auto;
+    background-color: #ffffff;
     border: 1px solid #d8d8d8;
     border-radius: 6px;
-    background-color: #ffffff;
 }
 
 .debug-table {
@@ -263,7 +304,6 @@ html {
         font-weight: 600;
         white-space: nowrap;
     }
-
 
 .debug-group-header th {
     text-align: center !important;
@@ -344,7 +384,7 @@ html {
     max-height: 450px;
     overflow: auto;
     box-sizing: border-box;
-    margin: 10px 0 0 0;
+    margin: 10px 0 0;
     padding: 12px;
     background-color: #1e1e1e;
     color: #ffffff;
@@ -393,7 +433,6 @@ html {
 
     .log-filter .debug-input {
         width: 100%;
-        box-sizing: border-box;
     }
 
 .log-count {
@@ -550,6 +589,14 @@ html {
 }
 
 @media (max-width: 800px) {
+    .debug-page {
+        padding: 15px;
+    }
+
+    .debug-quick-nav {
+        margin-bottom: 20px;
+    }
+
     .database-header,
     .logs-header {
         align-items: flex-start;

@@ -46,7 +46,6 @@ public class SettingsService : ISettingsService
     {
         var settings = await GetSettingsAsync();
 
-        settings.ShowDebugInformation = model.ShowDebugInformation;
         settings.GroupTestsByBaseName = model.GroupTestsByBaseName;
         settings.MatchCustomerName = model.MatchCustomerName;
         settings.MatchCustomerPhone = model.MatchCustomerPhone;
@@ -60,6 +59,15 @@ public class SettingsService : ISettingsService
 
         if (!string.IsNullOrWhiteSpace(model.NewCarbonXPassword))
             settings.CarbonXPasswordEncrypted = _secretProtector.Protect(model.NewCarbonXPassword);
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateDebugAsync(bool showDebugInformation)
+    {
+        var settings = await GetSettingsAsync();
+
+        settings.ShowDebugInformation = showDebugInformation;
 
         await _dbContext.SaveChangesAsync();
     }

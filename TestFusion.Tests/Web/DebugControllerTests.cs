@@ -79,7 +79,11 @@ public class DebugControllerTests
     public async Task Index_WhenSourceFails_SetsJsonError()
     {
         await using var db = TestData.CreateInMemoryContext();
-        var playwright = new FakePlaywright { GetDataException = new InvalidOperationException("Source unavailable") };
+        var playwright = new FakePlaywright
+        {
+            GetDataException = new InvalidOperationException("Source unavailable")
+        };
+
         using var temp = new TempLogDirectory();
         var controller = CreateController(db, playwright, temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
@@ -96,17 +100,23 @@ public class DebugControllerTests
     {
         await using var db = TestData.CreateInMemoryContext();
         using var temp = new TempLogDirectory();
+
         var lines = Enumerable.Range(0, 510)
             .Select(i => $"{{\"@t\":\"{new DateTimeOffset(2026, 10, 18, 0, 0, 0, TimeSpan.Zero).AddSeconds(i):O}\",\"@m\":\"Message {i}\",\"SourceContext\":\"Example.Source\"}}")
             .ToArray();
-        File.WriteAllLines(Path.Combine(temp.LogDirectory, "web-20261018.jsonl"), lines);
+
+        File.WriteAllLines(
+            Path.Combine(temp.LogDirectory, "web-20261018.jsonl"),
+            lines);
 
         var controller = CreateController(db, new FakePlaywright(), temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
         var result = await controller.Index(null);
 
-        var model = Assert.IsType<DebugViewModel>(Assert.IsType<ViewResult>(result).Model);
+        var model = Assert.IsType<DebugViewModel>(
+            Assert.IsType<ViewResult>(result).Model);
+
         Assert.Equal(500, model.Logs.Count);
         Assert.Equal("Message 509", model.Logs[0].Message);
         Assert.Equal("Message 10", model.Logs[^1].Message);
@@ -117,6 +127,7 @@ public class DebugControllerTests
     {
         await using var db = TestData.CreateInMemoryContext();
         using var temp = new TempLogDirectory();
+
         File.WriteAllText(
             Path.Combine(temp.LogDirectory, "web-20261018.jsonl"),
             "{\"@t\":\"2026-10-18T12:00:00Z\",\"@m\":\"Request failed\",\"@l\":\"Error\",\"@x\":\"System.Exception: boom\\n at Test()\",\"RequestId\":123,\"SourceContext\":\"TestFusion.Web.Controllers.DebugController\"}" + Environment.NewLine);
@@ -126,8 +137,11 @@ public class DebugControllerTests
 
         var result = await controller.Index(null);
 
-        var model = Assert.IsType<DebugViewModel>(Assert.IsType<ViewResult>(result).Model);
+        var model = Assert.IsType<DebugViewModel>(
+            Assert.IsType<ViewResult>(result).Model);
+
         var log = Assert.Single(model.Logs);
+
         Assert.Equal("Web", log.Application);
         Assert.Equal("Error", log.Level);
         Assert.Equal("DebugController", log.SourceContext);
@@ -140,6 +154,7 @@ public class DebugControllerTests
     {
         await using var db = TestData.CreateInMemoryContext();
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, new FakePlaywright(), temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
@@ -156,10 +171,15 @@ public class DebugControllerTests
         var tuple = TestData.CreateSqliteContext();
         await using var db = tuple.Context;
         await using var connection = tuple.Connection;
-        db.TestReports.AddRange(TestData.CreateReport("one"), TestData.CreateReport("two"));
+
+        db.TestReports.AddRange(
+            TestData.CreateReport("one"),
+            TestData.CreateReport("two"));
+
         await db.SaveChangesAsync();
 
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, new FakePlaywright(), temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
@@ -176,6 +196,7 @@ public class DebugControllerTests
     {
         await using var db = TestData.CreateInMemoryContext();
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, new FakePlaywright(), temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
@@ -191,10 +212,15 @@ public class DebugControllerTests
         var tuple = TestData.CreateSqliteContext();
         await using var db = tuple.Context;
         await using var connection = tuple.Connection;
-        db.TestReports.AddRange(TestData.CreateReport("one"), TestData.CreateReport("two"));
+
+        db.TestReports.AddRange(
+            TestData.CreateReport("one"),
+            TestData.CreateReport("two"));
+
         await db.SaveChangesAsync();
 
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, new FakePlaywright(), temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
@@ -202,7 +228,9 @@ public class DebugControllerTests
 
         Assert.IsType<RedirectToActionResult>(result);
         Assert.Empty(db.TestReports);
-        Assert.Equal("All TestReports deleted. 2 rows deleted.", controller.TempData["DebugMessage"]);
+        Assert.Equal(
+            "All TestReports deleted. 2 rows deleted.",
+            controller.TempData["DebugMessage"]);
     }
 
     [Theory]
@@ -212,6 +240,7 @@ public class DebugControllerTests
     {
         await using var db = TestData.CreateInMemoryContext();
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, new FakePlaywright(), temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
@@ -224,35 +253,47 @@ public class DebugControllerTests
     public async Task DownloadRawJson_ValidId_ReturnsSourceJsonFile()
     {
         await using var db = TestData.CreateInMemoryContext();
+
         var playwright = new FakePlaywright();
         playwright.JsonById["one"] = "{\"value\":1}";
+
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, playwright, temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
         var result = await controller.DownloadRawJson("one");
 
         var file = Assert.IsType<FileContentResult>(result);
+
         Assert.Equal("application/json", file.ContentType);
         Assert.Equal("raw_one.json", file.FileDownloadName);
-        Assert.Equal("{\"value\":1}", Encoding.UTF8.GetString(file.FileContents));
+        Assert.Equal(
+            "{\"value\":1}",
+            Encoding.UTF8.GetString(file.FileContents));
     }
 
     [Fact]
     public async Task DownloadProcessedJson_ValidId_ReturnsProcessedJsonFile()
     {
         await using var db = TestData.CreateInMemoryContext();
+
         var playwright = new FakePlaywright();
         playwright.JsonById["one"] = TestData.CreateSourceJson("one");
+
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, playwright, temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
         var result = await controller.DownloadProcessedJson("one");
 
         var file = Assert.IsType<FileContentResult>(result);
+
         Assert.Equal("processed_one.json", file.FileDownloadName);
+
         var json = Encoding.UTF8.GetString(file.FileContents);
+
         Assert.Contains("\"Id\": \"one\"", json);
         Assert.Contains('\n', json);
     }
@@ -262,31 +303,41 @@ public class DebugControllerTests
     {
         await using var db = TestData.CreateInMemoryContext();
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, new FakePlaywright(), temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
         var result = await controller.DownloadStoredJson("missing");
 
         var notFound = Assert.IsType<NotFoundObjectResult>(result);
-        Assert.Contains("missing", notFound.Value!.ToString());
+
+        Assert.Contains(
+            "missing",
+            notFound.Value!.ToString());
     }
 
     [Fact]
     public async Task DownloadStoredJson_ExistingId_ReturnsStoredJson()
     {
         await using var db = TestData.CreateInMemoryContext();
+
         var report = TestData.CreateReport("one");
         db.TestReports.Add(report);
         await db.SaveChangesAsync();
+
         using var temp = new TempLogDirectory();
+
         var controller = CreateController(db, new FakePlaywright(), temp.ContentRootPath);
         ControllerTestHelper.AttachHttpContext(controller);
 
         var result = await controller.DownloadStoredJson("one");
 
         var file = Assert.IsType<FileContentResult>(result);
+
         Assert.Equal("stored_one.json", file.FileDownloadName);
-        Assert.Equal(report.Json, Encoding.UTF8.GetString(file.FileContents));
+        Assert.Equal(
+            report.Json,
+            Encoding.UTF8.GetString(file.FileContents));
     }
 
     private static DebugController CreateController(
@@ -298,8 +349,12 @@ public class DebugControllerTests
             db,
             playwright,
             new JSONService(new TimeZoneService()),
+            new TestSettingsService(),
             new TestStringLocalizer(),
-            new TestWebHostEnvironment { ContentRootPath = contentRootPath },
+            new TestWebHostEnvironment
+            {
+                ContentRootPath = contentRootPath
+            },
             NullLogger<DebugController>.Instance);
     }
 
@@ -311,9 +366,18 @@ public class DebugControllerTests
 
         public TempLogDirectory()
         {
-            Root = Path.Combine(Path.GetTempPath(), $"testfusion-debug-{Guid.NewGuid():N}");
-            ContentRootPath = Path.Combine(Root, "TestFusion.Web");
-            LogDirectory = Path.Combine(Root, "logs");
+            Root = Path.Combine(
+                Path.GetTempPath(),
+                $"testfusion-debug-{Guid.NewGuid():N}");
+
+            ContentRootPath = Path.Combine(
+                Root,
+                "TestFusion.Web");
+
+            LogDirectory = Path.Combine(
+                Root,
+                "logs");
+
             Directory.CreateDirectory(ContentRootPath);
             Directory.CreateDirectory(LogDirectory);
         }
