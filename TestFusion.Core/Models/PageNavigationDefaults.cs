@@ -12,7 +12,7 @@ public static class PageNavigationDefaults
                 ShowBackToTop = true,
                 ShowBackToStart = false
             },
-            ["Analysis/Generate"] = new()
+            ["Analysis/Index"] = new()
             {
                 ShowBackToLeft = true,
                 ShowBackToTop = true,
