@@ -51,6 +51,9 @@ namespace TestFusion.Data.Migrations
                     b.Property<bool>("MatchCustomerPhone")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("PageNavigationSettingsJson")
+                        .HasColumnType("jsonb");
+
                     b.Property<int>("PdfMaxInjectorsPerPage")
                         .HasColumnType("integer");
 

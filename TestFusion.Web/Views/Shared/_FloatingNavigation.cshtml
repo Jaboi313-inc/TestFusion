@@ -1,0 +1,74 @@
+﻿@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@using TestFusion.Core.Interfaces
+@inject ISettingsService SettingsService
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    var controller =
+        ViewContext.RouteData.Values["controller"]?.ToString()
+        ?? string.Empty;
+
+    var action =
+        ViewContext.RouteData.Values["action"]?.ToString()
+        ?? string.Empty;
+
+    var navigation =
+        await SettingsService.GetPageNavigationAsync(
+            $"{controller}/{action}");
+}
+
+@if (navigation.ShowBackToLeft ||
+     navigation.ShowBackToTop ||
+     navigation.ShowBackToStart)
+{
+    <div class="floating-navigation">
+        @if (navigation.ShowBackToLeft)
+        {
+            <button type="button"
+                    id="backToLeftToast"
+                    class="floating-navigation-button"
+                    aria-label="@Localizer["ButtonBackToLeft"]">
+                <span class="floating-navigation-icon">
+                    ←
+                </span>
+
+                <span class="floating-navigation-text">
+                    @Localizer["ButtonBackToLeft"]
+                </span>
+            </button>
+        }
+
+        @if (navigation.ShowBackToTop)
+        {
+            <button type="button"
+                    id="backToTopToast"
+                    class="floating-navigation-button"
+                    aria-label="@Localizer["ButtonBackToTop"]">
+                <span class="floating-navigation-icon">
+                    ↑
+                </span>
+
+                <span class="floating-navigation-text">
+                    @Localizer["ButtonBackToTop"]
+                </span>
+            </button>
+        }
+
+        @if (navigation.ShowBackToStart)
+        {
+            <button type="button"
+                    id="backToStartToast"
+                    class="floating-navigation-button"
+                    aria-label="@Localizer["ButtonBackToStart"]">
+                <span class="floating-navigation-icon">
+                    ↖
+                </span>
+
+                <span class="floating-navigation-text">
+                    @Localizer["ButtonBackToStart"]
+                </span>
+            </button>
+        }
+    </div>
+}

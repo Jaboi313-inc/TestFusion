@@ -7,13 +7,24 @@
 <html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
     <title>TestFusion</title>
+
     <script type="importmap"></script>
 
-    <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="stylesheet" href="~/css/nav-bar.css" />
+    <link rel="stylesheet"
+          href="~/css/site.css" />
+
+    <link rel="stylesheet"
+          href="~/css/nav-bar.css" />
+
+    <link rel="stylesheet"
+          href="~/css/floating-navigation.css"
+          asp-append-version="true" />
 </head>
+
 <body>
     <header>
         <nav class="nav-bar">
@@ -46,13 +57,25 @@
 
                         @if (CultureInfo.CurrentUICulture.Name.StartsWith("nl"))
                         {
-                            <option value="nl-NL" selected>NL</option>
-                            <option value="en-US">EN</option>
+                            <option value="nl-NL"
+                                    selected>
+                                NL
+                            </option>
+
+                            <option value="en-US">
+                                EN
+                            </option>
                         }
                         else
                         {
-                            <option value="nl-NL">NL</option>
-                            <option value="en-US" selected>EN</option>
+                            <option value="nl-NL">
+                                NL
+                            </option>
+
+                            <option value="en-US"
+                                    selected>
+                                EN
+                            </option>
                         }
 
                     </select>
@@ -62,12 +85,22 @@
     </header>
 
     <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main"
+              class="pb-3">
             @RenderBody()
         </main>
     </div>
 
+    <partial name="_FloatingNavigation" />
+
     <script src="~/js/site.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/js/floating-navigation.js"
+            asp-append-version="true">
+    </script>
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false)
 </body>
 </html>

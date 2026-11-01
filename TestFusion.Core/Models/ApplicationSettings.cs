@@ -1,4 +1,6 @@
-﻿namespace TestFusion.Core.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TestFusion.Core.Models;
 
 public class ApplicationSettings
 {
@@ -8,7 +10,7 @@ public class ApplicationSettings
     private const bool DefaultMatchCustomerPhone = true;
     private const bool DefaultMatchCustomerMail = true;
     private const bool DefaultMatchCustomerNotes = true;
-    private const int DefaultPdfMaxInjectorsPerPage = 10;
+    private const int DefaultPdfMaxInjectorsPerPage = 8;
 
     public ApplicationSettings()
     {
@@ -23,6 +25,10 @@ public class ApplicationSettings
     public bool MatchCustomerMail { get; set; }
     public bool MatchCustomerNotes { get; set; }
     public int PdfMaxInjectorsPerPage { get; set; }
+
+    [Column(TypeName = "jsonb")]
+    public string? PageNavigationSettingsJson { get; set; }
+
     public string? CarbonXEmailEncrypted { get; set; }
     public string? CarbonXPasswordEncrypted { get; set; }
 
@@ -35,5 +41,6 @@ public class ApplicationSettings
         MatchCustomerMail = DefaultMatchCustomerMail;
         MatchCustomerNotes = DefaultMatchCustomerNotes;
         PdfMaxInjectorsPerPage = DefaultPdfMaxInjectorsPerPage;
+        PageNavigationSettingsJson = null;
     }
 }

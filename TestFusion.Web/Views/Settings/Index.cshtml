@@ -11,7 +11,9 @@
     }
 }
 
-<link rel="stylesheet" href="~/css/settings.css" />
+<link rel="stylesheet"
+      href="~/css/settings.css"
+      asp-append-version="true" />
 
 <div class="settings-page">
     <div class="settings-header">
@@ -39,21 +41,44 @@
         </div>
     }
 
-    <form asp-action="Index" method="post" class="settings-form">
-        <input asp-for="ReturnUrl" type="hidden" />
+    <form asp-action="Index"
+          method="post"
+          class="settings-form">
+        @Html.AntiForgeryToken()
+
+        <input asp-for="ReturnUrl"
+               type="hidden" />
 
         @if (!ViewData.ModelState.IsValid)
         {
-            <div asp-validation-summary="All" class="settings-validation"></div>
+            <div asp-validation-summary="All"
+                 class="settings-validation">
+            </div>
         }
 
         <div class="settings-layout">
             <aside class="settings-sidebar">
                 <nav class="settings-navigation">
-                    <a href="#settings-analysis" class="active">Analyse</a>
-                    <a href="#settings-customer">Klantgroepering</a>
-                    <a href="#settings-pdf">PDF</a>
-                    <a href="#settings-carbonx">CarbonX</a>
+                    <a href="#settings-analysis"
+                       class="active">
+                        Analyse
+                    </a>
+
+                    <a href="#settings-customer">
+                        Klantgroepering
+                    </a>
+
+                    <a href="#settings-pdf">
+                        PDF
+                    </a>
+
+                    <a href="#settings-navigation">
+                        Navigatie
+                    </a>
+
+                    <a href="#settings-carbonx">
+                        CarbonX
+                    </a>
                 </nav>
 
                 <div class="settings-actions">
@@ -66,7 +91,8 @@
 
                     @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
                     {
-                        <a href="@Model.ReturnUrl" class="btn settings-button-secondary">
+                        <a href="@Model.ReturnUrl"
+                           class="btn settings-button-secondary">
                             Terug
                         </a>
                     }
@@ -92,7 +118,8 @@
             </aside>
 
             <div class="settings-content">
-                <section id="settings-analysis" class="settings-section">
+                <section id="settings-analysis"
+                         class="settings-section">
                     <div class="settings-section-header">
                         <h2>Analyse</h2>
                         <p>Instellingen voor het groeperen van testresultaten.</p>
@@ -110,7 +137,8 @@
                     </div>
                 </section>
 
-                <section id="settings-customer" class="settings-section">
+                <section id="settings-customer"
+                         class="settings-section">
                     <div class="settings-section-header">
                         <h2>Klantgroepering</h2>
                         <p>Bepaal welke klantgegevens worden gebruikt om verstuivers te groeperen.</p>
@@ -155,7 +183,8 @@
                     </div>
                 </section>
 
-                <section id="settings-pdf" class="settings-section">
+                <section id="settings-pdf"
+                         class="settings-section">
                     <div class="settings-section-header">
                         <h2>PDF</h2>
                         <p>Instellingen voor het genereren van vergelijkings-PDF's.</p>
@@ -173,14 +202,63 @@
                                    max="10" />
 
                             <span asp-validation-for="PdfMaxInjectorsPerPage"
-                                  class="settings-field-error"></span>
+                                  class="settings-field-error">
+                            </span>
 
                             <small>Toegestaan: 1 tot en met 10 verstuivers per pagina.</small>
                         </div>
                     </div>
                 </section>
 
-                <section id="settings-carbonx" class="settings-section">
+                <section id="settings-navigation"
+                         class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>Navigatie</h2>
+                        <p>Bepaal per pagina welke zwevende navigatieknoppen beschikbaar zijn.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <div class="settings-navigation-table">
+                            <div class="settings-navigation-row settings-navigation-row-header">
+                                <span>Pagina</span>
+                                <span>← Links</span>
+                                <span>↑ Boven</span>
+                                <span>↖ Linksboven</span>
+                            </div>
+
+                            @foreach (var navigationPage in Model.NavigationPages)
+                            {
+                                <div class="settings-navigation-row">
+                                    <strong>@navigationPage.Key</strong>
+
+                                    <label class="settings-navigation-toggle">
+                                        @Html.CheckBox(
+                                            $"NavigationPages[{navigationPage.Key}].ShowBackToLeft",
+                                            navigationPage.Value.ShowBackToLeft)
+                                        <span>←</span>
+                                    </label>
+
+                                    <label class="settings-navigation-toggle">
+                                        @Html.CheckBox(
+                                            $"NavigationPages[{navigationPage.Key}].ShowBackToTop",
+                                            navigationPage.Value.ShowBackToTop)
+                                        <span>↑</span>
+                                    </label>
+
+                                    <label class="settings-navigation-toggle">
+                                        @Html.CheckBox(
+                                            $"NavigationPages[{navigationPage.Key}].ShowBackToStart",
+                                            navigationPage.Value.ShowBackToStart)
+                                        <span>↖</span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </section>
+
+                <section id="settings-carbonx"
+                         class="settings-section">
                     <div class="settings-section-header">
                         <h2>CarbonX</h2>
                         <p>Inloggegevens die TestFusion gebruikt om verbinding te maken met CarbonX.</p>
@@ -197,7 +275,8 @@
                                    autocomplete="off" />
 
                             <span asp-validation-for="CarbonXEmail"
-                                  class="settings-field-error"></span>
+                                  class="settings-field-error">
+                            </span>
                         </div>
 
                         <div class="settings-field">
@@ -211,7 +290,8 @@
                                    placeholder="Nieuw wachtwoord" />
 
                             <span asp-validation-for="NewCarbonXPassword"
-                                  class="settings-field-error"></span>
+                                  class="settings-field-error">
+                            </span>
 
                             @if (Model.HasCarbonXPassword)
                             {
@@ -234,19 +314,28 @@
         document.addEventListener("DOMContentLoaded", function () {
             const form = document.querySelector(".settings-form");
             const saveButton = document.getElementById("settings-save");
-            const navigationLinks = Array.from(document.querySelectorAll(".settings-navigation a"));
-            const sections = Array.from(document.querySelectorAll(".settings-section"));
-            const message = document.querySelector(".settings-message-temporary");
+            const navigationLinks = Array.from(
+                document.querySelectorAll(".settings-navigation a"));
+            const sections = Array.from(
+                document.querySelectorAll(".settings-section"));
+            const message = document.querySelector(
+                ".settings-message-temporary");
+
+            let isNavigationScrolling = false;
+            let navigationScrollTimeout = null;
+            let clickedSectionId = null;
 
             if (form && saveButton) {
                 function getFormState() {
-                    return new URLSearchParams(new FormData(form)).toString();
+                    return new URLSearchParams(
+                        new FormData(form)).toString();
                 }
 
                 const initialState = getFormState();
 
                 function updateSaveButton() {
-                    saveButton.disabled = getFormState() === initialState;
+                    saveButton.disabled =
+                        getFormState() === initialState;
                 }
 
                 form.addEventListener("input", updateSaveButton);
@@ -254,11 +343,19 @@
             }
 
             if (message) {
-                const closeButton = message.querySelector(".settings-message-close");
-                const duration = parseInt(message.dataset.duration || "5000", 10);
+                const closeButton =
+                    message.querySelector(".settings-message-close");
+
+                const duration =
+                    parseInt(
+                        message.dataset.duration || "5000",
+                        10);
+
                 let hideTimeout;
 
-                message.style.setProperty("--message-duration", duration + "ms");
+                message.style.setProperty(
+                    "--message-duration",
+                    duration + "ms");
 
                 function hideMessage() {
                     window.clearTimeout(hideTimeout);
@@ -273,29 +370,70 @@
                     message.classList.add("is-counting");
                 });
 
-                hideTimeout = window.setTimeout(hideMessage, duration);
+                hideTimeout =
+                    window.setTimeout(
+                        hideMessage,
+                        duration);
 
                 if (closeButton) {
-                    closeButton.addEventListener("click", hideMessage);
+                    closeButton.addEventListener(
+                        "click",
+                        hideMessage);
                 }
             }
 
             function getNavbarHeight() {
-                const value = getComputedStyle(document.documentElement)
-                    .getPropertyValue("--navbar-height");
+                const value =
+                    getComputedStyle(document.documentElement)
+                        .getPropertyValue("--navbar-height");
 
-                const height = parseFloat(value);
+                const height =
+                    parseFloat(value);
 
-                return Number.isNaN(height) ? 70 : height;
+                return Number.isNaN(height)
+                    ? 70
+                    : height;
             }
 
             function setActiveNavigation(sectionId) {
                 navigationLinks.forEach(function (link) {
                     link.classList.toggle(
                         "active",
-                        link.getAttribute("href") === "#" + sectionId
-                    );
+                        link.getAttribute("href") ===
+                            "#" + sectionId);
                 });
+            }
+
+            function getCurrentSection() {
+                const activationLine =
+                    getNavbarHeight() + 40;
+
+                let activeSection =
+                    sections[0];
+
+                sections.forEach(function (section) {
+                    if (
+                        section
+                            .getBoundingClientRect()
+                            .top <= activationLine
+                    ) {
+                        activeSection = section;
+                    }
+                });
+
+                const scrollBottom =
+                    window.scrollY +
+                    window.innerHeight;
+
+                const pageBottom =
+                    document.documentElement.scrollHeight;
+
+                if (scrollBottom >= pageBottom - 5) {
+                    activeSection =
+                        sections[sections.length - 1];
+                }
+
+                return activeSection;
             }
 
             function updateActiveNavigation() {
@@ -303,53 +441,86 @@
                     return;
                 }
 
-                const activationLine = getNavbarHeight() + 40;
-                let activeSection = sections[0];
-
-                sections.forEach(function (section) {
-                    if (section.getBoundingClientRect().top <= activationLine) {
-                        activeSection = section;
+                if (isNavigationScrolling) {
+                    if (clickedSectionId) {
+                        setActiveNavigation(clickedSectionId);
                     }
-                });
 
-                const scrollBottom = window.scrollY + window.innerHeight;
-                const pageBottom = document.documentElement.scrollHeight;
+                    window.clearTimeout(navigationScrollTimeout);
 
-                if (scrollBottom >= pageBottom - 5) {
-                    activeSection = sections[sections.length - 1];
+                    navigationScrollTimeout =
+                        window.setTimeout(function () {
+                            isNavigationScrolling = false;
+
+                            if (clickedSectionId) {
+                                setActiveNavigation(clickedSectionId);
+                            }
+                        }, 150);
+
+                    return;
                 }
 
-                setActiveNavigation(activeSection.id);
+                const activeSection =
+                    getCurrentSection();
+
+                if (activeSection) {
+                    setActiveNavigation(
+                        activeSection.id);
+                }
             }
 
             navigationLinks.forEach(function (link) {
-                link.addEventListener("click", function (event) {
-                    event.preventDefault();
+                link.addEventListener(
+                    "click",
+                    function (event) {
+                        event.preventDefault();
 
-                    const href = link.getAttribute("href");
+                        const href =
+                            link.getAttribute("href");
 
-                    if (!href) {
-                        return;
-                    }
+                        if (!href) {
+                            return;
+                        }
 
-                    const sectionId = href.substring(1);
-                    const section = document.getElementById(sectionId);
+                        const section =
+                            document.getElementById(
+                                href.substring(1));
 
-                    if (!section) {
-                        return;
-                    }
+                        if (!section) {
+                            return;
+                        }
 
-                    setActiveNavigation(sectionId);
+                        clickedSectionId =
+                            section.id;
 
-                    section.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start"
+                        isNavigationScrolling =
+                            true;
+
+                        window.clearTimeout(
+                            navigationScrollTimeout);
+
+                        setActiveNavigation(
+                            clickedSectionId);
+
+                        section.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start"
+                        });
                     });
-                });
             });
 
-            window.addEventListener("scroll", updateActiveNavigation, { passive: true });
-            window.addEventListener("resize", updateActiveNavigation);
+            window.addEventListener(
+                "scroll",
+                updateActiveNavigation,
+                { passive: true });
+
+            window.addEventListener(
+                "resize",
+                function () {
+                    if (!isNavigationScrolling) {
+                        updateActiveNavigation();
+                    }
+                });
 
             updateActiveNavigation();
         });
