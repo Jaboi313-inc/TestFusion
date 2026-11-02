@@ -66,7 +66,6 @@
       href="~/css/debug.css"
       asp-append-version="true" />
 
-
 <div class="debug-page">
 
     <div class="debug-header">
@@ -101,14 +100,12 @@
 
     </div>
 
-
     @if (TempData["DebugMessage"] != null)
     {
         <div class="debug-message">
             @TempData["DebugMessage"]
         </div>
     }
-
 
     <section class="debug-section"
              id="settings">
@@ -125,14 +122,93 @@
 
             @Html.AntiForgeryToken()
 
-            <label class="debug-settings-checkbox">
-                <input asp-for="ShowDebugInformation" />
+            <div class="debug-settings-block">
+                <label class="debug-settings-checkbox">
+                    <input asp-for="ShowDebugInformation" />
 
-                <span>
-                    <strong>Debuginformatie tonen</strong>
-                    <small>Toont extra technische informatie bij testresultaten en gegenereerde PDF's.</small>
-                </span>
-            </label>
+                    <span>
+                        <strong>Debuginformatie tonen</strong>
+                        <small>Toont extra technische informatie bij testresultaten en gegenereerde PDF's.</small>
+                    </span>
+                </label>
+            </div>
+
+            <div class="debug-settings-block">
+
+                <div class="debug-settings-block-header">
+                    <h4>Navigatieknoppen</h4>
+                    <p>Bepaal welke zwevende navigatieknoppen op Debug-pagina's zichtbaar zijn.</p>
+                </div>
+
+                <div class="debug-navigation-pages">
+
+                    @foreach (var navigationPage in Model.NavigationPages)
+                    {
+                        <div class="debug-navigation-card">
+
+                            <div class="debug-navigation-page">
+                                <strong>@navigationPage.Key</strong>
+                                <small>Navigatie op deze pagina</small>
+                            </div>
+
+                            <div class="debug-navigation-options">
+
+                                <label class="debug-navigation-option">
+
+                                    @Html.CheckBox(
+                                        $"NavigationPages[{navigationPage.Key}].ShowBackToLeft",
+                                        navigationPage.Value.ShowBackToLeft)
+
+                                    <span class="debug-navigation-icon">
+                                        ←
+                                    </span>
+
+                                    <span>
+                                        Links
+                                    </span>
+
+                                </label>
+
+                                <label class="debug-navigation-option">
+
+                                    @Html.CheckBox(
+                                        $"NavigationPages[{navigationPage.Key}].ShowBackToTop",
+                                        navigationPage.Value.ShowBackToTop)
+
+                                    <span class="debug-navigation-icon">
+                                        ↑
+                                    </span>
+
+                                    <span>
+                                        Boven
+                                    </span>
+
+                                </label>
+
+                                <label class="debug-navigation-option">
+
+                                    @Html.CheckBox(
+                                        $"NavigationPages[{navigationPage.Key}].ShowBackToStart",
+                                        navigationPage.Value.ShowBackToStart)
+
+                                    <span class="debug-navigation-icon">
+                                        ↖
+                                    </span>
+
+                                    <span>
+                                        Linksboven
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
 
             <button type="submit"
                     class="btn">
@@ -143,7 +219,6 @@
 
     </section>
 
-
     <section class="debug-section"
              id="json-viewer">
 
@@ -151,7 +226,6 @@
             <h3>@Localizer["DebugJsonViewer"]</h3>
             <p>@Localizer["DebugJsonViewerDescription"]@Localizer["SymbolDot"]</p>
         </div>
-
 
         <form asp-controller="Debug"
               asp-action="Index"
@@ -180,7 +254,6 @@
 
         </form>
 
-
         @if (!string.IsNullOrWhiteSpace(Model.JsonId))
         {
             @if (!string.IsNullOrWhiteSpace(Model.JsonError))
@@ -189,7 +262,6 @@
                     @Localizer["DebugRawProcessedLoadError", Model.JsonError]@Localizer["SymbolDot"]
                 </div>
             }
-
 
             @if (!Model.StoredJsonFound)
             {
@@ -209,7 +281,6 @@
                     @Localizer["DebugProcessedStoredDifferent"]@Localizer["SymbolDot"]
                 </div>
             }
-
 
             <div class="json-preview-grid">
 
@@ -233,7 +304,6 @@
 
                 </div>
 
-
                 <div class="json-preview-card">
 
                     <div class="json-preview-header">
@@ -253,7 +323,6 @@
                     <pre>@(Model.ProcessedJson ?? $"{Localizer["DebugProcessedJsonLoadFailed"]}{Localizer["SymbolDot"]}")</pre>
 
                 </div>
-
 
                 <div class="json-preview-card">
 
@@ -283,9 +352,8 @@
 
     </section>
 
-
     <section class="debug-section"
-         id="database">
+             id="database">
 
         <div class="database-header">
 
@@ -300,7 +368,6 @@
                 </p>
             </div>
 
-
             <div class="debug-actions">
 
                 <button type="submit"
@@ -310,7 +377,6 @@
                         disabled>
                     @Localizer["DebugDeleteSelected"]
                 </button>
-
 
                 <form asp-controller="Debug"
                       asp-action="ClearTestReports"
@@ -334,7 +400,6 @@
 
         </div>
 
-
         @if (Model.TestReports.Count == 0)
         {
             <p class="debug-empty">
@@ -350,7 +415,6 @@
                   data-confirm="@confirmDeleteSelected">
 
                 @Html.AntiForgeryToken()
-
 
                 <div class="debug-table-wrapper">
 
@@ -383,7 +447,6 @@
 
                             </tr>
 
-
                             <tr>
                                 <th>@Localizer["DebugId"]</th>
                                 <th>@Localizer["InjectorDateTime"]</th>
@@ -401,7 +464,6 @@
 
                         </thead>
 
-
                         <tbody>
 
                             @foreach (var report in Model.TestReports)
@@ -409,11 +471,13 @@
                                 <tr>
 
                                     <td class="debug-checkbox-column">
+
                                         <input type="checkbox"
                                                name="selectedIds"
                                                value="@report.Id"
                                                class="row-checkbox"
                                                aria-label="@Localizer["DebugSelectTestReport", report.Id]" />
+
                                     </td>
 
                                     <td class="debug-table-id">
@@ -481,20 +545,20 @@
 
     </section>
 
-
     <section class="debug-section"
-         id="logs">
+             id="logs">
 
         <div class="logs-header">
 
             <div>
+
                 <h3>@Localizer["Logs"]</h3>
 
                 <p>
                     @Localizer["DebugLogsDescription"]@Localizer["SymbolDot"]
                 </p>
-            </div>
 
+            </div>
 
             <a asp-controller="Debug"
                asp-action="Index"
@@ -505,10 +569,10 @@
 
         </div>
 
-
         <div class="log-filters">
 
             <div class="log-filter">
+
                 <label for="log-source-filter">
                     @Localizer["Source"]
                 </label>
@@ -529,10 +593,11 @@
                     </option>
 
                 </select>
+
             </div>
 
-
             <div class="log-filter">
+
                 <label for="log-level-filter">
                     @Localizer["Level"]
                 </label>
@@ -561,10 +626,11 @@
                     </option>
 
                 </select>
+
             </div>
 
-
             <div class="log-filter log-filter-search">
+
                 <label for="log-search">
                     @Localizer["Search"]
                 </label>
@@ -573,18 +639,20 @@
                        id="log-search"
                        class="debug-input"
                        placeholder="@Localizer["DebugLogSearchPlaceholder"]" />
+
             </div>
 
         </div>
 
-
         <div class="log-count">
+
             @Localizer["Total"]:
+
             <span id="visible-log-count">
                 @Model.Logs.Count
             </span>
-        </div>
 
+        </div>
 
         <div id="log-list"
              class="log-list">
@@ -629,7 +697,6 @@
 
                     </div>
 
-
                     @if (!string.IsNullOrWhiteSpace(log.Exception) ||
                          log.Properties.Count > 0)
                     {
@@ -638,7 +705,6 @@
                             <summary>
                                 @Localizer["DebugLogDetails"]
                             </summary>
-
 
                             @if (!string.IsNullOrWhiteSpace(log.Exception))
                             {
@@ -652,7 +718,6 @@
 
                                 </div>
                             }
-
 
                             @if (log.Properties.Count > 0)
                             {
@@ -683,7 +748,6 @@
 
         </div>
 
-
         <p id="no-visible-logs"
            class="debug-empty"
            style="display: @(Model.Logs.Count == 0 ? "block" : "none");">
@@ -693,8 +757,6 @@
     </section>
 
 </div>
-
-
 
 @section Scripts {
     <script src="~/js/debug.js" asp-append-version="true"></script>

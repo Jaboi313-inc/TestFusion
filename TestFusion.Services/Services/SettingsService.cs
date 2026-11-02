@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models;
@@ -7,30 +7,27 @@ using TestFusion.Data;
 
 namespace TestFusion.Services.Services;
 
-public class SettingsService : ISettingsService
-{
-    private static readonly JsonSerializerOptions NavigationJsonOptions = new(JsonSerializerDefaults.Web)
-    {
+public class SettingsService : ISettingsService {
+    private static readonly JsonSerializerOptions NavigationJsonOptions = new(JsonSerializerDefaults.Web) {
         WriteIndented = true
     };
 
     private readonly AppDbContext _dbContext;
     private readonly ISecretProtector _secretProtector;
 
-    public SettingsService(AppDbContext dbContext, ISecretProtector secretProtector)
-    {
+    public SettingsService(AppDbContext dbContext, ISecretProtector secretProtector) {
         _dbContext = dbContext;
         _secretProtector = secretProtector;
     }
 
-    public async Task<ApplicationSettings> GetAsync() => await GetSettingsAsync();
+    public async Task<ApplicationSettings> GetAsync() {
+        return await GetSettingsAsync();
+    }
 
-    public async Task<SettingsViewModel> GetForEditAsync()
-    {
+    public async Task<SettingsViewModel> GetForEditAsync() {
         var settings = await GetSettingsAsync();
 
-        return new SettingsViewModel
-        {
+        return new SettingsViewModel {
             ShowDebugInformation = settings.ShowDebugInformation,
             GroupTestsByBaseName = settings.GroupTestsByBaseName,
             MatchCustomerName = settings.MatchCustomerName,
@@ -46,8 +43,7 @@ public class SettingsService : ISettingsService
         };
     }
 
-    public async Task UpdateAsync(SettingsViewModel model)
-    {
+    public async Task UpdateAsync(SettingsViewModel model) {
         var settings = await GetSettingsAsync();
 
         settings.GroupTestsByBaseName = model.GroupTestsByBaseName;
@@ -57,41 +53,56 @@ public class SettingsService : ISettingsService
         settings.MatchCustomerNotes = model.MatchCustomerNotes;
         settings.PdfMaxInjectorsPerPage = model.PdfMaxInjectorsPerPage;
 
-        var navigationPages = PageNavigationDefaults.Create();
+        var navigationPages = GetNavigationPages(settings);
 
-        foreach (var pageKey in navigationPages.Keys.ToList())
-        {
-            if (!model.NavigationPages.TryGetValue(pageKey, out var pageSettings))
+        foreach (var navigationPage in model.NavigationPages) {
+            if (navigationPage.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase)) {
                 continue;
+            }
 
-            navigationPages[pageKey] = new PageNavigationSettings
-            {
-                ShowBackToLeft = pageSettings.ShowBackToLeft,
-                ShowBackToTop = pageSettings.ShowBackToTop,
-                ShowBackToStart = pageSettings.ShowBackToStart
-            };
+            if (!navigationPages.ContainsKey(navigationPage.Key)) {
+                continue;
+            }
+
+            navigationPages[navigationPage.Key] = CopyNavigationSettings(navigationPage.Value);
         }
 
         settings.PageNavigationSettingsJson = SerializeNavigationPages(navigationPages);
+
         settings.CarbonXEmailEncrypted = string.IsNullOrWhiteSpace(model.CarbonXEmail)
             ? null
             : _secretProtector.Protect(model.CarbonXEmail);
 
-        if (!string.IsNullOrWhiteSpace(model.NewCarbonXPassword))
+        if (!string.IsNullOrWhiteSpace(model.NewCarbonXPassword)) {
             settings.CarbonXPasswordEncrypted = _secretProtector.Protect(model.NewCarbonXPassword);
+        }
 
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdateDebugAsync(bool showDebugInformation)
-    {
+    public async Task UpdateDebugAsync(bool showDebugInformation, Dictionary<string, PageNavigationSettings> navigationPages) {
         var settings = await GetSettingsAsync();
         settings.ShowDebugInformation = showDebugInformation;
+
+        var currentNavigationPages = GetNavigationPages(settings);
+
+        foreach (var navigationPage in navigationPages) {
+            if (!navigationPage.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase)) {
+                continue;
+            }
+
+            if (!currentNavigationPages.ContainsKey(navigationPage.Key)) {
+                continue;
+            }
+
+            currentNavigationPages[navigationPage.Key] = CopyNavigationSettings(navigationPage.Value);
+        }
+
+        settings.PageNavigationSettingsJson = SerializeNavigationPages(currentNavigationPages);
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<PageNavigationSettings> GetPageNavigationAsync(string pageKey)
-    {
+    public async Task<PageNavigationSettings> GetPageNavigationAsync(string pageKey) {
         var navigationPages = GetNavigationPages(await GetSettingsAsync());
 
         return navigationPages.TryGetValue(pageKey, out var pageSettings)
@@ -99,20 +110,33 @@ public class SettingsService : ISettingsService
             : new PageNavigationSettings();
     }
 
-    public async Task ResetToDefaultsAsync()
-    {
+    public async Task ResetToDefaultsAsync() {
         var settings = await GetSettingsAsync();
+        var currentNavigationPages = GetNavigationPages(settings);
+
+        var debugNavigationPages = currentNavigationPages
+            .Where(page => page.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(page => page.Key, page => CopyNavigationSettings(page.Value), StringComparer.OrdinalIgnoreCase);
+
+        var showDebugInformation = settings.ShowDebugInformation;
+
         settings.ResetToDefaults();
-        settings.PageNavigationSettingsJson = SerializeNavigationPages(PageNavigationDefaults.Create());
+        settings.ShowDebugInformation = showDebugInformation;
+
+        var defaultNavigationPages = PageNavigationDefaults.Create();
+
+        foreach (var debugNavigationPage in debugNavigationPages) {
+            defaultNavigationPages[debugNavigationPage.Key] = debugNavigationPage.Value;
+        }
+
+        settings.PageNavigationSettingsJson = SerializeNavigationPages(defaultNavigationPages);
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<CarbonXCredentials> GetCarbonXCredentialsAsync()
-    {
+    public async Task<CarbonXCredentials> GetCarbonXCredentialsAsync() {
         var settings = await GetSettingsAsync();
 
-        return new CarbonXCredentials
-        {
+        return new CarbonXCredentials {
             Email = string.IsNullOrWhiteSpace(settings.CarbonXEmailEncrypted)
                 ? string.Empty
                 : _secretProtector.Unprotect(settings.CarbonXEmailEncrypted),
@@ -122,14 +146,11 @@ public class SettingsService : ISettingsService
         };
     }
 
-    private async Task<ApplicationSettings> GetSettingsAsync()
-    {
+    private async Task<ApplicationSettings> GetSettingsAsync() {
         var settings = await _dbContext.ApplicationSettings.FirstOrDefaultAsync(x => x.Id == 1);
 
-        if (settings != null)
-        {
-            if (string.IsNullOrWhiteSpace(settings.PageNavigationSettingsJson))
-            {
+        if (settings != null) {
+            if (string.IsNullOrWhiteSpace(settings.PageNavigationSettingsJson)) {
                 settings.PageNavigationSettingsJson = SerializeNavigationPages(PageNavigationDefaults.Create());
                 await _dbContext.SaveChangesAsync();
             }
@@ -137,8 +158,7 @@ public class SettingsService : ISettingsService
             return settings;
         }
 
-        settings = new ApplicationSettings
-        {
+        settings = new ApplicationSettings {
             Id = 1,
             PageNavigationSettingsJson = SerializeNavigationPages(PageNavigationDefaults.Create())
         };
@@ -149,43 +169,44 @@ public class SettingsService : ISettingsService
         return settings;
     }
 
-    private static Dictionary<string, PageNavigationSettings> GetNavigationPages(ApplicationSettings settings)
-    {
+    private static Dictionary<string, PageNavigationSettings> GetNavigationPages(ApplicationSettings settings) {
         var defaults = PageNavigationDefaults.Create();
 
-        if (string.IsNullOrWhiteSpace(settings.PageNavigationSettingsJson))
+        if (string.IsNullOrWhiteSpace(settings.PageNavigationSettingsJson)) {
             return defaults;
+        }
 
-        try
-        {
-            var stored = JsonSerializer.Deserialize<Dictionary<string, PageNavigationSettings>>(
-                settings.PageNavigationSettingsJson,
-                NavigationJsonOptions);
+        try {
+            var stored = JsonSerializer.Deserialize<Dictionary<string, PageNavigationSettings>>(settings.PageNavigationSettingsJson, NavigationJsonOptions);
 
-            if (stored == null)
+            if (stored == null) {
                 return defaults;
+            }
 
-            var result = new Dictionary<string, PageNavigationSettings>(
-                stored,
-                StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, PageNavigationSettings>(stored, StringComparer.OrdinalIgnoreCase);
 
-            foreach (var page in defaults)
-            {
-                if (!result.ContainsKey(page.Key))
+            foreach (var page in defaults) {
+                if (!result.ContainsKey(page.Key)) {
                     result[page.Key] = page.Value;
+                }
             }
 
             return result;
         }
-        catch (JsonException)
-        {
+        catch (JsonException) {
             return defaults;
         }
     }
 
-    private static string SerializeNavigationPages(
-        Dictionary<string, PageNavigationSettings> navigationPages)
-    {
+    private static PageNavigationSettings CopyNavigationSettings(PageNavigationSettings settings) {
+        return new PageNavigationSettings {
+            ShowBackToLeft = settings.ShowBackToLeft,
+            ShowBackToTop = settings.ShowBackToTop,
+            ShowBackToStart = settings.ShowBackToStart
+        };
+    }
+
+    private static string SerializeNavigationPages(Dictionary<string, PageNavigationSettings> navigationPages) {
         return JsonSerializer.Serialize(navigationPages, NavigationJsonOptions);
     }
 }

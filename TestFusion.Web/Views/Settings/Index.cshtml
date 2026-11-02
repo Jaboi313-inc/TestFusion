@@ -226,7 +226,8 @@
                                 <span>↖ Linksboven</span>
                             </div>
 
-                            @foreach (var navigationPage in Model.NavigationPages)
+                            @foreach (var navigationPage in Model.NavigationPages
+                                .Where(page => !page.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase)))
                             {
                                 <div class="settings-navigation-row">
                                     <strong>@navigationPage.Key</strong>
