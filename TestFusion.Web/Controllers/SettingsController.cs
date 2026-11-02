@@ -19,7 +19,9 @@ public class SettingsController : Controller {
             .Where(page => !page.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase))
             .ToDictionary(page => page.Key, page => page.Value, StringComparer.OrdinalIgnoreCase);
 
-        model.ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null;
+        model.ReturnUrl = string.IsNullOrWhiteSpace(returnUrl)
+            ? null
+            : Url.IsLocalUrl(returnUrl) ? returnUrl : null;
 
         return View(model);
     }
@@ -56,8 +58,12 @@ public class SettingsController : Controller {
         TempData["Success"] = "De standaardinstellingen zijn hersteld.";
         TempData["SuccessDuration"] = 6000;
 
+        var safeReturnUrl = string.IsNullOrWhiteSpace(returnUrl)
+            ? null
+            : Url.IsLocalUrl(returnUrl) ? returnUrl : null;
+
         return RedirectToAction(nameof(Index), new {
-            returnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null
+            returnUrl = safeReturnUrl
         });
     }
 }
