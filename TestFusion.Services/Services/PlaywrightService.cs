@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
 using TestFusion.Core.Interfaces;
@@ -9,7 +10,7 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 {
     private readonly ILogger<PlaywrightService> _logger;
     private readonly SiteSettings _siteSettings;
-    private readonly AuthSettings _authSettings;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     private Microsoft.Playwright.IPlaywright? _playwright;
     private IBrowserContext? _context;
@@ -21,11 +22,11 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     public PlaywrightService(
         ILogger<PlaywrightService> logger,
         IOptions<SiteSettings> siteSettings,
-        IOptions<AuthSettings> authSettings)
+        IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _siteSettings = siteSettings.Value;
-        _authSettings = authSettings.Value;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task<List<string>> GetAllIDs()
@@ -329,27 +330,29 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
     private async Task EnsureLoggedIn(IPage page)
     {
+        var loginButton = page.Locator("#btn-login");
+
+        bool loginRequired;
+
         try
         {
-            var loginButton = page.Locator("#btn-login");
-
-            if (await loginButton.IsVisibleAsync())
-            {
-                _logger.LogInformation("Login required");
-
-                await Login(page);
-
-                return;
-            }
-
-            _logger.LogDebug("Existing login session detected");
+            loginRequired = await loginButton.IsVisibleAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(
-                ex,
-                "Could not determine login state");
+            _logger.LogError(ex, "Could not determine CarbonX login state");
+            throw;
         }
+
+        if (!loginRequired)
+        {
+            _logger.LogDebug("Existing login session detected");
+            return;
+        }
+
+        _logger.LogInformation("Login required");
+
+        await Login(page);
     }
 
     private async Task Login(IPage page)
@@ -358,34 +361,37 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
         _logger.LogInformation("Logging in");
 
-        await TypeHumanly(
-            page.Locator("#email"),
-            _authSettings.Email);
+        using var scope = _scopeFactory.CreateScope();
+        var settingsService = scope.ServiceProvider.GetRequiredService<ISettingsService>();
+        var credentials = await settingsService.GetCarbonXCredentialsAsync();
 
+        _logger.LogInformation(
+            "CarbonX credentials loaded. Email configured: {HasEmail}, password configured: {HasPassword}",
+            !string.IsNullOrWhiteSpace(credentials.Email),
+            !string.IsNullOrWhiteSpace(credentials.Password));
+
+        if (string.IsNullOrWhiteSpace(credentials.Email))
+            throw new InvalidOperationException("CarbonX e-mailadres is niet ingesteld.");
+
+        if (string.IsNullOrWhiteSpace(credentials.Password))
+            throw new InvalidOperationException("CarbonX wachtwoord is niet ingesteld.");
+
+        await TypeHumanly(page.Locator("#email"), credentials.Email);
         await RandomDelay();
 
-        await TypeHumanly(
-            page.Locator("#password"),
-            _authSettings.Password);
-
+        await TypeHumanly(page.Locator("#password"), credentials.Password);
         await RandomDelay();
 
         await page.Mouse.MoveAsync(400, 300);
-
         await RandomDelay();
 
         await page.Locator("#btn-login").ClickAsync();
-
-        await page.WaitForLoadStateAsync(
-            LoadState.DOMContentLoaded);
-
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         await RandomDelay();
 
         stopwatch.Stop();
 
-        _logger.LogInformation(
-            "Login completed in {ElapsedMilliseconds} ms",
-            stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation("Login completed in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
     }
 
     private async Task TypeHumanly(

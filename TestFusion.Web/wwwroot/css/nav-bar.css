@@ -1,24 +1,23 @@
-﻿:root {
-    --navbar-height: 87px;
-}
-
-header {
+﻿header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 5000;
-    height: var(--navbar-height);
     font-weight: bold;
     background-color: #f0f0f0;
+}
+
+body {
+    padding-top: 84px;
 }
 
 .nav-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: nowrap;
     width: 100%;
-    height: 100%;
     box-sizing: border-box;
     padding: 20px;
 }
@@ -30,6 +29,7 @@ header {
     text-decoration: none;
     border-radius: 5px;
     transition: background-color 0.2s ease;
+    white-space: nowrap;
 }
 
     #nav-home:hover {
@@ -40,14 +40,27 @@ header {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    margin-left: auto;
 }
 
+    .nav-right form {
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+
 #nav-settings {
+    display: inline-flex;
+    align-items: center;
     padding: 10px 15px;
     color: black;
     text-decoration: none;
     border-radius: 5px;
     transition: background-color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
     #nav-settings:hover {
@@ -64,6 +77,8 @@ header {
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
     .language-select:hover {

@@ -14,6 +14,9 @@ public class AppDbContext : DbContext
     public DbSet<TestReportModel> TestReports
         => Set<TestReportModel>();
 
+    public DbSet<ApplicationSettings> ApplicationSettings
+        => Set<ApplicationSettings>();
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
@@ -29,22 +32,23 @@ public class AppDbContext : DbContext
                 .HasColumnType("TEXT");
 
             entity.Property(x => x.TimeOffTesting)
-                .HasColumnType("timestamp with time zone");
-
+                .HasColumnType(
+                    "timestamp with time zone");
 
             entity.HasIndex(x => x.PartNumber);
-
             entity.HasIndex(x => x.PartBrand);
-
             entity.HasIndex(x => x.PartType);
-
             entity.HasIndex(x => x.TimeOffTesting);
-
             entity.HasIndex(x => x.CustomerName);
-
             entity.HasIndex(x => x.CustomerMail);
-
             entity.HasIndex(x => x.InjectorSerialNumber);
+        });
+
+        modelBuilder.Entity<ApplicationSettings>(entity =>
+        {
+            entity.ToTable("application_settings");
+
+            entity.HasKey(x => x.Id);
         });
     }
 }

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using TestFusion.Core.Models.WebModels;
+using TestFusion.Tests.Helpers;
 using TestFusion.Web.Controllers;
 
 namespace TestFusion.Tests.Web;
@@ -6,12 +8,14 @@ namespace TestFusion.Tests.Web;
 public class SettingsControllerTests
 {
     [Fact]
-    public void Index_ReturnsView()
+    public async Task Index_ReturnsView()
     {
-        var controller = new SettingsController();
+        var settingsService = new TestSettingsService();
+        var controller = new SettingsController(settingsService);
 
-        var result = controller.Index();
+        var result = await controller.Index(returnUrl: null);
 
-        Assert.IsType<ViewResult>(result);
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.IsType<SettingsViewModel>(view.Model);
     }
 }

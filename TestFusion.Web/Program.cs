@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,11 @@ using TestFusion.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var dataProtectionKeysPath = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath, "..", "DataProtectionKeys"));
+
+Directory.CreateDirectory(dataProtectionKeysPath);
+
 builder.Logging.ClearProviders();
 
 builder.Logging.AddSimpleConsole(options =>
@@ -24,10 +30,7 @@ builder.Logging.AddSimpleConsole(options =>
 });
 
 var logDirectory = Path.GetFullPath(
-    Path.Combine(
-        builder.Environment.ContentRootPath,
-        "..",
-        "logs"));
+    Path.Combine(builder.Environment.ContentRootPath, "..", "logs"));
 
 Directory.CreateDirectory(logDirectory);
 
@@ -36,27 +39,19 @@ var fileLogger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.File(
         new CompactJsonFormatter(),
-        Path.Combine(
-            logDirectory,
-            "web-.jsonl"),
+        Path.Combine(logDirectory, "web-.jsonl"),
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 30,
         flushToDiskInterval: TimeSpan.FromSeconds(1))
     .CreateLogger();
 
-builder.Logging.AddSerilog(
-    fileLogger,
-    dispose: true);
+builder.Logging.AddSerilog(fileLogger, dispose: true);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException(
-        "Connection string 'DefaultConnection' not found."
-    );
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 var postgresConnection = builder.Configuration.GetConnectionString("PostGresConnection")
-    ?? throw new InvalidOperationException(
-        "Connection string 'PostGresConnection' not found."
-    );
+    ?? throw new InvalidOperationException("Connection string 'PostGresConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -66,12 +61,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+builder.Services
+    .AddDataProtection()
+    .SetApplicationName("TestFusion")
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+
+builder.Services.AddScoped<ISecretProtector, SecretProtector>();
+builder.Services.AddScoped<ISettingsService, SettingsService>();
+
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>();
-
 
 builder.Services.AddLocalization(options =>
 {
@@ -85,22 +87,16 @@ builder.Services
 
 builder.Services.AddRazorPages();
 
-
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<JSONService>();
 builder.Services.AddSingleton<IPlaywright, PlaywrightService>();
 builder.Services.AddScoped<ISyncService, SyncService>();
 
-
 builder.Services.Configure<SiteSettings>(
     builder.Configuration.GetSection("SiteSettings"));
 
-builder.Services.Configure<AuthSettings>(
-    builder.Configuration.GetSection("AuthSettings"));
-
 builder.Services.Configure<Intervals>(
     builder.Configuration.GetSection("Intervals"));
-
 
 var app = builder.Build();
 
@@ -123,18 +119,14 @@ var supportedCultures = new[]
 var localizationOptions = new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture("nl-NL"),
-
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures
 };
 
 app.UseRequestLocalization(localizationOptions);
 
-
 app.UseHttpsRedirection();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -142,11 +134,10 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}"
-)
-.WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
 
 app.MapRazorPages()
-   .WithStaticAssets();
+    .WithStaticAssets();
 
 app.Run();

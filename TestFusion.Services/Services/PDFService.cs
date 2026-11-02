@@ -11,8 +11,6 @@ namespace TestFusion.Services.Services;
 
 public static class PDFService
 {
-    private const int MaxInjectorsPerPage = 8;
-
     private sealed class CustomerInfoGroup
     {
         public string Key { get; set; } = string.Empty;
@@ -31,13 +29,15 @@ public static class PDFService
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
-        var showDebugInformation = false;
-        var groupTestsByBaseName = true;
+        var showDebugInformation = model.Settings.ShowDebugInformation;
+        var groupTestsByBaseName = model.Settings.GroupTestsByBaseName;
 
-        var matchCustomerName = true;
-        var matchCustomerPhone = true;
-        var matchCustomerMail = true;
-        var matchCustomerNotes = true;
+        var matchCustomerName = model.Settings.MatchCustomerName;
+        var matchCustomerPhone = model.Settings.MatchCustomerPhone;
+        var matchCustomerMail = model.Settings.MatchCustomerMail;
+        var matchCustomerNotes = model.Settings.MatchCustomerNotes;
+
+        var maxInjectorsPerPage = model.Settings.PdfMaxInjectorsPerPage;
 
         var displayTests = model.AllTests
             .GroupBy(
@@ -61,7 +61,7 @@ public static class PDFService
             .ToList();
 
         var injectorGroups = orderedInjectorIndexes
-            .Chunk(MaxInjectorsPerPage)
+            .Chunk(maxInjectorsPerPage)
             .Select(group => (IReadOnlyList<int>)group.ToList())
             .ToList();
 

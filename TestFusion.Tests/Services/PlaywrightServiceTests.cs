@@ -1,11 +1,15 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
+using TestFusion.Core.Interfaces;
+using TestFusion.Core.Models;
 using TestFusion.Services;
 using TestFusion.Services.Models;
+using TestFusion.Tests.Helpers;
 
 namespace TestFusion.Tests.Services;
 
@@ -56,7 +60,7 @@ public class PlaywrightServiceTests
         var service = new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(new SiteSettings()),
-            Options.Create(new AuthSettings()));
+            CreateScopeFactory(new TestSettingsService()));
 
         var initializeBrowser = typeof(PlaywrightService).GetMethod(
             "InitializeBrowser",
@@ -111,7 +115,7 @@ public class PlaywrightServiceTests
         return new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(new SiteSettings()),
-            Options.Create(new AuthSettings()));
+            CreateScopeFactory(new TestSettingsService()));
     }
 
     private static PlaywrightService CreateLiveService()
@@ -140,9 +144,29 @@ public class PlaywrightServiceTests
         if (string.IsNullOrWhiteSpace(authSettings.Password))
             throw new InvalidOperationException("AuthSettings:Password environment variable is empty.");
 
+        var settingsService = new TestSettingsService
+        {
+            Credentials = new CarbonXCredentials
+            {
+                Email = authSettings.Email,
+                Password = authSettings.Password
+            }
+        };
+
         return new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(siteSettings),
-            Options.Create(authSettings));
+            CreateScopeFactory(settingsService));
+    }
+
+    private static IServiceScopeFactory CreateScopeFactory(TestSettingsService settingsService)
+    {
+        var services = new ServiceCollection();
+
+        services.AddScoped<ISettingsService>(_ => settingsService);
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        return serviceProvider.GetRequiredService<IServiceScopeFactory>();
     }
 }

@@ -1,16 +1,314 @@
-﻿@using System.Globalization
-@using Microsoft.Extensions.Localization
-@using TestFusion.Core
-@inject IStringLocalizer<SharedResource> Localizer
+﻿@model TestFusion.Core.Models.WebModels.SettingsViewModel
 
 @{
-    ViewData["Title"] = Localizer["PageTitleSettings"];
+    ViewData["Title"] = "Instellingen";
+
+    var successDuration = 5000;
+
+    if (TempData["SuccessDuration"] is int duration)
+    {
+        successDuration = duration;
+    }
 }
 
+<link rel="stylesheet"
+      href="~/css/settings.css"
+      asp-append-version="true" />
 
-<link rel="stylesheet" href="~/css/settings.css" />
+<div class="settings-page">
+    <div class="settings-header">
+        <h2>Instellingen</h2>
+        <p>Beheer de algemene instellingen van TestFusion.</p>
+    </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="settings-message settings-message-success settings-message-temporary"
+             data-duration="@successDuration"
+             role="status"
+             aria-live="polite">
+            <div class="settings-message-content">
+                <span>@TempData["Success"]</span>
 
-<div class="top-bar-left">
-    <h2>Instellingen</h2>
+                <button type="button"
+                        class="settings-message-close"
+                        aria-label="Melding sluiten">
+                    &times;
+                </button>
+            </div>
+
+            <div class="settings-message-progress"></div>
+        </div>
+    }
+
+    <form asp-action="Index"
+          method="post"
+          class="settings-form">
+        @Html.AntiForgeryToken()
+
+        <input asp-for="ReturnUrl"
+               type="hidden" />
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All"
+                 class="settings-validation">
+            </div>
+        }
+
+        <div class="settings-layout">
+            <aside class="settings-sidebar">
+                <nav class="settings-navigation">
+                    <a href="#settings-analysis"
+                       class="active">
+                        Analyse
+                    </a>
+
+                    <a href="#settings-customer">
+                        Klantgroepering
+                    </a>
+
+                    <a href="#settings-pdf">
+                        PDF
+                    </a>
+
+                    <a href="#settings-navigation">
+                        Navigatie
+                    </a>
+
+                    <a href="#settings-carbonx">
+                        CarbonX
+                    </a>
+                </nav>
+
+                <div class="settings-actions">
+                    <button type="submit"
+                            id="settings-save"
+                            class="btn"
+                            disabled>
+                        Opslaan
+                    </button>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
+                    {
+                        <a href="@Model.ReturnUrl"
+                           class="btn settings-button-secondary">
+                            Terug
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Home"
+                           asp-action="Index"
+                           class="btn settings-button-secondary">
+                            Terug
+                        </a>
+                    }
+
+                    <div class="settings-reset-area">
+                        <button type="submit"
+                                asp-action="ResetToDefaults"
+                                class="btn settings-button-reset"
+                                formnovalidate
+                                data-confirm="Weet je zeker dat je de standaardinstellingen wilt herstellen? CarbonX-inloggegevens blijven behouden.">
+                            Standaard herstellen
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="settings-content">
+                <section id="settings-analysis"
+                         class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>Analyse</h2>
+                        <p>Instellingen voor het groeperen van testresultaten.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <label class="settings-checkbox">
+                            <input asp-for="GroupTestsByBaseName" />
+
+                            <span>
+                                <strong>Tests groeperen op basisnaam</strong>
+                                <small>Groepeert varianten van dezelfde test onder één testnaam.</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <section id="settings-customer"
+                         class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>Klantgroepering</h2>
+                        <p>Bepaal welke klantgegevens worden gebruikt om verstuivers te groeperen.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <label class="settings-checkbox">
+                            <input asp-for="MatchCustomerName" />
+
+                            <span>
+                                <strong>Naam vergelijken</strong>
+                                <small>Gebruik de klantnaam bij het bepalen van dezelfde klant.</small>
+                            </span>
+                        </label>
+
+                        <label class="settings-checkbox">
+                            <input asp-for="MatchCustomerPhone" />
+
+                            <span>
+                                <strong>Telefoonnummer vergelijken</strong>
+                                <small>Gebruik het telefoonnummer bij het bepalen van dezelfde klant.</small>
+                            </span>
+                        </label>
+
+                        <label class="settings-checkbox">
+                            <input asp-for="MatchCustomerMail" />
+
+                            <span>
+                                <strong>E-mailadres vergelijken</strong>
+                                <small>Gebruik het e-mailadres bij het bepalen van dezelfde klant.</small>
+                            </span>
+                        </label>
+
+                        <label class="settings-checkbox">
+                            <input asp-for="MatchCustomerNotes" />
+
+                            <span>
+                                <strong>Notities vergelijken</strong>
+                                <small>Gebruik de klantnotities bij het bepalen van dezelfde klant.</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <section id="settings-pdf"
+                         class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>PDF</h2>
+                        <p>Instellingen voor het genereren van vergelijkings-PDF's.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <div class="settings-field">
+                            <label asp-for="PdfMaxInjectorsPerPage">
+                                Maximaal aantal verstuivers per pagina
+                            </label>
+
+                            <input asp-for="PdfMaxInjectorsPerPage"
+                                   type="number"
+                                   min="1"
+                                   max="10" />
+
+                            <span asp-validation-for="PdfMaxInjectorsPerPage"
+                                  class="settings-field-error">
+                            </span>
+
+                            <small>Toegestaan: 1 tot en met 10 verstuivers per pagina.</small>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="settings-navigation"
+                         class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>Navigatie</h2>
+                        <p>Bepaal per pagina welke zwevende navigatieknoppen beschikbaar zijn.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <div class="settings-navigation-table">
+                            <div class="settings-navigation-row settings-navigation-row-header">
+                                <span>Pagina</span>
+                                <span>← Links</span>
+                                <span>↑ Boven</span>
+                                <span>↖ Linksboven</span>
+                            </div>
+
+                            @foreach (var navigationPage in Model.NavigationPages
+                                .Where(page => !page.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                <div class="settings-navigation-row">
+                                    <strong>@navigationPage.Key</strong>
+
+                                    <label class="settings-navigation-toggle">
+                                        @Html.CheckBox(
+                                            $"NavigationPages[{navigationPage.Key}].ShowBackToLeft",
+                                            navigationPage.Value.ShowBackToLeft)
+                                        <span>←</span>
+                                    </label>
+
+                                    <label class="settings-navigation-toggle">
+                                        @Html.CheckBox(
+                                            $"NavigationPages[{navigationPage.Key}].ShowBackToTop",
+                                            navigationPage.Value.ShowBackToTop)
+                                        <span>↑</span>
+                                    </label>
+
+                                    <label class="settings-navigation-toggle">
+                                        @Html.CheckBox(
+                                            $"NavigationPages[{navigationPage.Key}].ShowBackToStart",
+                                            navigationPage.Value.ShowBackToStart)
+                                        <span>↖</span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </section>
+
+                <section id="settings-carbonx"
+                         class="settings-section">
+                    <div class="settings-section-header">
+                        <h2>CarbonX</h2>
+                        <p>Inloggegevens die TestFusion gebruikt om verbinding te maken met CarbonX.</p>
+                    </div>
+
+                    <div class="settings-section-content">
+                        <div class="settings-field">
+                            <label asp-for="CarbonXEmail">
+                                E-mailadres
+                            </label>
+
+                            <input asp-for="CarbonXEmail"
+                                   type="email"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="CarbonXEmail"
+                                  class="settings-field-error">
+                            </span>
+                        </div>
+
+                        <div class="settings-field">
+                            <label asp-for="NewCarbonXPassword">
+                                Wachtwoord
+                            </label>
+
+                            <input asp-for="NewCarbonXPassword"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   placeholder="Nieuw wachtwoord" />
+
+                            <span asp-validation-for="NewCarbonXPassword"
+                                  class="settings-field-error">
+                            </span>
+
+                            @if (Model.HasCarbonXPassword)
+                            {
+                                <small>
+                                    Er is al een wachtwoord opgeslagen. Laat dit veld leeg om het bestaande wachtwoord te behouden.
+                                </small>
+                            }
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/settings.js" asp-append-version="true"></script>
+}

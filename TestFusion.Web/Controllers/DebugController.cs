@@ -14,50 +14,44 @@ using TestFusion.Web.Models;
 
 namespace TestFusion.Web.Controllers;
 
-public class DebugController : Controller
-{
+public class DebugController : Controller {
     private readonly AppDbContext _db;
     private readonly IPlaywright _playwrightService;
     private readonly JSONService _jsonService;
+    private readonly ISettingsService _settingsService;
     private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<DebugController> _logger;
 
-    public DebugController(
-        AppDbContext db,
-        IPlaywright playwrightService,
-        JSONService jsonService,
-        IStringLocalizer<SharedResource> localizer,
-        IWebHostEnvironment environment,
-        ILogger<DebugController> logger)
-    {
+    public DebugController(AppDbContext db, IPlaywright playwrightService, JSONService jsonService, ISettingsService settingsService, IStringLocalizer<SharedResource> localizer, IWebHostEnvironment environment, ILogger<DebugController> logger) {
         _db = db;
         _playwrightService = playwrightService;
         _jsonService = jsonService;
+        _settingsService = settingsService;
         _localizer = localizer;
         _environment = environment;
         _logger = logger;
     }
 
-
-    // Page
-
     [HttpGet]
-    public async Task<IActionResult> Index(string? id)
-    {
+    public async Task<IActionResult> Index(string? id) {
         var testReports = await _db.TestReports
             .AsNoTracking()
             .OrderByDescending(x => x.TimeOffTesting)
             .ToListAsync();
 
-        var viewModel = new DebugViewModel
-        {
+        var settings = await _settingsService.GetForEditAsync();
+
+        var viewModel = new DebugViewModel {
             TestReports = testReports,
-            JsonId = id?.Trim() ?? string.Empty
+            JsonId = id?.Trim() ?? string.Empty,
+            ShowDebugInformation = settings.ShowDebugInformation,
+            NavigationPages = settings.NavigationPages
+                .Where(page => page.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(page => page.Key, page => page.Value, StringComparer.OrdinalIgnoreCase)
         };
 
-        if (!string.IsNullOrWhiteSpace(viewModel.JsonId))
-        {
+        if (!string.IsNullOrWhiteSpace(viewModel.JsonId)) {
             await LoadJsonViewer(viewModel);
         }
 
@@ -66,15 +60,24 @@ public class DebugController : Controller
         return View(viewModel);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateDebugSettings(DebugViewModel model) {
+        var navigationPages = model.NavigationPages
+            .Where(page => page.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(page => page.Key, page => page.Value, StringComparer.OrdinalIgnoreCase);
 
-    // Database
+        await _settingsService.UpdateDebugAsync(model.ShowDebugInformation, navigationPages);
+
+        TempData["DebugMessage"] = "Debuginstellingen zijn opgeslagen.";
+
+        return RedirectToAction(nameof(Index));
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteSelectedTestReports(List<string> selectedIds)
-    {
-        if (selectedIds.Count == 0)
-        {
+    public async Task<IActionResult> DeleteSelectedTestReports(List<string> selectedIds) {
+        if (selectedIds.Count == 0) {
             TempData["DebugMessage"] =
                 _localizer["DebugNoRowsSelected"].Value +
                 _localizer["SymbolDot"].Value;
@@ -93,13 +96,10 @@ public class DebugController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ClearTestReports(bool confirmed)
-    {
-        if (!confirmed)
-        {
+    public async Task<IActionResult> ClearTestReports(bool confirmed) {
+        if (!confirmed) {
             return BadRequest(
                 _localizer["DebugConfirmationRequired"].Value +
                 _localizer["SymbolDot"].Value);
@@ -118,14 +118,9 @@ public class DebugController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-
-    // JSON downloads
-
     [HttpGet]
-    public async Task<IActionResult> DownloadRawJson(string id)
-    {
-        if (string.IsNullOrWhiteSpace(id))
-        {
+    public async Task<IActionResult> DownloadRawJson(string id) {
+        if (string.IsNullOrWhiteSpace(id)) {
             return BadRequest(
                 _localizer["DebugIdRequired"].Value +
                 _localizer["SymbolDot"].Value);
@@ -137,12 +132,9 @@ public class DebugController : Controller
         return File(bytes, "application/json", $"raw_{id}.json");
     }
 
-
     [HttpGet]
-    public async Task<IActionResult> DownloadProcessedJson(string id)
-    {
-        if (string.IsNullOrWhiteSpace(id))
-        {
+    public async Task<IActionResult> DownloadProcessedJson(string id) {
+        if (string.IsNullOrWhiteSpace(id)) {
             return BadRequest(
                 _localizer["DebugIdRequired"].Value +
                 _localizer["SymbolDot"].Value);
@@ -161,12 +153,9 @@ public class DebugController : Controller
         return File(bytes, "application/json", $"processed_{id}.json");
     }
 
-
     [HttpGet]
-    public async Task<IActionResult> DownloadStoredJson(string id)
-    {
-        if (string.IsNullOrWhiteSpace(id))
-        {
+    public async Task<IActionResult> DownloadStoredJson(string id) {
+        if (string.IsNullOrWhiteSpace(id)) {
             return BadRequest(
                 _localizer["DebugIdRequired"].Value +
                 _localizer["SymbolDot"].Value);
@@ -176,8 +165,7 @@ public class DebugController : Controller
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
 
-        if (testReport == null)
-        {
+        if (testReport == null) {
             return NotFound(
                 _localizer["DebugStoredJsonNotFound", id].Value +
                 _localizer["SymbolDot"].Value);
@@ -188,22 +176,15 @@ public class DebugController : Controller
         return File(bytes, "application/json", $"stored_{id}.json");
     }
 
+    private async Task LoadJsonViewer(DebugViewModel viewModel) {
+        var storedReport = viewModel.TestReports.FirstOrDefault(x => x.Id == viewModel.JsonId);
 
-    // JSON viewer
-
-    private async Task LoadJsonViewer(DebugViewModel viewModel)
-    {
-        var storedReport = viewModel.TestReports
-            .FirstOrDefault(x => x.Id == viewModel.JsonId);
-
-        if (storedReport != null)
-        {
+        if (storedReport != null) {
             viewModel.StoredJsonFound = true;
             viewModel.StoredJson = FormatJson(storedReport.Json);
         }
 
-        try
-        {
+        try {
             var rawJson = await _playwrightService.GetDataForId(viewModel.JsonId);
             var processedModel = _jsonService.ConvertToTestResultModel(rawJson);
 
@@ -215,14 +196,11 @@ public class DebugController : Controller
             viewModel.RawJson = FormatJson(rawJson);
             viewModel.ProcessedJson = FormatJson(processedJson);
 
-            if (storedReport != null)
-            {
-                viewModel.ProcessedMatchesStored =
-                    JsonEquals(processedJson, storedReport.Json);
+            if (storedReport != null) {
+                viewModel.ProcessedMatchesStored = JsonEquals(processedJson, storedReport.Json);
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.LogError(
                 ex,
                 "Failed to load debug JSON for report {ReportId}",
@@ -232,34 +210,27 @@ public class DebugController : Controller
         }
     }
 
-
-    // Logs
-
-    private List<DebugLogEntry> LoadLogs(int maxEntries)
-    {
+    private List<DebugLogEntry> LoadLogs(int maxEntries) {
         var logDirectory = GetLogDirectory();
 
-        if (!Directory.Exists(logDirectory))
-        {
-            return new List<DebugLogEntry>();
+        if (!Directory.Exists(logDirectory)) {
+            return [];
         }
 
         var files = Directory
             .EnumerateFiles(logDirectory, "*.jsonl")
-            .Where(path =>
-            {
+            .Where(path => {
                 var name = Path.GetFileName(path);
 
                 return name.StartsWith("web-", StringComparison.OrdinalIgnoreCase) ||
                        name.StartsWith("worker-", StringComparison.OrdinalIgnoreCase);
             })
-            .OrderByDescending(path => System.IO.File.GetLastWriteTimeUtc(path))
+            .OrderByDescending(System.IO.File.GetLastWriteTimeUtc)
             .ToList();
 
         var entries = new List<DebugLogEntry>();
 
-        foreach (var file in files)
-        {
+        foreach (var file in files) {
             entries.AddRange(ReadLogFile(file, maxEntries));
         }
 
@@ -269,15 +240,10 @@ public class DebugController : Controller
             .ToList();
     }
 
-
-    private IEnumerable<DebugLogEntry> ReadLogFile(
-        string filePath,
-        int maxEntries)
-    {
+    private IEnumerable<DebugLogEntry> ReadLogFile(string filePath, int maxEntries) {
         var lines = new Queue<string>();
 
-        try
-        {
+        try {
             using var stream = new FileStream(
                 filePath,
                 FileMode.Open,
@@ -286,18 +252,15 @@ public class DebugController : Controller
 
             using var reader = new StreamReader(stream);
 
-            while (reader.ReadLine() is { } line)
-            {
+            while (reader.ReadLine() is { } line) {
                 lines.Enqueue(line);
 
-                if (lines.Count > maxEntries)
-                {
+                if (lines.Count > maxEntries) {
                     lines.Dequeue();
                 }
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.LogWarning(
                 ex,
                 "Failed to read log file {LogFile}",
@@ -306,24 +269,17 @@ public class DebugController : Controller
             yield break;
         }
 
-        foreach (var line in lines)
-        {
+        foreach (var line in lines) {
             var entry = ParseLogLine(line, filePath);
 
-            if (entry != null)
-            {
+            if (entry != null) {
                 yield return entry;
             }
         }
     }
 
-
-    private static DebugLogEntry? ParseLogLine(
-        string line,
-        string filePath)
-    {
-        try
-        {
+    private static DebugLogEntry? ParseLogLine(string line, string filePath) {
+        try {
             using var document = JsonDocument.Parse(line);
             var root = document.RootElement;
 
@@ -332,64 +288,49 @@ public class DebugController : Controller
                     timestampElement.GetString(),
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.RoundtripKind,
-                    out var timestamp))
-            {
+                    out var timestamp)) {
                 return null;
             }
 
-            var level =
-                root.TryGetProperty("@l", out var levelElement)
-                    ? levelElement.GetString() ?? "Information"
-                    : "Information";
+            var level = root.TryGetProperty("@l", out var levelElement)
+                ? levelElement.GetString() ?? "Information"
+                : "Information";
 
-            var sourceContext =
-                root.TryGetProperty("SourceContext", out var sourceElement)
-                    ? GetJsonValue(sourceElement)
-                    : string.Empty;
+            var sourceContext = root.TryGetProperty("SourceContext", out var sourceElement)
+                ? GetJsonValue(sourceElement)
+                : string.Empty;
 
-            if (sourceContext.Contains('.'))
-            {
-                sourceContext =
-                    sourceContext[(sourceContext.LastIndexOf('.') + 1)..];
+            if (sourceContext.Contains('.')) {
+                sourceContext = sourceContext[(sourceContext.LastIndexOf('.') + 1)..];
             }
 
             var properties = new Dictionary<string, string>();
 
-            foreach (var property in root.EnumerateObject())
-            {
-                if (property.Name.StartsWith('@') ||
-                    property.Name == "SourceContext")
-                {
+            foreach (var property in root.EnumerateObject()) {
+                if (property.Name.StartsWith('@') || property.Name == "SourceContext") {
                     continue;
                 }
 
-                properties[property.Name] =
-                    GetJsonValue(property.Value);
+                properties[property.Name] = GetJsonValue(property.Value);
             }
 
-            var message =
-                root.TryGetProperty("@m", out var renderedMessageElement)
-                    ? renderedMessageElement.GetString() ?? string.Empty
-                    : root.TryGetProperty("@mt", out var templateElement)
-                        ? RenderMessage(
-                            templateElement.GetString() ?? string.Empty,
-                            properties)
-                        : string.Empty;
+            var message = root.TryGetProperty("@m", out var renderedMessageElement)
+                ? renderedMessageElement.GetString() ?? string.Empty
+                : root.TryGetProperty("@mt", out var templateElement)
+                    ? RenderMessage(templateElement.GetString() ?? string.Empty, properties)
+                    : string.Empty;
 
-            var exception =
-                root.TryGetProperty("@x", out var exceptionElement)
-                    ? exceptionElement.GetString()
-                    : null;
+            var exception = root.TryGetProperty("@x", out var exceptionElement)
+                ? exceptionElement.GetString()
+                : null;
 
             var fileName = Path.GetFileName(filePath);
 
-            var application =
-                fileName.StartsWith("worker-", StringComparison.OrdinalIgnoreCase)
-                    ? "Worker"
-                    : "Web";
+            var application = fileName.StartsWith("worker-", StringComparison.OrdinalIgnoreCase)
+                ? "Worker"
+                : "Web";
 
-            return new DebugLogEntry
-            {
+            return new DebugLogEntry {
                 Timestamp = timestamp,
                 Application = application,
                 Level = level,
@@ -399,22 +340,16 @@ public class DebugController : Controller
                 Properties = properties
             };
         }
-        catch (JsonException)
-        {
+        catch (JsonException) {
             return null;
         }
     }
 
-
-    private static string RenderMessage(
-        string template,
-        IReadOnlyDictionary<string, string> properties)
-    {
+    private static string RenderMessage(string template, IReadOnlyDictionary<string, string> properties) {
         return Regex.Replace(
             template,
             @"\{[@$]?([A-Za-z0-9_]+)(?:[^}]*)\}",
-            match =>
-            {
+            match => {
                 var key = match.Groups[1].Value;
 
                 return properties.TryGetValue(key, out var value)
@@ -423,70 +358,49 @@ public class DebugController : Controller
             });
     }
 
-
-    private static string GetJsonValue(JsonElement element)
-    {
-        return element.ValueKind switch
-        {
+    private static string GetJsonValue(JsonElement element) {
+        return element.ValueKind switch {
             JsonValueKind.String => element.GetString() ?? string.Empty,
             JsonValueKind.Null => string.Empty,
             _ => element.GetRawText()
         };
     }
 
-
-    private string GetLogDirectory()
-    {
+    private string GetLogDirectory() {
         var parentDirectory =
-            Directory.GetParent(
-                _environment.ContentRootPath
-            )?.FullName
-            ?? _environment.ContentRootPath;
+            Directory.GetParent(_environment.ContentRootPath)?.FullName ??
+            _environment.ContentRootPath;
 
-        return Path.Combine(
-            parentDirectory,
-            "logs");
+        return Path.Combine(parentDirectory, "logs");
     }
 
-
-    // JSON helpers
-
-    private static string FormatJson(string json)
-    {
-        if (string.IsNullOrWhiteSpace(json))
-        {
+    private static string FormatJson(string json) {
+        if (string.IsNullOrWhiteSpace(json)) {
             return string.Empty;
         }
 
-        try
-        {
+        try {
             using var document = JsonDocument.Parse(json);
 
             return JsonSerializer.Serialize(
                 document.RootElement,
-                new JsonSerializerOptions
-                {
+                new JsonSerializerOptions {
                     WriteIndented = true
                 });
         }
-        catch (JsonException)
-        {
+        catch (JsonException) {
             return json;
         }
     }
 
-
-    private static bool JsonEquals(string firstJson, string secondJson)
-    {
-        try
-        {
+    private static bool JsonEquals(string firstJson, string secondJson) {
+        try {
             var first = JsonNode.Parse(firstJson);
             var second = JsonNode.Parse(secondJson);
 
             return JsonNode.DeepEquals(first, second);
         }
-        catch (JsonException)
-        {
+        catch (JsonException) {
             return string.Equals(
                 firstJson.Trim(),
                 secondJson.Trim(),

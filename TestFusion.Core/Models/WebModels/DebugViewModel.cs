@@ -15,6 +15,9 @@ public class DebugViewModel
 
     public bool StoredJsonFound { get; set; }
     public bool? ProcessedMatchesStored { get; set; }
-
     public string? JsonError { get; set; }
+
+    public bool ShowDebugInformation { get; set; }
+
+    public Dictionary<string, PageNavigationSettings> NavigationPages { get; set; } = [];
 }
