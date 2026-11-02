@@ -10,16 +10,13 @@
         margin: 0;
     }
 
-
-/* Sections */
-
 .debug-section {
     margin-bottom: 25px;
     padding: 20px;
     background-color: #f7f7f7;
     border: 1px solid #d8d8d8;
     border-radius: 8px;
-    scroll-margin-top: calc(var(--navbar-height, 70px) + 20px);
+    scroll-margin-top: calc(var(--navbar-height, 70px) + 35px);
 }
 
 .debug-section-header {
@@ -36,9 +33,6 @@
         color: #666666;
     }
 
-
-/* Quick navigation */
-
 .debug-quick-nav {
     display: flex;
     align-items: center;
@@ -53,9 +47,6 @@
         margin: 0;
     }
 
-
-/* Actions */
-
 .debug-actions {
     display: flex;
     align-items: center;
@@ -67,9 +58,6 @@
         margin: 0;
     }
 
-
-/* Destructive actions */
-
 .debug-danger-button {
     background-color: #dc3545;
     border-color: #b52a37;
@@ -80,20 +68,12 @@
         border-color: #a71d2a;
     }
 
-    .debug-danger-button:active {
-        background-color: #bd2130;
-        border-color: #9f1c28;
-    }
-
     .debug-danger-button:disabled {
         background-color: #c9c9c9;
         border-color: #b8b8b8;
         color: #666666;
         cursor: not-allowed;
     }
-
-
-/* Debug settings */
 
 .debug-settings-form {
     display: flex;
@@ -147,9 +127,6 @@
         margin: 0;
     }
 
-
-/* Debug navigation settings */
-
 .debug-navigation-pages {
     display: flex;
     flex-direction: column;
@@ -171,12 +148,7 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    min-width: 0;
 }
-
-    .debug-navigation-page strong {
-        overflow-wrap: anywhere;
-    }
 
 .debug-navigation-options {
     display: flex;
@@ -190,26 +162,17 @@
     align-items: center;
     gap: 7px;
     min-width: 112px;
-    box-sizing: border-box;
     padding: 9px 11px;
     background-color: #ffffff;
     border: 1px solid #d0d0d0;
     border-radius: 6px;
     cursor: pointer;
-    user-select: none;
 }
-
-    .debug-navigation-option:hover {
-        background-color: #f9f9f9;
-        border-color: #a9a9a9;
-    }
 
     .debug-navigation-option input[type="checkbox"] {
         width: 18px;
         height: 18px;
         margin: 0;
-        flex: 0 0 auto;
-        cursor: pointer;
     }
 
     .debug-navigation-option input[type="hidden"] {
@@ -218,7 +181,6 @@
 
 .debug-navigation-icon {
     width: 18px;
-    flex: 0 0 18px;
     text-align: center;
     font-weight: 700;
 }
@@ -226,9 +188,6 @@
 .debug-settings-form > .btn {
     align-self: flex-start;
 }
-
-
-/* JSON viewer */
 
 .json-viewer-form {
     display: flex;
@@ -257,10 +216,6 @@
     border: 1px solid #bcbcbc;
     border-radius: 6px;
 }
-
-    .debug-input:hover {
-        border-color: #888888;
-    }
 
     .debug-input:focus {
         outline: none;
@@ -336,9 +291,6 @@
     white-space: pre;
 }
 
-
-/* Database */
-
 .database-header {
     display: flex;
     align-items: center;
@@ -362,7 +314,7 @@
 
 .debug-table-wrapper {
     width: 100%;
-    overflow-x: auto;
+    overflow: hidden;
     border: 1px solid #d8d8d8;
     border-radius: 6px;
     background-color: #ffffff;
@@ -370,16 +322,17 @@
 
 .debug-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: 0.85rem;
 }
 
     .debug-table th,
     .debug-table td {
-        padding: 9px 12px;
+        padding: 9px 10px;
         border-right: 1px solid #dddddd;
         border-bottom: 1px solid #dddddd;
-        text-align: left !important;
+        text-align: left;
         vertical-align: top;
     }
 
@@ -388,109 +341,126 @@
             border-right: none;
         }
 
-    .debug-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
     .debug-table th {
-        position: sticky;
-        top: 0;
         background-color: #eeeeee;
         font-weight: 600;
-        white-space: nowrap;
     }
 
 .debug-group-header th {
-    text-align: center !important;
+    text-align: center;
     font-size: 0.95rem;
     font-weight: 700;
     background-color: #e2e2e2;
     border-bottom: 2px solid #bcbcbc;
 }
 
-.debug-group-header .debug-checkbox-column {
-    vertical-align: middle;
-}
-
-.debug-table tbody tr:nth-child(even) {
+.debug-report-row:nth-child(4n + 1) {
     background-color: #f8f8f8;
 }
 
-.debug-table tbody tr:hover {
+.debug-report-row:hover {
     background-color: #eef7f0;
 }
 
 .debug-checkbox-column {
-    width: 38px;
-    min-width: 38px;
+    width: 42px;
     text-align: center !important;
 }
 
-    .debug-checkbox-column input {
-        margin: 0;
-    }
-
 .debug-table-id {
-    max-width: 180px;
+    width: 120px;
     word-break: break-all;
 }
 
 .debug-table-date {
-    white-space: nowrap;
+    width: 170px;
 }
 
 .debug-table-notes {
-    min-width: 180px;
-    max-width: 300px;
-    text-align: left !important;
-    white-space: normal;
     overflow-wrap: break-word;
+}
+
+.debug-json-column {
+    width: 130px;
+}
+
+.debug-json-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .debug-json-toggle:hover {
+        text-decoration: underline;
+    }
+
+.debug-json-toggle-icon {
+    width: 12px;
+    flex: 0 0 12px;
+    font-size: 0.75rem;
+}
+
+.debug-json-row > td {
+    padding: 0;
+    border-right: none;
+    background-color: #eeeeee;
+}
+
+.debug-json-row[hidden] {
+    display: none;
+}
+
+.debug-json-expanded {
+    padding: 16px;
+}
+
+.debug-json-expanded-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+    .debug-json-expanded-header > div {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+    }
+
+    .debug-json-expanded-header small {
+        color: #666666;
+        overflow-wrap: anywhere;
+    }
+
+.debug-json-expanded pre {
+    width: 100%;
+    height: 420px;
+    overflow: auto;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 14px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    white-space: pre;
+    tab-size: 4;
 }
 
 .debug-empty {
     margin: 0;
     color: #666666;
 }
-
-
-/* Stored JSON */
-
-.debug-json-details {
-    min-width: 130px;
-}
-
-    .debug-json-details summary {
-        cursor: pointer;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-        .debug-json-details summary:hover {
-            text-decoration: underline;
-        }
-
-.debug-json-actions {
-    margin-top: 10px;
-}
-
-.debug-json-details pre {
-    width: 650px;
-    max-width: 70vw;
-    max-height: 450px;
-    overflow: auto;
-    box-sizing: border-box;
-    margin: 10px 0 0 0;
-    padding: 12px;
-    background-color: #1e1e1e;
-    color: #ffffff;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    line-height: 1.45;
-    white-space: pre;
-}
-
-
-/* Logs */
 
 .logs-header {
     display: flex;
@@ -534,7 +504,6 @@
 .log-count {
     margin-bottom: 10px;
     color: #666666;
-    font-size: 0.9rem;
 }
 
 .log-list {
@@ -571,7 +540,6 @@
     display: grid;
     grid-template-columns: 145px 70px 95px 160px minmax(250px, 1fr);
     gap: 10px;
-    align-items: start;
     padding: 10px 12px;
 }
 
@@ -582,17 +550,12 @@
     white-space: nowrap;
 }
 
-.log-time {
-    font-variant-numeric: tabular-nums;
-}
-
 .log-application,
 .log-level {
     font-weight: 600;
 }
 
 .log-message {
-    min-width: 0;
     overflow-wrap: anywhere;
 }
 
@@ -611,28 +574,15 @@
     padding: 12px;
 }
 
-    .log-detail-block + .log-detail-block {
-        padding-top: 0;
-    }
-
-    .log-detail-block strong {
-        display: block;
-        margin-bottom: 6px;
-    }
-
     .log-detail-block pre {
         max-height: 500px;
         overflow: auto;
-        box-sizing: border-box;
         margin: 0;
         padding: 12px;
         background-color: #1e1e1e;
         color: #ffffff;
         border-radius: 6px;
-        font-size: 0.8rem;
-        line-height: 1.45;
         white-space: pre-wrap;
-        overflow-wrap: anywhere;
     }
 
 .log-properties {
@@ -651,9 +601,6 @@
         overflow-wrap: anywhere;
     }
 
-
-/* Messages */
-
 .debug-message {
     margin-bottom: 20px;
     padding: 12px 15px;
@@ -662,9 +609,6 @@
     border: 1px solid #c3e6cb;
     border-radius: 6px;
 }
-
-
-/* Responsive */
 
 @media (max-width: 1200px) {
     .json-preview-grid {
@@ -697,19 +641,9 @@
         flex-direction: column;
     }
 
-    .debug-actions {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
     .json-viewer-input-row {
         align-items: stretch;
         flex-direction: column;
-    }
-
-    .debug-json-details pre {
-        width: 500px;
-        max-width: 80vw;
     }
 
     .log-filters {
@@ -718,30 +652,5 @@
 
     .log-entry-main {
         grid-template-columns: 1fr;
-    }
-
-    .log-message {
-        grid-column: auto;
-    }
-}
-
-@media (max-width: 600px) {
-    .debug-page {
-        padding: 12px;
-    }
-
-    .debug-quick-nav {
-        gap: 6px;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-    }
-
-    .debug-navigation-options {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .debug-navigation-option {
-        width: 100%;
     }
 }

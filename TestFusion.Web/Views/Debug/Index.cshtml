@@ -123,14 +123,18 @@
             @Html.AntiForgeryToken()
 
             <div class="debug-settings-block">
+
                 <label class="debug-settings-checkbox">
+
                     <input asp-for="ShowDebugInformation" />
 
                     <span>
                         <strong>Debuginformatie tonen</strong>
                         <small>Toont extra technische informatie bij testresultaten en gegenereerde PDF's.</small>
                     </span>
+
                 </label>
+
             </div>
 
             <div class="debug-settings-block">
@@ -159,13 +163,8 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToLeft",
                                         navigationPage.Value.ShowBackToLeft)
 
-                                    <span class="debug-navigation-icon">
-                                        ←
-                                    </span>
-
-                                    <span>
-                                        Links
-                                    </span>
+                                    <span class="debug-navigation-icon">←</span>
+                                    <span>Links</span>
 
                                 </label>
 
@@ -175,13 +174,8 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToTop",
                                         navigationPage.Value.ShowBackToTop)
 
-                                    <span class="debug-navigation-icon">
-                                        ↑
-                                    </span>
-
-                                    <span>
-                                        Boven
-                                    </span>
+                                    <span class="debug-navigation-icon">↑</span>
+                                    <span>Boven</span>
 
                                 </label>
 
@@ -191,13 +185,8 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToStart",
                                         navigationPage.Value.ShowBackToStart)
 
-                                    <span class="debug-navigation-icon">
-                                        ↖
-                                    </span>
-
-                                    <span>
-                                        Linksboven
-                                    </span>
+                                    <span class="debug-navigation-icon">↖</span>
+                                    <span>Linksboven</span>
 
                                 </label>
 
@@ -293,8 +282,7 @@
                         <a asp-controller="Debug"
                            asp-action="DownloadRawJson"
                            asp-route-id="@Model.JsonId"
-                           class="btn"
-                           title="@($"{Localizer["DebugRawJsonDownloadDescription"]}{Localizer["SymbolDot"]}")">
+                           class="btn">
                             @Localizer["DebugDownload"]
                         </a>
 
@@ -313,8 +301,7 @@
                         <a asp-controller="Debug"
                            asp-action="DownloadProcessedJson"
                            asp-route-id="@Model.JsonId"
-                           class="btn"
-                           title="@($"{Localizer["DebugProcessedJsonDownloadDescription"]}{Localizer["SymbolDot"]}")">
+                           class="btn">
                             @Localizer["DebugDownload"]
                         </a>
 
@@ -335,8 +322,7 @@
                             <a asp-controller="Debug"
                                asp-action="DownloadStoredJson"
                                asp-route-id="@Model.JsonId"
-                               class="btn"
-                               title="@($"{Localizer["DebugStoredJsonDownloadDescription"]}{Localizer["SymbolDot"]}")">
+                               class="btn">
                                 @Localizer["DebugDownload"]
                             </a>
                         }
@@ -358,6 +344,7 @@
         <div class="database-header">
 
             <div>
+
                 <h3>@Localizer["DebugDatabase"]</h3>
 
                 <p>
@@ -366,6 +353,7 @@
                         @Model.TestReports.Count
                     </span>
                 </p>
+
             </div>
 
             <div class="debug-actions">
@@ -468,7 +456,9 @@
 
                             @foreach (var report in Model.TestReports)
                             {
-                                <tr>
+                                var jsonRowId = $"json-row-{report.Id}";
+
+                                <tr class="debug-report-row">
 
                                     <td class="debug-checkbox-column">
 
@@ -505,21 +495,45 @@
 
                                     <td>@report.InjectorSerialNumber</td>
 
-                                    <td>
+                                    <td class="debug-json-column">
 
-                                        <details class="debug-json-details">
+                                        <button type="button"
+                                                class="debug-json-toggle"
+                                                data-json-toggle
+                                                data-target="@jsonRowId"
+                                                aria-expanded="false">
 
-                                            <summary>
+                                            <span class="debug-json-toggle-icon">▶</span>
+
+                                            <span>
                                                 @Localizer["DebugViewJson"]
-                                            </summary>
+                                            </span>
 
-                                            <div class="debug-json-actions">
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr id="@jsonRowId"
+                                    class="debug-json-row"
+                                    hidden>
+
+                                    <td colspan="13">
+
+                                        <div class="debug-json-expanded">
+
+                                            <div class="debug-json-expanded-header">
+
+                                                <div>
+                                                    <strong>JSON</strong>
+                                                    <small>@report.Id</small>
+                                                </div>
 
                                                 <a asp-controller="Debug"
                                                    asp-action="DownloadStoredJson"
                                                    asp-route-id="@report.Id"
-                                                   class="btn"
-                                                   title="@($"{Localizer["DebugStoredJsonDownloadDescription"]}{Localizer["SymbolDot"]}")">
+                                                   class="btn">
                                                     @Localizer["DebugDownloadJson"]
                                                 </a>
 
@@ -527,7 +541,7 @@
 
                                             <pre>@FormatJson(report.Json)</pre>
 
-                                        </details>
+                                        </div>
 
                                     </td>
 

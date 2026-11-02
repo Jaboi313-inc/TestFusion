@@ -32,6 +32,35 @@
         });
     }
 
+    const jsonToggleButtons = document.querySelectorAll("[data-json-toggle]");
+
+    jsonToggleButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            const targetId = button.dataset.target;
+
+            if (!targetId) {
+                return;
+            }
+
+            const row = document.getElementById(targetId);
+
+            if (!row) {
+                return;
+            }
+
+            const isOpen = !row.hidden;
+
+            row.hidden = isOpen;
+            button.setAttribute("aria-expanded", (!isOpen).toString());
+
+            const icon = button.querySelector(".debug-json-toggle-icon");
+
+            if (icon) {
+                icon.textContent = isOpen ? "▶" : "▼";
+            }
+        });
+    });
+
     const logEntries = document.querySelectorAll(".log-entry");
     const logSourceFilter = document.getElementById("log-source-filter");
     const logLevelFilter = document.getElementById("log-level-filter");
