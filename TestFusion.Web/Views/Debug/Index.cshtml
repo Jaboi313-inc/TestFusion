@@ -60,6 +60,31 @@
             return json;
         }
     }
+
+    private string GetLogCategoryLabel(string category) {
+        return category switch {
+            "Analysis" => Localizer["DebugLogCategoryAnalysis"],
+            "Settings" => Localizer["DebugLogCategorySettings"],
+            "Synchronization" => Localizer["DebugLogCategorySynchronization"],
+            "CarbonX" => Localizer["DebugLogCategoryCarbonX"],
+            "Navigation" => Localizer["DebugLogCategoryNavigation"],
+            "Debug" => Localizer["DebugLogCategoryDebug"],
+            "Maintenance" => Localizer["DebugLogCategoryMaintenance"],
+            "Database" => Localizer["DebugLogCategoryDatabase"],
+            "System" => Localizer["DebugLogCategorySystem"],
+            _ => Localizer["DebugLogCategoryApplication"]
+        };
+    }
+
+    private string GetLogLevelLabel(string level) {
+        return level.ToLowerInvariant() switch {
+            "information" => Localizer["DebugLogInformation"],
+            "warning" => Localizer["DebugLogWarning"],
+            "error" or "fatal" => Localizer["DebugLogError"],
+            "debug" or "verbose" => Localizer["DebugLogDebug"],
+            _ => level
+        };
+    }
 }
 
 <link rel="stylesheet"
@@ -77,7 +102,7 @@
         <a href="#settings"
            class="btn"
            data-smooth-scroll>
-            Instellingen
+            @Localizer["Settings"]
         </a>
 
         <a href="#json-viewer"
@@ -111,8 +136,8 @@
              id="settings">
 
         <div class="debug-section-header">
-            <h3>Instellingen</h3>
-            <p>Instellingen voor technische informatie en foutopsporing.</p>
+            <h3>@Localizer["Settings"]</h3>
+            <p>@Localizer["DebugSettingsDescription"]</p>
         </div>
 
         <form asp-controller="Debug"
@@ -129,8 +154,8 @@
                     <input asp-for="ShowDebugInformation" />
 
                     <span>
-                        <strong>Debuginformatie tonen</strong>
-                        <small>Toont extra technische informatie bij testresultaten en gegenereerde PDF's.</small>
+                        <strong>@Localizer["DebugShowDebugInformation"]</strong>
+                        <small>@Localizer["DebugShowDebugInformationDescription"]</small>
                     </span>
 
                 </label>
@@ -140,8 +165,8 @@
             <div class="debug-settings-block">
 
                 <div class="debug-settings-block-header">
-                    <h4>Navigatieknoppen</h4>
-                    <p>Bepaal welke zwevende navigatieknoppen op Debug-pagina's zichtbaar zijn.</p>
+                    <h4>@Localizer["DebugNavigationButtons"]</h4>
+                    <p>@Localizer["DebugNavigationButtonsDescription"]</p>
                 </div>
 
                 <div class="debug-navigation-pages">
@@ -152,7 +177,7 @@
 
                             <div class="debug-navigation-page">
                                 <strong>@navigationPage.Key</strong>
-                                <small>Navigatie op deze pagina</small>
+                                <small>@Localizer["DebugNavigationOnPage"]</small>
                             </div>
 
                             <div class="debug-navigation-options">
@@ -163,8 +188,8 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToLeft",
                                         navigationPage.Value.ShowBackToLeft)
 
-                                    <span class="debug-navigation-icon">←</span>
-                                    <span>Links</span>
+                                    <span class="debug-navigation-icon">@Localizer["SymbolArrowLeft"]</span>
+                                    <span>@Localizer["DebugNavigationLeft"]</span>
 
                                 </label>
 
@@ -174,8 +199,8 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToTop",
                                         navigationPage.Value.ShowBackToTop)
 
-                                    <span class="debug-navigation-icon">↑</span>
-                                    <span>Boven</span>
+                                    <span class="debug-navigation-icon">@Localizer["SymbolArrowUp"]</span>
+                                    <span>@Localizer["DebugNavigationTop"]</span>
 
                                 </label>
 
@@ -185,8 +210,8 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToStart",
                                         navigationPage.Value.ShowBackToStart)
 
-                                    <span class="debug-navigation-icon">↖</span>
-                                    <span>Linksboven</span>
+                                    <span class="debug-navigation-icon">@Localizer["SymbolArrowUpLeft"]</span>
+                                    <span>@Localizer["DebugNavigationTopLeft"]</span>
 
                                 </label>
 
@@ -201,7 +226,7 @@
 
             <button type="submit"
                     class="btn">
-                Opslaan
+                @Localizer["ButtonSave"]
             </button>
 
         </form>
@@ -526,7 +551,7 @@
                                             <div class="debug-json-expanded-header">
 
                                                 <div>
-                                                    <strong>JSON</strong>
+                                                    <strong>@Localizer["DebugJson"]</strong>
                                                     <small>@report.Id</small>
                                                 </div>
 
@@ -585,47 +610,47 @@
 
         <div class="log-filters">
             <div class="log-filter">
-                <label for="log-application-filter">Application</label>
+                <label for="log-application-filter">@Localizer["DebugLogApplication"]</label>
                 <select id="log-application-filter" class="debug-input">
-                    <option value="">All (@totalLogCount)</option>
-                    <option value="Web">Web (@webLogCount)</option>
-                    <option value="Worker">Worker (@workerLogCount)</option>
+                    <option value="">@Localizer["All"] (@totalLogCount)</option>
+                    <option value="Web">@Localizer["Web"] (@webLogCount)</option>
+                    <option value="Worker">@Localizer["Worker"] (@workerLogCount)</option>
                 </select>
             </div>
 
             <div class="log-filter">
-                <label for="log-category-filter">Category</label>
+                <label for="log-category-filter">@Localizer["DebugLogCategory"]</label>
                 <select id="log-category-filter" class="debug-input">
-                    <option value="">All (@totalLogCount)</option>
+                    <option value="">@Localizer["All"] (@totalLogCount)</option>
                     @foreach (var category in Model.Logs.GroupBy(x => x.Category).OrderBy(x => x.Key))
                     {
-                        <option value="@category.Key">@category.Key (@category.Count())</option>
+                        <option value="@category.Key">@GetLogCategoryLabel(category.Key) (@category.Count())</option>
                     }
                 </select>
             </div>
 
             <div class="log-filter">
-                <label for="log-level-filter">Level</label>
+                <label for="log-level-filter">@Localizer["Level"]</label>
                 <select id="log-level-filter" class="debug-input">
-                    <option value="">All (@totalLogCount)</option>
-                    <option value="Information">Information (@informationLogCount)</option>
-                    <option value="Warning">Warning (@warningLogCount)</option>
-                    <option value="Error">Error (@errorLogCount)</option>
-                    <option value="Debug">Debug (@debugLogCount)</option>
+                    <option value="">@Localizer["All"] (@totalLogCount)</option>
+                    <option value="Information">@Localizer["DebugLogInformation"] (@informationLogCount)</option>
+                    <option value="Warning">@Localizer["DebugLogWarning"] (@warningLogCount)</option>
+                    <option value="Error">@Localizer["DebugLogError"] (@errorLogCount)</option>
+                    <option value="Debug">@Localizer["DebugLogDebug"] (@debugLogCount)</option>
                 </select>
             </div>
 
             <div class="log-filter log-filter-search">
-                <label for="log-search">Search</label>
-                <input type="text" id="log-search" class="debug-input" placeholder="Search logs..." />
+                <label for="log-search">@Localizer["Search"]</label>
+                <input type="text" id="log-search" class="debug-input" placeholder="@Localizer["DebugLogSearchPlaceholder"]" />
             </div>
         </div>
 
         <div class="log-toolbar">
-            <div class="log-count">Showing <span id="visible-log-count">@Model.Logs.Count</span> of @Model.Logs.Count log entries</div>
+            <div class="log-count">@Localizer["DebugLogShowing"] <span id="visible-log-count">@Model.Logs.Count</span> @Localizer["DebugLogOf"] @Model.Logs.Count @Localizer["DebugLogEntries"]</div>
             <div class="log-export-actions">
-                <a id="export-logs-txt" class="btn" data-export-base="@Url.Action("ExportLogs", "Debug", new { format = "txt" })">Export TXT</a>
-                <a id="export-logs-json" class="btn" data-export-base="@Url.Action("ExportLogs", "Debug", new { format = "json" })">Export JSON</a>
+                <a id="export-logs-txt" class="btn" data-export-base="@Url.Action("ExportLogs", "Debug", new { format = "txt" })">@Localizer["DebugLogExportTxt"]</a>
+                <a id="export-logs-json" class="btn" data-export-base="@Url.Action("ExportLogs", "Debug", new { format = "json" })">@Localizer["DebugLogExportJson"]</a>
             </div>
         </div>
 
@@ -643,23 +668,23 @@
                 <article class="log-entry @levelClass" data-application="@log.Application" data-category="@log.Category" data-level="@log.Level">
                     <div class="log-entry-main">
                         <time class="log-time" datetime="@log.Timestamp.ToString("O")">@log.Timestamp.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss")</time>
-                        <span class="log-category">@log.Category</span>
-                        <span class="log-level">@log.Level</span>
+                        <span class="log-category">@GetLogCategoryLabel(log.Category)</span>
+                        <span class="log-level">@GetLogLevelLabel(log.Level)</span>
                         <span class="log-message">@log.Message</span>
                     </div>
 
                     <details class="log-details">
-                        <summary>Details</summary>
+                        <summary>@Localizer["DebugLogDetails"]</summary>
                         <div class="log-detail-block">
                             <dl class="log-properties log-technical-properties">
                                 @if (log.DurationMs.HasValue)
                                 {
-                                    <dt>Duration</dt>
+                                    <dt>@Localizer["DebugLogDuration"]</dt>
                                     <dd>@log.DurationMs.Value ms</dd>
                                 }
-                                <dt>Application</dt>
+                                <dt>@Localizer["DebugLogApplication"]</dt>
                                 <dd>@log.Application</dd>
-                                <dt>Source</dt>
+                                <dt>@Localizer["Source"]</dt>
                                 <dd>@log.SourceContext</dd>
                             </dl>
                         </div>
@@ -667,7 +692,7 @@
                         @if (!string.IsNullOrWhiteSpace(log.Exception))
                         {
                             <div class="log-detail-block">
-                                <strong>Exception</strong>
+                                <strong>@Localizer["DebugLogException"]</strong>
                                 <pre>@log.Exception</pre>
                             </div>
                         }
@@ -675,7 +700,7 @@
                         @if (log.Properties.Count > 0)
                         {
                             <div class="log-detail-block">
-                                <strong>Properties</strong>
+                                <strong>@Localizer["DebugLogProperties"]</strong>
                                 <dl class="log-properties">
                                     @foreach (var property in log.Properties)
                                     {

@@ -432,6 +432,15 @@
   <data name="SymbolQuestionmark" xml:space="preserve">
     <value>?</value>
   </data>
+  <data name="SymbolArrowLeft" xml:space="preserve">
+  <value>←</value>
+  </data>
+  <data name="SymbolArrowUp" xml:space="preserve">
+  <value>↑</value>
+  </data>
+  <data name="SymbolArrowUpLeft" xml:space="preserve">
+  <value>↖</value>
+  </data>
   <data name="Logs" xml:space="preserve">
     <value>Logs</value>
   </data>
@@ -530,5 +539,89 @@
   </data>
   <data name="ButtonBackToStart" xml:space="preserve">
     <value>Naar linksboven</value>
+  </data>
+  <data name="DebugSettingsDescription" xml:space="preserve">
+    <value>Instellingen voor technische informatie en foutopsporing.</value>
+  </data>
+  <data name="DebugShowDebugInformation" xml:space="preserve">
+    <value>Debuginformatie tonen</value>
+  </data>
+  <data name="DebugShowDebugInformationDescription" xml:space="preserve">
+    <value>Toont extra technische informatie bij testresultaten en gegenereerde PDF's.</value>
+  </data>
+  <data name="DebugNavigationButtons" xml:space="preserve">
+    <value>Navigatieknoppen</value>
+  </data>
+  <data name="DebugNavigationButtonsDescription" xml:space="preserve">
+    <value>Bepaal welke zwevende navigatieknoppen op Debug-pagina's zichtbaar zijn.</value>
+  </data>
+  <data name="DebugNavigationOnPage" xml:space="preserve">
+    <value>Navigatie op deze pagina</value>
+  </data>
+  <data name="DebugNavigationLeft" xml:space="preserve">
+    <value>Links</value>
+  </data>
+  <data name="DebugNavigationTop" xml:space="preserve">
+    <value>Boven</value>
+  </data>
+  <data name="DebugNavigationTopLeft" xml:space="preserve">
+    <value>Linksboven</value>
+  </data>
+  <data name="DebugLogApplication" xml:space="preserve">
+    <value>Applicatie</value>
+  </data>
+  <data name="DebugLogCategory" xml:space="preserve">
+    <value>Categorie</value>
+  </data>
+  <data name="DebugLogDuration" xml:space="preserve">
+    <value>Duur</value>
+  </data>
+  <data name="DebugLogShowing" xml:space="preserve">
+    <value>Toont</value>
+  </data>
+  <data name="DebugLogOf" xml:space="preserve">
+    <value>van</value>
+  </data>
+  <data name="DebugLogEntries" xml:space="preserve">
+    <value>logregels</value>
+  </data>
+  <data name="DebugLogExportTxt" xml:space="preserve">
+    <value>Exporteer TXT</value>
+  </data>
+  <data name="DebugLogExportJson" xml:space="preserve">
+    <value>Exporteer JSON</value>
+  </data>
+  <data name="DebugLogCategoryAnalysis" xml:space="preserve">
+    <value>Analyse</value>
+  </data>
+  <data name="DebugLogCategorySettings" xml:space="preserve">
+    <value>Instellingen</value>
+  </data>
+  <data name="DebugLogCategorySynchronization" xml:space="preserve">
+    <value>Synchronisatie</value>
+  </data>
+  <data name="DebugLogCategoryCarbonX" xml:space="preserve">
+    <value>CarbonX</value>
+  </data>
+  <data name="DebugLogCategoryNavigation" xml:space="preserve">
+    <value>Navigatie</value>
+  </data>
+  <data name="DebugLogCategoryDebug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="DebugLogCategoryMaintenance" xml:space="preserve">
+    <value>Onderhoud</value>
+  </data>
+  <data name="DebugLogCategoryDatabase" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="DebugLogCategorySystem" xml:space="preserve">
+    <value>Systeem</value>
+  </data>
+  <data name="DebugLogCategoryApplication" xml:space="preserve">
+    <value>Applicatie</value>
+  </data>
+  <data name="ButtonSave" xml:space="preserve">
+    <value>Opslaan</value>
   </data>
 </root>
