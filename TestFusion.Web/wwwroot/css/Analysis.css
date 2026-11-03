@@ -330,9 +330,10 @@ table.table td:first-child {
     position: sticky;
     left: 0;
     z-index: 900;
-    white-space: nowrap;
-    width: auto;
-    min-width: unset;
+    white-space: normal;
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
     background-color: #fff;
     border-right: 3px solid #111 !important;
 }
@@ -438,12 +439,12 @@ table.table {
     border-spacing: 0;
 }
 
-    table.table td,
-    table.table th {
+    table.table td:not(:first-child),
+    table.table th:not(:first-child) {
         position: relative;
         vertical-align: top;
-        min-width: 110px;
-        width: 110px;
+        min-width: 220px;
+        width: 220px;
         min-height: 50px;
         height: 5%;
         overflow: visible;

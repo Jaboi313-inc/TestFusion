@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -67,9 +67,10 @@ public class DebugController : Controller {
             .Where(page => page.Key.StartsWith("Debug/", StringComparison.OrdinalIgnoreCase))
             .ToDictionary(page => page.Key, page => page.Value, StringComparer.OrdinalIgnoreCase);
 
+        _logger.LogInformation("Debug settings update requested");
         await _settingsService.UpdateDebugAsync(model.ShowDebugInformation, navigationPages);
 
-        TempData["DebugMessage"] = "Debuginstellingen zijn opgeslagen.";
+        TempData["DebugMessage"] = _localizer["DebugSettingsSaved"].Value + _localizer["SymbolDot"].Value;
 
         return RedirectToAction(nameof(Index));
     }
@@ -78,6 +79,7 @@ public class DebugController : Controller {
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteSelectedTestReports(List<string> selectedIds) {
         if (selectedIds.Count == 0) {
+            _logger.LogWarning("Delete selected reports requested without selected report IDs");
             TempData["DebugMessage"] =
                 _localizer["DebugNoRowsSelected"].Value +
                 _localizer["SymbolDot"].Value;
@@ -85,9 +87,11 @@ public class DebugController : Controller {
             return RedirectToAction(nameof(Index));
         }
 
+        _logger.LogInformation("Deleting selected reports: {ReportIds}", string.Join(", ", selectedIds));
         var deletedCount = await _db.TestReports
             .Where(x => selectedIds.Contains(x.Id))
             .ExecuteDeleteAsync();
+        _logger.LogInformation("Deleted {Count} selected reports", deletedCount);
 
         TempData["DebugMessage"] =
             _localizer["DebugSelectedRowsDeleted", deletedCount].Value +
@@ -100,12 +104,15 @@ public class DebugController : Controller {
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ClearTestReports(bool confirmed) {
         if (!confirmed) {
+            _logger.LogWarning("Delete all reports rejected because confirmation was missing");
             return BadRequest(
                 _localizer["DebugConfirmationRequired"].Value +
                 _localizer["SymbolDot"].Value);
         }
 
+        _logger.LogWarning("Deleting all test reports from debug page");
         var deletedCount = await _db.TestReports.ExecuteDeleteAsync();
+        _logger.LogInformation("Deleted all test reports. Deleted count: {Count}", deletedCount);
 
         TempData["DebugMessage"] =
             _localizer[
@@ -126,6 +133,7 @@ public class DebugController : Controller {
                 _localizer["SymbolDot"].Value);
         }
 
+        _logger.LogInformation("Raw JSON download requested for report {ReportId}", id);
         var rawJson = await _playwrightService.GetDataForId(id);
         var bytes = Encoding.UTF8.GetBytes(rawJson);
 
@@ -140,6 +148,7 @@ public class DebugController : Controller {
                 _localizer["SymbolDot"].Value);
         }
 
+        _logger.LogInformation("Processed JSON download requested for report {ReportId}", id);
         var rawJson = await _playwrightService.GetDataForId(id);
         var model = _jsonService.ConvertToTestResultModel(rawJson);
 
@@ -161,6 +170,7 @@ public class DebugController : Controller {
                 _localizer["SymbolDot"].Value);
         }
 
+        _logger.LogInformation("Stored JSON download requested for report {ReportId}", id);
         var testReport = await _db.TestReports
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
@@ -174,6 +184,60 @@ public class DebugController : Controller {
         var bytes = Encoding.UTF8.GetBytes(testReport.Json);
 
         return File(bytes, "application/json", $"stored_{id}.json");
+    }
+
+    [HttpGet]
+    public IActionResult ExportLogs(string format = "txt", string? application = null, string? category = null, string? level = null, string? search = null) {
+        var logs = FilterLogs(LoadLogs(5000), application, category, level, search);
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+
+        if (format.Equals("json", StringComparison.OrdinalIgnoreCase)) {
+            var json = JsonSerializer.Serialize(logs.Select(log => new {
+                timestamp = log.Timestamp.ToLocalTime(),
+                application = log.Application,
+                category = log.Category,
+                level = log.Level,
+                message = log.Message,
+                durationMs = log.DurationMs,
+                source = log.SourceContext,
+                exception = log.Exception,
+                properties = log.Properties
+            }), new JsonSerializerOptions { WriteIndented = true });
+
+            return File(Encoding.UTF8.GetBytes(json), "application/json", $"testfusion-logs-{timestamp}.json");
+        }
+
+        var text = new StringBuilder();
+        foreach (var log in logs) {
+            text.Append(log.Timestamp.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss"));
+            text.Append(" | ").Append(log.Application);
+            text.Append(" | ").Append(log.Category);
+            text.Append(" | ").Append(log.Level);
+            text.Append(" | ").AppendLine(log.Message);
+            if (log.DurationMs.HasValue) text.AppendLine($"  Duration: {log.DurationMs.Value} ms");
+            text.AppendLine($"  Source: {log.SourceContext}");
+            foreach (var property in log.Properties) text.AppendLine($"  {property.Key}: {property.Value}");
+            if (!string.IsNullOrWhiteSpace(log.Exception)) text.AppendLine($"  Exception: {log.Exception}");
+            text.AppendLine();
+        }
+
+        return File(Encoding.UTF8.GetBytes(text.ToString()), "text/plain", $"testfusion-logs-{timestamp}.txt");
+    }
+
+    private static List<DebugLogEntry> FilterLogs(IEnumerable<DebugLogEntry> logs, string? application, string? category, string? level, string? search) {
+        var filtered = logs;
+        if (!string.IsNullOrWhiteSpace(application)) filtered = filtered.Where(log => log.Application.Equals(application, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(category)) filtered = filtered.Where(log => log.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(level)) filtered = filtered.Where(log => log.Level.Equals(level, StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(search)) {
+            filtered = filtered.Where(log => {
+                var searchable = string.Join(" ", new[] { log.Message, log.SourceContext, log.Application, log.Category, log.Level, log.Exception ?? string.Empty, log.DurationMs?.ToString() ?? string.Empty }.Concat(log.Properties.Select(property => $"{property.Key} {property.Value}")));
+                return searchable.Contains(search, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+
+        return filtered.OrderByDescending(log => log.Timestamp).ToList();
     }
 
     private async Task LoadJsonViewer(DebugViewModel viewModel) {
@@ -296,10 +360,11 @@ public class DebugController : Controller {
                 ? levelElement.GetString() ?? "Information"
                 : "Information";
 
-            var sourceContext = root.TryGetProperty("SourceContext", out var sourceElement)
+            var fullSourceContext = root.TryGetProperty("SourceContext", out var sourceElement)
                 ? GetJsonValue(sourceElement)
                 : string.Empty;
 
+            var sourceContext = fullSourceContext;
             if (sourceContext.Contains('.')) {
                 sourceContext = sourceContext[(sourceContext.LastIndexOf('.') + 1)..];
             }
@@ -320,6 +385,13 @@ public class DebugController : Controller {
                     ? RenderMessage(templateElement.GetString() ?? string.Empty, properties)
                     : string.Empty;
 
+            long? durationMs = null;
+            if (properties.TryGetValue("DurationMs", out var durationValue) && long.TryParse(durationValue, out var parsedDuration)) durationMs = parsedDuration;
+            else if (properties.TryGetValue("ElapsedMilliseconds", out var elapsedValue) && long.TryParse(elapsedValue, out var parsedElapsed)) durationMs = parsedElapsed;
+
+            properties.Remove("DurationMs");
+            properties.Remove("ElapsedMilliseconds");
+
             var exception = root.TryGetProperty("@x", out var exceptionElement)
                 ? exceptionElement.GetString()
                 : null;
@@ -333,9 +405,11 @@ public class DebugController : Controller {
             return new DebugLogEntry {
                 Timestamp = timestamp,
                 Application = application,
+                Category = GetLogCategory(fullSourceContext),
                 Level = level,
                 SourceContext = sourceContext,
                 Message = message,
+                DurationMs = durationMs,
                 Exception = exception,
                 Properties = properties
             };
@@ -343,6 +417,20 @@ public class DebugController : Controller {
         catch (JsonException) {
             return null;
         }
+    }
+
+
+    private static string GetLogCategory(string sourceContext) {
+        if (sourceContext.Contains("AnalysisController", StringComparison.OrdinalIgnoreCase)) return "Analysis";
+        if (sourceContext.Contains("Settings", StringComparison.OrdinalIgnoreCase)) return "Settings";
+        if (sourceContext.Contains("SyncService", StringComparison.OrdinalIgnoreCase) || sourceContext.Equals("Worker", StringComparison.OrdinalIgnoreCase)) return "Synchronization";
+        if (sourceContext.Contains("PlaywrightService", StringComparison.OrdinalIgnoreCase)) return "CarbonX";
+        if (sourceContext.Contains("RequestLoggingMiddleware", StringComparison.OrdinalIgnoreCase)) return "Navigation";
+        if (sourceContext.Contains("DebugController", StringComparison.OrdinalIgnoreCase)) return "Debug";
+        if (sourceContext.Contains("LogRetention", StringComparison.OrdinalIgnoreCase)) return "Maintenance";
+        if (sourceContext.Contains("EntityFramework", StringComparison.OrdinalIgnoreCase) || sourceContext.Contains("DbContext", StringComparison.OrdinalIgnoreCase)) return "Database";
+        if (sourceContext.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase) || sourceContext.StartsWith("System", StringComparison.OrdinalIgnoreCase)) return "System";
+        return "Application";
     }
 
     private static string RenderMessage(string template, IReadOnlyDictionary<string, string> properties) {

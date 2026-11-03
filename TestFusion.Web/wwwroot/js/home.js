@@ -241,11 +241,11 @@
             }
 
             if (button.dataset.sort !== currentSortColumn) {
-                indicator.textContent = "↕";
+                indicator.textContent = testResultsList.dataset.symbolSortNeutral;
                 return;
             }
 
-            indicator.textContent = currentSortDirection === "asc" ? "▲" : "▼";
+            indicator.textContent = currentSortDirection === "asc" ? testResultsList.dataset.symbolSortAscending : testResultsList.dataset.symbolSortDescending;
         });
     }
 
@@ -368,7 +368,7 @@
         filterToggleButton.setAttribute("aria-expanded", isOpen.toString());
 
         if (filterToggleIndicator) {
-            filterToggleIndicator.textContent = isOpen ? "▲" : "▼";
+            filterToggleIndicator.textContent = isOpen ? filterToggleButton.dataset.symbolExpanded : filterToggleButton.dataset.symbolCollapsed;
         }
     });
 

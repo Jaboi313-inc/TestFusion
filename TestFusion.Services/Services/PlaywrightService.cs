@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -11,6 +11,7 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     private readonly ILogger<PlaywrightService> _logger;
     private readonly SiteSettings _siteSettings;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly LoggingSettings _loggingSettings;
 
     private Microsoft.Playwright.IPlaywright? _playwright;
     private IBrowserContext? _context;
@@ -22,18 +23,20 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     public PlaywrightService(
         ILogger<PlaywrightService> logger,
         IOptions<SiteSettings> siteSettings,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        IOptions<LoggingSettings> loggingSettings)
     {
         _logger = logger;
         _siteSettings = siteSettings.Value;
         _scopeFactory = scopeFactory;
+        _loggingSettings = loggingSettings.Value;
     }
 
     public async Task<List<string>> GetAllIDs()
     {
         var stopwatch = Stopwatch.StartNew();
 
-        _logger.LogInformation("Retrieving report IDs");
+        _logger.LogDebug("Retrieving report IDs");
 
         var page = await CreatePage();
 
@@ -115,21 +118,16 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
             stopwatch.Stop();
 
-            if (responseCount != ids.Count)
-            {
-                _logger.LogWarning(
-                    "Retrieved {ValidIdCount} valid IDs from {ReturnedCount} returned records. Total: {TotalCount}, filtered: {FilteredCount}",
-                    ids.Count,
-                    responseCount,
-                    recordsTotal,
-                    recordsFiltered);
+            using var durationScope = _logger.BeginScope(new Dictionary<string, object> { ["DurationMs"] = stopwatch.ElapsedMilliseconds });
+
+            if (responseCount != ids.Count) {
+                _logger.LogWarning("Retrieved {ValidIdCount} valid report IDs from {ReturnedCount} returned records. Total: {TotalCount}, filtered: {FilteredCount}", ids.Count, responseCount, recordsTotal, recordsFiltered);
             }
-            else
-            {
-                _logger.LogInformation(
-                    "Retrieved {Count} report IDs in {ElapsedMilliseconds} ms",
-                    ids.Count,
-                    stopwatch.ElapsedMilliseconds);
+            else if (stopwatch.ElapsedMilliseconds >= _loggingSettings.SlowOperationThresholds.CarbonXMs) {
+                _logger.LogWarning("Retrieved {Count} report IDs from CarbonX, but the operation was slower than expected", ids.Count);
+            }
+            else {
+                _logger.LogInformation("Retrieved {Count} report IDs from CarbonX", ids.Count);
             }
 
             return ids;
@@ -138,10 +136,8 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
         {
             stopwatch.Stop();
 
-            _logger.LogError(
-                ex,
-                "Failed to retrieve report IDs after {ElapsedMilliseconds} ms",
-                stopwatch.ElapsedMilliseconds);
+            using var durationScope = _logger.BeginScope(new Dictionary<string, object> { ["DurationMs"] = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Failed to retrieve report IDs from CarbonX");
 
             throw;
         }
@@ -155,9 +151,7 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
     {
         var stopwatch = Stopwatch.StartNew();
 
-        _logger.LogInformation(
-            "Retrieving report {ReportId}",
-            id);
+        _logger.LogDebug("Retrieving report {ReportId}", id);
 
         var page = await CreatePage();
 
@@ -202,10 +196,9 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
             stopwatch.Stop();
 
-            _logger.LogInformation(
-                "Retrieved report {ReportId} in {ElapsedMilliseconds} ms",
-                id,
-                stopwatch.ElapsedMilliseconds);
+            using var durationScope = _logger.BeginScope(new Dictionary<string, object> { ["DurationMs"] = stopwatch.ElapsedMilliseconds });
+            if (stopwatch.ElapsedMilliseconds >= _loggingSettings.SlowOperationThresholds.CarbonXMs) _logger.LogWarning("Retrieved report {ReportId} from CarbonX, but the operation was slower than expected", id);
+            else _logger.LogInformation("Retrieved report {ReportId} from CarbonX", id);
 
             return json;
         }
@@ -213,12 +206,8 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
         {
             stopwatch.Stop();
 
-            _logger.LogError(
-                ex,
-                "Timed out retrieving report {ReportId} after {ElapsedMilliseconds} ms. Current URL: {Url}",
-                id,
-                stopwatch.ElapsedMilliseconds,
-                page.Url);
+            using var durationScope = _logger.BeginScope(new Dictionary<string, object> { ["DurationMs"] = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Timed out retrieving report {ReportId} from CarbonX. Current URL: {Url}", id, page.Url);
 
             throw;
         }
@@ -226,11 +215,8 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
         {
             stopwatch.Stop();
 
-            _logger.LogError(
-                ex,
-                "Failed to retrieve report {ReportId} after {ElapsedMilliseconds} ms",
-                id,
-                stopwatch.ElapsedMilliseconds);
+            using var durationScope = _logger.BeginScope(new Dictionary<string, object> { ["DurationMs"] = stopwatch.ElapsedMilliseconds });
+            _logger.LogError(ex, "Failed to retrieve report {ReportId} from CarbonX", id);
 
             throw;
         }
@@ -276,7 +262,9 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
             await _context.AddInitScriptAsync("""Object.defineProperty(navigator, 'webdriver', {get: () => undefined});""");
 
             stopwatch.Stop();
-            _logger.LogInformation("Browser started in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
+            using var durationScope = _logger.BeginScope(new Dictionary<string, object> { ["DurationMs"] = stopwatch.ElapsedMilliseconds });
+            if (stopwatch.ElapsedMilliseconds >= _loggingSettings.SlowOperationThresholds.CarbonXMs) _logger.LogWarning("Browser started, but initialization was slower than expected");
+            else _logger.LogInformation("Browser started");
         }
         catch (Exception ex)
         {
@@ -391,7 +379,9 @@ public class PlaywrightService : TestFusion.Core.Interfaces.IPlaywright
 
         stopwatch.Stop();
 
-        _logger.LogInformation("Login completed in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
+        using var durationScope = _logger.BeginScope(new Dictionary<string, object> { ["DurationMs"] = stopwatch.ElapsedMilliseconds });
+        if (stopwatch.ElapsedMilliseconds >= _loggingSettings.SlowOperationThresholds.CarbonXMs) _logger.LogWarning("CarbonX login completed, but took longer than expected");
+        else _logger.LogInformation("CarbonX login completed");
     }
 
     private async Task TypeHumanly(

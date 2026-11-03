@@ -1,4 +1,4 @@
-﻿.debug-page {
+.debug-page {
     padding: 20px;
 }
 
@@ -470,18 +470,18 @@
     margin-bottom: 18px;
 }
 
-    .logs-header h3 {
-        margin: 0 0 6px 0;
-    }
+.logs-header h3 {
+    margin: 0 0 6px 0;
+}
 
-    .logs-header p {
-        margin: 0;
-        color: #666666;
-    }
+.logs-header p {
+    margin: 0;
+    color: #666666;
+}
 
 .log-filters {
     display: grid;
-    grid-template-columns: 180px 180px minmax(250px, 1fr);
+    grid-template-columns: 160px 180px 160px minmax(260px, 1fr);
     gap: 12px;
     margin-bottom: 12px;
 }
@@ -492,18 +492,31 @@
     gap: 5px;
 }
 
-    .log-filter label {
-        font-weight: 600;
-    }
+.log-filter label {
+    font-weight: 600;
+}
 
-    .log-filter .debug-input {
-        width: 100%;
-        box-sizing: border-box;
-    }
+.log-filter .debug-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.log-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
 
 .log-count {
-    margin-bottom: 10px;
     color: #666666;
+}
+
+.log-export-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .log-list {
@@ -538,68 +551,98 @@
 
 .log-entry-main {
     display: grid;
-    grid-template-columns: 145px 70px 95px 160px minmax(250px, 1fr);
-    gap: 10px;
-    padding: 10px 12px;
+    grid-template-columns: 155px 150px 110px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    padding: 12px 14px;
 }
 
 .log-time,
-.log-application,
+.log-category,
 .log-level,
-.log-source {
+.log-message {
+    min-width: 0;
+}
+
+.log-time,
+.log-category,
+.log-level {
     white-space: nowrap;
 }
 
-.log-application,
+.log-category,
 .log-level {
     font-weight: 600;
 }
 
+.log-category {
+    color: #333333;
+}
+
 .log-message {
     overflow-wrap: anywhere;
+    line-height: 1.4;
 }
 
 .log-details {
     border-top: 1px solid #e1e1e1;
 }
 
-    .log-details > summary {
-        padding: 8px 12px;
-        cursor: pointer;
-        font-weight: 600;
-        background-color: #f4f4f4;
-    }
+.log-details > summary {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    background-color: #f4f4f4;
+}
+
+.log-details > summary:hover {
+    background-color: #ececec;
+}
 
 .log-detail-block {
     padding: 12px;
 }
 
-    .log-detail-block pre {
-        max-height: 500px;
-        overflow: auto;
-        margin: 0;
-        padding: 12px;
-        background-color: #1e1e1e;
-        color: #ffffff;
-        border-radius: 6px;
-        white-space: pre-wrap;
-    }
+.log-detail-block + .log-detail-block {
+    padding-top: 0;
+}
+
+.log-detail-block strong {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.log-detail-block pre {
+    max-height: 500px;
+    overflow: auto;
+    margin: 0;
+    padding: 12px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
 
 .log-properties {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
-    gap: 5px 12px;
+    gap: 6px 14px;
     margin: 0;
 }
 
-    .log-properties dt {
-        font-weight: 600;
-    }
+.log-properties dt {
+    font-weight: 600;
+}
 
-    .log-properties dd {
-        margin: 0;
-        overflow-wrap: anywhere;
-    }
+.log-properties dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.log-technical-properties {
+    padding-bottom: 2px;
+}
 
 .debug-message {
     margin-bottom: 20px;
@@ -619,12 +662,12 @@
         height: 400px;
     }
 
-    .log-entry-main {
-        grid-template-columns: 145px 70px 95px 1fr;
+    .log-filters {
+        grid-template-columns: 1fr 1fr;
     }
 
-    .log-message {
-        grid-column: 1 / -1;
+    .log-entry-main {
+        grid-template-columns: 155px 150px 110px minmax(0, 1fr);
     }
 }
 
@@ -636,7 +679,8 @@
 
 @media (max-width: 800px) {
     .database-header,
-    .logs-header {
+    .logs-header,
+    .log-toolbar {
         align-items: flex-start;
         flex-direction: column;
     }
@@ -652,5 +696,13 @@
 
     .log-entry-main {
         grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .log-time,
+    .log-category,
+    .log-level,
+    .log-message {
+        white-space: normal;
     }
 }

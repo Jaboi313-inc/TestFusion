@@ -60,7 +60,8 @@ public class PlaywrightServiceTests
         var service = new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(new SiteSettings()),
-            CreateScopeFactory(new TestSettingsService()));
+            CreateScopeFactory(new TestSettingsService()),
+            Options.Create(new LoggingSettings()));
 
         var initializeBrowser = typeof(PlaywrightService).GetMethod(
             "InitializeBrowser",
@@ -115,7 +116,8 @@ public class PlaywrightServiceTests
         return new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(new SiteSettings()),
-            CreateScopeFactory(new TestSettingsService()));
+            CreateScopeFactory(new TestSettingsService()),
+            Options.Create(new LoggingSettings()));
     }
 
     private static PlaywrightService CreateLiveService()
@@ -156,7 +158,8 @@ public class PlaywrightServiceTests
         return new PlaywrightService(
             NullLogger<PlaywrightService>.Instance,
             Options.Create(siteSettings),
-            CreateScopeFactory(settingsService));
+            CreateScopeFactory(settingsService),
+            Options.Create(new LoggingSettings()));
     }
 
     private static IServiceScopeFactory CreateScopeFactory(TestSettingsService settingsService)

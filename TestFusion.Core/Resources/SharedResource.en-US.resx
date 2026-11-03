@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -530,5 +530,260 @@
   </data>
   <data name="ButtonBackToStart" xml:space="preserve">
     <value>Back to top left</value>
+  </data>
+  <data name="DebugSettingsDescription" xml:space="preserve">
+    <value>Settings for technical information and troubleshooting.</value>
+  </data>
+  <data name="DebugShowDebugInformation" xml:space="preserve">
+    <value>Show debug information</value>
+  </data>
+  <data name="DebugShowDebugInformationDescription" xml:space="preserve">
+    <value>Shows additional technical information in test results and generated PDFs.</value>
+  </data>
+  <data name="DebugNavigationButtons" xml:space="preserve">
+    <value>Navigation buttons</value>
+  </data>
+  <data name="DebugNavigationButtonsDescription" xml:space="preserve">
+    <value>Choose which floating navigation buttons are visible on Debug pages.</value>
+  </data>
+  <data name="DebugNavigationOnPage" xml:space="preserve">
+    <value>Navigation on this page</value>
+  </data>
+  <data name="DebugNavigationLeft" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="DebugNavigationTop" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="DebugNavigationTopLeft" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="DebugLogApplication" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="DebugLogCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="DebugLogDuration" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="DebugLogShowing" xml:space="preserve">
+    <value>Showing</value>
+  </data>
+  <data name="DebugLogOf" xml:space="preserve">
+    <value>of</value>
+  </data>
+  <data name="DebugLogEntries" xml:space="preserve">
+    <value>log entries</value>
+  </data>
+  <data name="DebugLogExportTxt" xml:space="preserve">
+    <value>Export TXT</value>
+  </data>
+  <data name="DebugLogExportJson" xml:space="preserve">
+    <value>Export JSON</value>
+  </data>
+  <data name="DebugLogCategoryAnalysis" xml:space="preserve">
+    <value>Analysis</value>
+  </data>
+  <data name="DebugLogCategorySettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="DebugLogCategorySynchronization" xml:space="preserve">
+    <value>Synchronization</value>
+  </data>
+  <data name="DebugLogCategoryCarbonX" xml:space="preserve">
+    <value>CarbonX</value>
+  </data>
+  <data name="DebugLogCategoryNavigation" xml:space="preserve">
+    <value>Navigation</value>
+  </data>
+  <data name="DebugLogCategoryDebug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="DebugLogCategoryMaintenance" xml:space="preserve">
+    <value>Maintenance</value>
+  </data>
+  <data name="DebugLogCategoryDatabase" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="DebugLogCategorySystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="DebugLogCategoryApplication" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="ButtonSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SymbolCross" xml:space="preserve">
+    <value>×</value>
+  </data>
+  <data name="SymbolArrowUpDown" xml:space="preserve">
+    <value>↕</value>
+  </data>
+  <data name="SymbolTriangleUp" xml:space="preserve">
+    <value>▲</value>
+  </data>
+  <data name="SymbolTriangleDown" xml:space="preserve">
+    <value>▼</value>
+  </data>
+  <data name="SymbolTriangleRight" xml:space="preserve">
+    <value>▶</value>
+  </data>
+  <data name="SettingsDescription" xml:space="preserve">
+    <value>Manage the general TestFusion settings.</value>
+  </data>
+  <data name="SettingsMessageClose" xml:space="preserve">
+    <value>Close notification</value>
+  </data>
+  <data name="SettingsSectionAnalysis" xml:space="preserve">
+    <value>Analysis</value>
+  </data>
+  <data name="SettingsAnalysisDescription" xml:space="preserve">
+    <value>Settings for grouping test results.</value>
+  </data>
+  <data name="SettingsGroupTestsByBaseName" xml:space="preserve">
+    <value>Group tests by base name</value>
+  </data>
+  <data name="SettingsGroupTestsByBaseNameDescription" xml:space="preserve">
+    <value>Groups variants of the same test under one test name.</value>
+  </data>
+  <data name="SettingsSectionCustomerGrouping" xml:space="preserve">
+    <value>Customer grouping</value>
+  </data>
+  <data name="SettingsCustomerGroupingDescription" xml:space="preserve">
+    <value>Choose which customer details are used to group injectors.</value>
+  </data>
+  <data name="SettingsMatchCustomerName" xml:space="preserve">
+    <value>Match name</value>
+  </data>
+  <data name="SettingsMatchCustomerNameDescription" xml:space="preserve">
+    <value>Use the customer name when determining whether the customer is the same.</value>
+  </data>
+  <data name="SettingsMatchCustomerPhone" xml:space="preserve">
+    <value>Match phone number</value>
+  </data>
+  <data name="SettingsMatchCustomerPhoneDescription" xml:space="preserve">
+    <value>Use the phone number when determining whether the customer is the same.</value>
+  </data>
+  <data name="SettingsMatchCustomerMail" xml:space="preserve">
+    <value>Match email address</value>
+  </data>
+  <data name="SettingsMatchCustomerMailDescription" xml:space="preserve">
+    <value>Use the email address when determining whether the customer is the same.</value>
+  </data>
+  <data name="SettingsMatchCustomerNotes" xml:space="preserve">
+    <value>Match notes</value>
+  </data>
+  <data name="SettingsMatchCustomerNotesDescription" xml:space="preserve">
+    <value>Use the customer notes when determining whether the customer is the same.</value>
+  </data>
+  <data name="SettingsSectionPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="SettingsPdfDescription" xml:space="preserve">
+    <value>Settings for generating comparison PDFs.</value>
+  </data>
+  <data name="SettingsPdfMaxInjectorsPerPage" xml:space="preserve">
+    <value>Maximum injectors per page</value>
+  </data>
+  <data name="SettingsPdfMaxInjectorsPerPageDescription" xml:space="preserve">
+    <value>Allowed: 1 through 10 injectors per page.</value>
+  </data>
+  <data name="SettingsSectionNavigation" xml:space="preserve">
+    <value>Navigation</value>
+  </data>
+  <data name="SettingsNavigationDescription" xml:space="preserve">
+    <value>Choose which floating navigation buttons are available on each page.</value>
+  </data>
+  <data name="SettingsSectionCarbonX" xml:space="preserve">
+    <value>CarbonX</value>
+  </data>
+  <data name="SettingsCarbonXDescription" xml:space="preserve">
+    <value>Credentials TestFusion uses to connect to CarbonX.</value>
+  </data>
+  <data name="SettingsCarbonXEmail" xml:space="preserve">
+    <value>Email address</value>
+  </data>
+  <data name="SettingsCarbonXPassword" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="SettingsCarbonXNewPasswordPlaceholder" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="SettingsCarbonXPasswordStoredDescription" xml:space="preserve">
+    <value>A password is already stored. Leave this field empty to keep the existing password.</value>
+  </data>
+  <data name="SettingsResetDefaultsConfirm" xml:space="preserve">
+    <value>Are you sure you want to restore the default settings? CarbonX credentials will be preserved.</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>Settings have been saved</value>
+  </data>
+  <data name="SettingsDefaultsRestored" xml:space="preserve">
+    <value>The default settings have been restored</value>
+  </data>
+  <data name="DebugSettingsSaved" xml:space="preserve">
+    <value>Debug settings have been saved</value>
+  </data>
+  <data name="ButtonBack" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="ButtonResetDefaults" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
+  <data name="AnalysisValidationDetailTestMissing" xml:space="preserve">
+    <value>test is missing</value>
+  </data>
+  <data name="AnalysisValidationDetailTestName" xml:space="preserve">
+    <value>Test name</value>
+  </data>
+  <data name="AnalysisValidationDetailTankPosition" xml:space="preserve">
+    <value>Tank position</value>
+  </data>
+  <data name="AnalysisValidationDetailTankCount" xml:space="preserve">
+    <value>tank count</value>
+  </data>
+  <data name="AnalysisValidationDetailTankName" xml:space="preserve">
+    <value>Tank name</value>
+  </data>
+  <data name="AnalysisValidationDetailMin" xml:space="preserve">
+    <value>Min</value>
+  </data>
+  <data name="AnalysisValidationDetailMax" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="AnalysisValidationDetailBlueMin" xml:space="preserve">
+    <value>Blue min</value>
+  </data>
+  <data name="AnalysisValidationDetailBlueMax" xml:space="preserve">
+    <value>Blue max</value>
+  </data>
+  <data name="AnalysisValidationDetailYellowMin" xml:space="preserve">
+    <value>Yellow min</value>
+  </data>
+  <data name="AnalysisValidationDetailYellowMax" xml:space="preserve">
+    <value>Yellow max</value>
+  </data>
+  <data name="AnalysisValidationDetailTolBlue" xml:space="preserve">
+    <value>Blue tolerance</value>
+  </data>
+  <data name="AnalysisValidationDetailPercentMin" xml:space="preserve">
+    <value>Percentage min</value>
+  </data>
+  <data name="AnalysisValidationDetailPercentMax" xml:space="preserve">
+    <value>Percentage max</value>
+  </data>
+  <data name="AnalysisValidationDetailPercentText" xml:space="preserve">
+    <value>Percentage text</value>
+  </data>
+  <data name="SymbolArrowLeft" xml:space="preserve">
+    <value>←</value>
+  </data>
+  <data name="SymbolArrowUp" xml:space="preserve">
+    <value>↑</value>
+  </data>
+  <data name="SymbolArrowUpLeft" xml:space="preserve">
+    <value>↖</value>
   </data>
 </root>
