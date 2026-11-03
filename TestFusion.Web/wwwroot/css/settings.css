@@ -146,7 +146,7 @@
 
 .settings-content {
     min-width: 0;
-    padding-bottom: 60vh;
+    padding-bottom: 70vh;
 }
 
 .settings-section {
@@ -318,7 +318,7 @@
 
 .settings-navigation-row {
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) 110px 110px 130px;
+    grid-template-columns: minmax(180px, 1fr) 120px 120px 150px;
     align-items: center;
     min-height: 52px;
     border-bottom: 1px solid #e5e5e5;
@@ -342,6 +342,7 @@
     align-items: center;
     justify-content: center;
     gap: 7px;
+    white-space: nowrap;
     cursor: pointer;
 }
 
@@ -412,7 +413,7 @@
     }
 
     .settings-navigation-row {
-        min-width: 650px;
+        min-width: 680px;
     }
 }
 
