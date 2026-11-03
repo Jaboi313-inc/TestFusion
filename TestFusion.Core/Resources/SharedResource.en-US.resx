@@ -1,110 +1,51 @@
-<?xml version="1.0" encoding="utf-8"?>
-<root>
-  <!-- 
-    Microsoft ResX Schema 
-    
-    Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
-    associated with the data types.
-    
-    Example:
-    
-    ... ado.net/XML headers & schema ...
-    <resheader name="resmimetype">text/microsoft-resx</resheader>
-    <resheader name="version">2.0</resheader>
-    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
-    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
-    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
-    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-        <value>[base64 mime encoded serialized .NET Framework object]</value>
-    </data>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
-        <comment>This is a comment</comment>
-    </data>
-                
-    There are any number of "resheader" rows that contain simple 
-    name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
-    mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
-    extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
-    read any of the formats listed below.
-    
-    mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-            : and then encoded with base64 encoding.
-    
-    mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
-            : and then encoded with base64 encoding.
-
-    mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
-            : using a System.ComponentModel.TypeConverter
-            : and then encoded with base64 encoding.
-    -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
+<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" use="required" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+              <xs:attribute ref="xml:space" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+              <xs:attribute ref="xml:space" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
@@ -157,7 +98,7 @@
     <value>As much as possible on a single page</value>
   </data>
   <data name="PDFOptionKeepTestTogether" xml:space="preserve">
-    <value>Test moves to a new page if this doesn't fit.</value>
+    <value>Test moves to a new page if this doesn't fit</value>
   </data>
   <data name="PDFOptionOneTestPerPage" xml:space="preserve">
     <value>Each test on a separate page</value>
@@ -484,31 +425,31 @@
     <value>Validation passed</value>
   </data>
   <data name="AnalysisValidationSuccess" xml:space="preserve">
-    <value>Injector part number, brand, type, tests and test limits match.</value>
+    <value>Injector part number, brand, type, tests and test limits match</value>
   </data>
   <data name="AnalysisValidationErrorTitle" xml:space="preserve">
     <value>Differences found</value>
   </data>
   <data name="AnalysisValidationPartNumberMismatch" xml:space="preserve">
-    <value>The injector part number is not the same for all selected injectors.</value>
+    <value>The injector part number is not the same for all selected injectors</value>
   </data>
   <data name="AnalysisValidationBrandMismatch" xml:space="preserve">
-    <value>The brand is not the same for all selected injectors.</value>
+    <value>The brand is not the same for all selected injectors</value>
   </data>
   <data name="AnalysisValidationTypeMismatch" xml:space="preserve">
-    <value>The type is not the same for all selected injectors.</value>
+    <value>The type is not the same for all selected injectors</value>
   </data>
   <data name="AnalysisValidationTestMissing" xml:space="preserve">
-    <value>Test '{0}' is not present for all selected injectors.</value>
+    <value>Test '{0}' is not present for all selected injectors</value>
   </data>
   <data name="AnalysisValidationTestNameMismatch" xml:space="preserve">
-    <value>The test name for test '{0}' does not match for all selected injectors.</value>
+    <value>The test name for test '{0}' does not match for all selected injectors</value>
   </data>
   <data name="AnalysisValidationTestTypeMismatch" xml:space="preserve">
-    <value>The test type for test '{0}' does not match for all selected injectors.</value>
+    <value>The test type for test '{0}' does not match for all selected injectors</value>
   </data>
   <data name="AnalysisValidationTestLimitsMismatch" xml:space="preserve">
-    <value>The tanks or limits for test '{0}' do not match for all selected injectors.</value>
+    <value>The tanks or limits for test '{0}' do not match for all selected injectors</value>
   </data>
   <data name="AnalysisValidationAccuracyWarning" xml:space="preserve">
     <value>There are differences between the selected tests. Be aware that this can affect the accuracy of the comparison</value>
@@ -532,19 +473,19 @@
     <value>Back to top left</value>
   </data>
   <data name="DebugSettingsDescription" xml:space="preserve">
-    <value>Settings for technical information and troubleshooting.</value>
+    <value>Settings for technical information and troubleshooting</value>
   </data>
   <data name="DebugShowDebugInformation" xml:space="preserve">
     <value>Show debug information</value>
   </data>
   <data name="DebugShowDebugInformationDescription" xml:space="preserve">
-    <value>Shows additional technical information in test results and generated PDFs.</value>
+    <value>Shows additional technical information in test results and generated PDFs</value>
   </data>
   <data name="DebugNavigationButtons" xml:space="preserve">
     <value>Navigation buttons</value>
   </data>
   <data name="DebugNavigationButtonsDescription" xml:space="preserve">
-    <value>Choose which floating navigation buttons are visible on Debug pages.</value>
+    <value>Choose which floating navigation buttons are visible on Debug pages</value>
   </data>
   <data name="DebugNavigationOnPage" xml:space="preserve">
     <value>Navigation on this page</value>
@@ -631,7 +572,7 @@
     <value>▶</value>
   </data>
   <data name="SettingsDescription" xml:space="preserve">
-    <value>Manage the general TestFusion settings.</value>
+    <value>Manage the general TestFusion settings</value>
   </data>
   <data name="SettingsMessageClose" xml:space="preserve">
     <value>Close notification</value>
@@ -640,67 +581,67 @@
     <value>Analysis</value>
   </data>
   <data name="SettingsAnalysisDescription" xml:space="preserve">
-    <value>Settings for grouping test results.</value>
+    <value>Settings for comparing and exporting test results</value>
   </data>
   <data name="SettingsGroupTestsByBaseName" xml:space="preserve">
     <value>Group tests by base name</value>
   </data>
   <data name="SettingsGroupTestsByBaseNameDescription" xml:space="preserve">
-    <value>Groups variants of the same test under one test name.</value>
+    <value>Groups variants of the same test under one test name</value>
   </data>
   <data name="SettingsSectionCustomerGrouping" xml:space="preserve">
     <value>Customer grouping</value>
   </data>
   <data name="SettingsCustomerGroupingDescription" xml:space="preserve">
-    <value>Choose which customer details are used to group injectors.</value>
+    <value>Choose which customer details are used to group injectors</value>
   </data>
   <data name="SettingsMatchCustomerName" xml:space="preserve">
     <value>Match name</value>
   </data>
   <data name="SettingsMatchCustomerNameDescription" xml:space="preserve">
-    <value>Use the customer name when determining whether the customer is the same.</value>
+    <value>Use the customer name when determining whether the customer is the same</value>
   </data>
   <data name="SettingsMatchCustomerPhone" xml:space="preserve">
     <value>Match phone number</value>
   </data>
   <data name="SettingsMatchCustomerPhoneDescription" xml:space="preserve">
-    <value>Use the phone number when determining whether the customer is the same.</value>
+    <value>Use the phone number when determining whether the customer is the same</value>
   </data>
   <data name="SettingsMatchCustomerMail" xml:space="preserve">
     <value>Match email address</value>
   </data>
   <data name="SettingsMatchCustomerMailDescription" xml:space="preserve">
-    <value>Use the email address when determining whether the customer is the same.</value>
+    <value>Use the email address when determining whether the customer is the same</value>
   </data>
   <data name="SettingsMatchCustomerNotes" xml:space="preserve">
     <value>Match notes</value>
   </data>
   <data name="SettingsMatchCustomerNotesDescription" xml:space="preserve">
-    <value>Use the customer notes when determining whether the customer is the same.</value>
+    <value>Use the customer notes when determining whether the customer is the same</value>
   </data>
   <data name="SettingsSectionPdf" xml:space="preserve">
     <value>PDF</value>
   </data>
   <data name="SettingsPdfDescription" xml:space="preserve">
-    <value>Settings for generating comparison PDFs.</value>
+    <value>Settings for generating comparison PDFs</value>
   </data>
   <data name="SettingsPdfMaxInjectorsPerPage" xml:space="preserve">
     <value>Maximum injectors per page</value>
   </data>
   <data name="SettingsPdfMaxInjectorsPerPageDescription" xml:space="preserve">
-    <value>Allowed: 1 through 10 injectors per page.</value>
+    <value>Allowed: 1 through 10 injectors per page</value>
   </data>
   <data name="SettingsSectionNavigation" xml:space="preserve">
     <value>Navigation</value>
   </data>
   <data name="SettingsNavigationDescription" xml:space="preserve">
-    <value>Choose which floating navigation buttons are available on each page.</value>
+    <value>Choose which floating navigation buttons are available on each page</value>
   </data>
   <data name="SettingsSectionCarbonX" xml:space="preserve">
     <value>CarbonX</value>
   </data>
   <data name="SettingsCarbonXDescription" xml:space="preserve">
-    <value>Credentials TestFusion uses to connect to CarbonX.</value>
+    <value>Credentials TestFusion uses to connect to CarbonX</value>
   </data>
   <data name="SettingsCarbonXEmail" xml:space="preserve">
     <value>Email address</value>
@@ -712,10 +653,10 @@
     <value>New password</value>
   </data>
   <data name="SettingsCarbonXPasswordStoredDescription" xml:space="preserve">
-    <value>A password is already stored. Leave this field empty to keep the existing password.</value>
+    <value>A password is already stored. Leave this field empty to keep the existing password</value>
   </data>
   <data name="SettingsResetDefaultsConfirm" xml:space="preserve">
-    <value>Are you sure you want to restore the default settings? CarbonX credentials will be preserved.</value>
+    <value>Are you sure you want to restore the default settings{0} CarbonX credentials will be preserved{1}</value>
   </data>
   <data name="SettingsSaved" xml:space="preserve">
     <value>Settings have been saved</value>
@@ -785,5 +726,14 @@
   </data>
   <data name="SymbolArrowUpLeft" xml:space="preserve">
     <value>↖</value>
+  </data>
+  <data name="SettingsSectionComparison" xml:space="preserve">
+    <value>Comparison</value>
+  </data>
+  <data name="SettingsComparisonDescription" xml:space="preserve">
+    <value>Configure how tests and injectors are compared within an analysis</value>
+  </data>
+  <data name="SettingsSectionPdfExport" xml:space="preserve">
+    <value>PDF export</value>
   </data>
 </root>

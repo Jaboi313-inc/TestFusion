@@ -199,7 +199,8 @@
         {
             result.Errors.Add(
                 localizer[
-                    "AnalysisValidationPartNumberMismatch"]);
+                    "AnalysisValidationPartNumberMismatch"].Value +
+                localizer["SymbolDot"].Value);
 
             foreach (var injector in partNumberMismatches)
             {
@@ -231,7 +232,8 @@
         {
             result.Errors.Add(
                 localizer[
-                    "AnalysisValidationBrandMismatch"]);
+                    "AnalysisValidationBrandMismatch"].Value +
+                localizer["SymbolDot"].Value);
 
             foreach (var injector in partBrandMismatches)
             {
@@ -263,7 +265,8 @@
         {
             result.Errors.Add(
                 localizer[
-                    "AnalysisValidationTypeMismatch"]);
+                    "AnalysisValidationTypeMismatch"].Value +
+                localizer["SymbolDot"].Value);
 
             foreach (var injector in partTypeMismatches)
             {
@@ -345,7 +348,8 @@
                 result.Errors.Add(
                     localizer[
                         "AnalysisValidationTestMissing",
-                        displayName]);
+                        displayName].Value +
+                    localizer["SymbolDot"].Value);
 
                 foreach (var injector in missingInjectors)
                 {
@@ -420,7 +424,8 @@
                 result.Errors.Add(
                     localizer[
                         "AnalysisValidationTestNameMismatch",
-                        canonicalTestName]);
+                        canonicalTestName].Value +
+                    localizer["SymbolDot"].Value);
 
                 foreach (var entry in testNameMismatches)
                 {
@@ -481,7 +486,8 @@
                     result.Errors.Add(
                         localizer[
                             "AnalysisValidationTestTypeMismatch",
-                            canonicalTestName]);
+                            canonicalTestName].Value +
+                        localizer["SymbolDot"].Value);
 
                     foreach (var entry in testTypeMismatches)
                     {
@@ -519,7 +525,8 @@
                 result.Errors.Add(
                     localizer[
                         "AnalysisValidationTestLimitsMismatch",
-                        canonicalTestName]);
+                        canonicalTestName].Value +
+                    localizer["SymbolDot"].Value);
 
                 var referenceDefinition =
                     definitionGroups[0].First();
@@ -973,13 +980,13 @@
                         {
                             <option value="KeepTestTogether"
                                     selected>
-                                @Localizer["PDFOptionKeepTestTogether"]
+                                @Localizer["PDFOptionKeepTestTogether"]@Localizer["SymbolDot"]
                             </option>
                         }
                         else
                         {
                             <option value="KeepTestTogether">
-                                @Localizer["PDFOptionKeepTestTogether"]
+                                @Localizer["PDFOptionKeepTestTogether"]@Localizer["SymbolDot"]
                             </option>
                         }
 

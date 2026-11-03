@@ -2,7 +2,7 @@
     const form = document.querySelector(".settings-form");
     const saveButton = document.getElementById("settings-save");
     const navigationLinks = Array.from(document.querySelectorAll(".settings-navigation a"));
-    const sections = Array.from(document.querySelectorAll(".settings-section"));
+    const sections = Array.from(document.querySelectorAll(".settings-section, .settings-subsection[id]"));
     const message = document.querySelector(".settings-message-temporary");
 
     let isNavigationScrolling = false;
@@ -138,6 +138,7 @@
     });
 
     window.addEventListener("scroll", updateActiveNavigation, { passive: true });
+
     window.addEventListener("resize", function () {
         if (!isNavigationScrolling) {
             updateActiveNavigation();

@@ -137,7 +137,7 @@
 
         <div class="debug-section-header">
             <h3>@Localizer["Settings"]</h3>
-            <p>@Localizer["DebugSettingsDescription"]</p>
+            <p>@Localizer["DebugSettingsDescription"]@Localizer["SymbolDot"]</p>
         </div>
 
         <form asp-controller="Debug"
@@ -155,7 +155,7 @@
 
                     <span>
                         <strong>@Localizer["DebugShowDebugInformation"]</strong>
-                        <small>@Localizer["DebugShowDebugInformationDescription"]</small>
+                        <small>@Localizer["DebugShowDebugInformationDescription"]@Localizer["SymbolDot"]</small>
                     </span>
 
                 </label>
@@ -166,7 +166,7 @@
 
                 <div class="debug-settings-block-header">
                     <h4>@Localizer["DebugNavigationButtons"]</h4>
-                    <p>@Localizer["DebugNavigationButtonsDescription"]</p>
+                    <p>@Localizer["DebugNavigationButtonsDescription"]@Localizer["SymbolDot"]</p>
                 </div>
 
                 <div class="debug-navigation-pages">
@@ -188,7 +188,7 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToLeft",
                                         navigationPage.Value.ShowBackToLeft)
 
-                                    <span class="debug-navigation-icon">@Localizer["SymbolArrowLeft"]</span>
+                                    <span class="debug-navigation-icon">←</span>
                                     <span>@Localizer["DebugNavigationLeft"]</span>
 
                                 </label>
@@ -199,7 +199,7 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToTop",
                                         navigationPage.Value.ShowBackToTop)
 
-                                    <span class="debug-navigation-icon">@Localizer["SymbolArrowUp"]</span>
+                                    <span class="debug-navigation-icon">↑</span>
                                     <span>@Localizer["DebugNavigationTop"]</span>
 
                                 </label>
@@ -210,7 +210,7 @@
                                         $"NavigationPages[{navigationPage.Key}].ShowBackToStart",
                                         navigationPage.Value.ShowBackToStart)
 
-                                    <span class="debug-navigation-icon">@Localizer["SymbolArrowUpLeft"]</span>
+                                    <span class="debug-navigation-icon">↖</span>
                                     <span>@Localizer["DebugNavigationTopLeft"]</span>
 
                                 </label>
@@ -526,11 +526,9 @@
                                                 class="debug-json-toggle"
                                                 data-json-toggle
                                                 data-target="@jsonRowId"
-                                                data-symbol-collapsed="@Localizer["SymbolTriangleRight"]"
-                                                data-symbol-expanded="@Localizer["SymbolTriangleDown"]"
                                                 aria-expanded="false">
 
-                                            <span class="debug-json-toggle-icon">@Localizer["SymbolTriangleRight"]</span>
+                                            <span class="debug-json-toggle-icon">▶</span>
 
                                             <span>
                                                 @Localizer["DebugViewJson"]

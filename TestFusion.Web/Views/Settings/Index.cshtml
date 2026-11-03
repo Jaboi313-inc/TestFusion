@@ -1,4 +1,4 @@
-﻿@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Localization
 @using TestFusion.Core
 @inject IStringLocalizer<SharedResource> Localizer
 @model TestFusion.Core.Models.WebModels.SettingsViewModel
@@ -21,7 +21,7 @@
 <div class="settings-page">
     <div class="settings-header">
         <h2>@Localizer["PageTitleSettings"]</h2>
-        <p>@Localizer["SettingsDescription"]</p>
+        <p>@Localizer["SettingsDescription"]@Localizer["SymbolDot"]</p>
     </div>
 
     @if (TempData["Success"] != null)
@@ -63,23 +63,27 @@
             <aside class="settings-sidebar">
                 <nav class="settings-navigation">
                     <a href="#settings-analysis"
-                       class="active">
+                       class="settings-navigation-main active">
                         @Localizer["SettingsSectionAnalysis"]
                     </a>
 
-                    <a href="#settings-customer">
-                        @Localizer["SettingsSectionCustomerGrouping"]
+                    <a href="#settings-comparison"
+                       class="settings-navigation-sub">
+                        @Localizer["SettingsSectionComparison"]
                     </a>
 
-                    <a href="#settings-pdf">
-                        @Localizer["SettingsSectionPdf"]
+                    <a href="#settings-pdf-export"
+                       class="settings-navigation-sub">
+                        @Localizer["SettingsSectionPdfExport"]
                     </a>
 
-                    <a href="#settings-navigation">
+                    <a href="#settings-navigation"
+                       class="settings-navigation-main">
                         @Localizer["SettingsSectionNavigation"]
                     </a>
 
-                    <a href="#settings-carbonx">
+                    <a href="#settings-carbonx"
+                       class="settings-navigation-main">
                         @Localizer["SettingsSectionCarbonX"]
                     </a>
                 </nav>
@@ -113,7 +117,7 @@
                                 asp-action="ResetToDefaults"
                                 class="btn settings-button-reset"
                                 formnovalidate
-                                data-confirm="@Localizer["SettingsResetDefaultsConfirm"]">
+                                data-confirm="@Localizer["SettingsResetDefaultsConfirm", Localizer["SymbolQuestionmark"], Localizer["SymbolDot"]]">
                             @Localizer["ButtonResetDefaults"]
                         </button>
                     </div>
@@ -125,90 +129,99 @@
                          class="settings-section">
                     <div class="settings-section-header">
                         <h2>@Localizer["SettingsSectionAnalysis"]</h2>
-                        <p>@Localizer["SettingsAnalysisDescription"]</p>
+                        <p>@Localizer["SettingsAnalysisDescription"]@Localizer["SymbolDot"]</p>
                     </div>
 
                     <div class="settings-section-content">
-                        <label class="settings-checkbox">
-                            <input asp-for="GroupTestsByBaseName" />
+                        <div id="settings-comparison"
+                             class="settings-subsection">
+                            <div class="settings-subsection-header">
+                                <h3>@Localizer["SettingsSectionComparison"]</h3>
+                                <p>@Localizer["SettingsComparisonDescription"]@Localizer["SymbolDot"]</p>
+                            </div>
 
-                            <span>
-                                <strong>@Localizer["SettingsGroupTestsByBaseName"]</strong>
-                                <small>@Localizer["SettingsGroupTestsByBaseNameDescription"]</small>
-                            </span>
-                        </label>
-                    </div>
-                </section>
+                            <div class="settings-subsection-content">
+                                <label class="settings-checkbox">
+                                    <input asp-for="GroupTestsByBaseName" />
 
-                <section id="settings-customer"
-                         class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>@Localizer["SettingsSectionCustomerGrouping"]</h2>
-                        <p>@Localizer["SettingsCustomerGroupingDescription"]</p>
-                    </div>
+                                    <span>
+                                        <strong>@Localizer["SettingsGroupTestsByBaseName"]</strong>
+                                        <small>@Localizer["SettingsGroupTestsByBaseNameDescription"]@Localizer["SymbolDot"]</small>
+                                    </span>
+                                </label>
 
-                    <div class="settings-section-content">
-                        <label class="settings-checkbox">
-                            <input asp-for="MatchCustomerName" />
+                                <div class="settings-subgroup">
+                                    <div class="settings-subgroup-header">
+                                        <h4>@Localizer["SettingsSectionCustomerGrouping"]</h4>
+                                        <p>@Localizer["SettingsCustomerGroupingDescription"]@Localizer["SymbolDot"]</p>
+                                    </div>
 
-                            <span>
-                                <strong>@Localizer["SettingsMatchCustomerName"]</strong>
-                                <small>@Localizer["SettingsMatchCustomerNameDescription"]</small>
-                            </span>
-                        </label>
+                                    <div class="settings-subgroup-content">
+                                        <label class="settings-checkbox">
+                                            <input asp-for="MatchCustomerName" />
 
-                        <label class="settings-checkbox">
-                            <input asp-for="MatchCustomerPhone" />
+                                            <span>
+                                                <strong>@Localizer["SettingsMatchCustomerName"]</strong>
+                                                <small>@Localizer["SettingsMatchCustomerNameDescription"]@Localizer["SymbolDot"]</small>
+                                            </span>
+                                        </label>
 
-                            <span>
-                                <strong>@Localizer["SettingsMatchCustomerPhone"]</strong>
-                                <small>@Localizer["SettingsMatchCustomerPhoneDescription"]</small>
-                            </span>
-                        </label>
+                                        <label class="settings-checkbox">
+                                            <input asp-for="MatchCustomerPhone" />
 
-                        <label class="settings-checkbox">
-                            <input asp-for="MatchCustomerMail" />
+                                            <span>
+                                                <strong>@Localizer["SettingsMatchCustomerPhone"]</strong>
+                                                <small>@Localizer["SettingsMatchCustomerPhoneDescription"]@Localizer["SymbolDot"]</small>
+                                            </span>
+                                        </label>
 
-                            <span>
-                                <strong>@Localizer["SettingsMatchCustomerMail"]</strong>
-                                <small>@Localizer["SettingsMatchCustomerMailDescription"]</small>
-                            </span>
-                        </label>
+                                        <label class="settings-checkbox">
+                                            <input asp-for="MatchCustomerMail" />
 
-                        <label class="settings-checkbox">
-                            <input asp-for="MatchCustomerNotes" />
+                                            <span>
+                                                <strong>@Localizer["SettingsMatchCustomerMail"]</strong>
+                                                <small>@Localizer["SettingsMatchCustomerMailDescription"]@Localizer["SymbolDot"]</small>
+                                            </span>
+                                        </label>
 
-                            <span>
-                                <strong>@Localizer["SettingsMatchCustomerNotes"]</strong>
-                                <small>@Localizer["SettingsMatchCustomerNotesDescription"]</small>
-                            </span>
-                        </label>
-                    </div>
-                </section>
+                                        <label class="settings-checkbox">
+                                            <input asp-for="MatchCustomerNotes" />
 
-                <section id="settings-pdf"
-                         class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>@Localizer["SettingsSectionPdf"]</h2>
-                        <p>@Localizer["SettingsPdfDescription"]</p>
-                    </div>
+                                            <span>
+                                                <strong>@Localizer["SettingsMatchCustomerNotes"]</strong>
+                                                <small>@Localizer["SettingsMatchCustomerNotesDescription"]@Localizer["SymbolDot"]</small>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="settings-section-content">
-                        <div class="settings-field">
-                            <label asp-for="PdfMaxInjectorsPerPage">
-                                @Localizer["SettingsPdfMaxInjectorsPerPage"]
-                            </label>
+                        <div id="settings-pdf-export"
+                             class="settings-subsection">
+                            <div class="settings-subsection-header">
+                                <h3>@Localizer["SettingsSectionPdfExport"]</h3>
+                                <p>@Localizer["SettingsPdfDescription"]@Localizer["SymbolDot"]</p>
+                            </div>
 
-                            <input asp-for="PdfMaxInjectorsPerPage"
-                                   type="number"
-                                   min="1"
-                                   max="10" />
+                            <div class="settings-subsection-content">
+                                <div class="settings-field">
+                                    <label asp-for="PdfMaxInjectorsPerPage">
+                                        @Localizer["SettingsPdfMaxInjectorsPerPage"]
+                                    </label>
 
-                            <span asp-validation-for="PdfMaxInjectorsPerPage"
-                                  class="settings-field-error">
-                            </span>
+                                    <input asp-for="PdfMaxInjectorsPerPage"
+                                           type="number"
+                                           min="1"
+                                           max="10" />
 
-                            <small>@Localizer["SettingsPdfMaxInjectorsPerPageDescription"]</small>
+                                    <span asp-validation-for="PdfMaxInjectorsPerPage"
+                                          class="settings-field-error">
+                                    </span>
+
+                                    <small>@Localizer["SettingsPdfMaxInjectorsPerPageDescription"]@Localizer["SymbolDot"]</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -217,7 +230,7 @@
                          class="settings-section">
                     <div class="settings-section-header">
                         <h2>@Localizer["SettingsSectionNavigation"]</h2>
-                        <p>@Localizer["SettingsNavigationDescription"]</p>
+                        <p>@Localizer["SettingsNavigationDescription"]@Localizer["SymbolDot"]</p>
                     </div>
 
                     <div class="settings-section-content">
@@ -265,7 +278,7 @@
                          class="settings-section">
                     <div class="settings-section-header">
                         <h2>@Localizer["SettingsSectionCarbonX"]</h2>
-                        <p>@Localizer["SettingsCarbonXDescription"]</p>
+                        <p>@Localizer["SettingsCarbonXDescription"]@Localizer["SymbolDot"]</p>
                     </div>
 
                     <div class="settings-section-content">
@@ -299,9 +312,7 @@
 
                             @if (Model.HasCarbonXPassword)
                             {
-                                <small>
-                                    @Localizer["SettingsCarbonXPasswordStoredDescription"]
-                                </small>
+                                <small>@Localizer["SettingsCarbonXPasswordStoredDescription"]@Localizer["SymbolDot"]</small>
                             }
                         </div>
                     </div>
