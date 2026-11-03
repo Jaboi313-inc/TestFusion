@@ -1,4 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using TestFusion.Core;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models.WebModels;
 
@@ -6,9 +8,11 @@ namespace TestFusion.Web.Controllers;
 
 public class SettingsController : Controller {
     private readonly ISettingsService _settingsService;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
-    public SettingsController(ISettingsService settingsService) {
+    public SettingsController(ISettingsService settingsService, IStringLocalizer<SharedResource> localizer) {
         _settingsService = settingsService;
+        _localizer = localizer;
     }
 
     [HttpGet]
@@ -42,7 +46,7 @@ public class SettingsController : Controller {
 
         await _settingsService.UpdateAsync(model);
 
-        TempData["Success"] = "Instellingen zijn opgeslagen.";
+        TempData["Success"] = _localizer["SettingsSaved"].Value + _localizer["SymbolDot"].Value;
         TempData["SuccessDuration"] = 4000;
 
         return RedirectToAction(nameof(Index), new {
@@ -55,7 +59,7 @@ public class SettingsController : Controller {
     public async Task<IActionResult> ResetToDefaults(string? returnUrl) {
         await _settingsService.ResetToDefaultsAsync();
 
-        TempData["Success"] = "De standaardinstellingen zijn hersteld.";
+        TempData["Success"] = _localizer["SettingsDefaultsRestored"].Value + _localizer["SymbolDot"].Value;
         TempData["SuccessDuration"] = 6000;
 
         var safeReturnUrl = string.IsNullOrWhiteSpace(returnUrl)

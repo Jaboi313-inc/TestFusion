@@ -345,10 +345,12 @@
                     id="filter-toggle"
                     class="btn"
                     aria-expanded="@hasActiveFilters.ToString().ToLowerInvariant()"
-                    aria-controls="filter-panel">
+                    aria-controls="filter-panel"
+                    data-symbol-expanded="@Localizer["SymbolTriangleUp"]"
+                    data-symbol-collapsed="@Localizer["SymbolTriangleDown"]">
                 @Localizer["ButtonFilter"]
                 <span id="filter-toggle-indicator">
-                    @(hasActiveFilters ? "▲" : "▼")
+                    @(hasActiveFilters ? Localizer["SymbolTriangleUp"].Value : Localizer["SymbolTriangleDown"].Value)
                 </span>
             </button>
 
@@ -640,7 +642,10 @@
 
 
     <div class="list"
-         id="test-results-list">
+         id="test-results-list"
+         data-symbol-sort-neutral="@Localizer["SymbolArrowUpDown"]"
+         data-symbol-sort-ascending="@Localizer["SymbolTriangleUp"]"
+         data-symbol-sort-descending="@Localizer["SymbolTriangleDown"]">
 
         <div class="list-row header">
 
@@ -665,7 +670,7 @@
                     @Localizer["InjectorPartNumber"]
 
                     <span class="sort-indicator">
-                        ↕
+                        @Localizer["SymbolArrowUpDown"]
                     </span>
 
                 </button>
@@ -682,7 +687,7 @@
                     @Localizer["InjectorBrand"]
 
                     <span class="sort-indicator">
-                        ↕
+                        @Localizer["SymbolArrowUpDown"]
                     </span>
 
                 </button>
@@ -699,7 +704,7 @@
                     @Localizer["InjectorType"]
 
                     <span class="sort-indicator">
-                        ↕
+                        @Localizer["SymbolArrowUpDown"]
                     </span>
 
                 </button>
@@ -716,7 +721,7 @@
                     @Localizer["InjectorDateTime"]
 
                     <span class="sort-indicator">
-                        ↕
+                        @Localizer["SymbolArrowUpDown"]
                     </span>
 
                 </button>

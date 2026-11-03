@@ -1,4 +1,4 @@
-@using System.Text.Json
+﻿@using System.Text.Json
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
 @model TestFusion.Web.Models.DebugViewModel
@@ -526,9 +526,11 @@
                                                 class="debug-json-toggle"
                                                 data-json-toggle
                                                 data-target="@jsonRowId"
+                                                data-symbol-collapsed="@Localizer["SymbolTriangleRight"]"
+                                                data-symbol-expanded="@Localizer["SymbolTriangleDown"]"
                                                 aria-expanded="false">
 
-                                            <span class="debug-json-toggle-icon">▶</span>
+                                            <span class="debug-json-toggle-icon">@Localizer["SymbolTriangleRight"]</span>
 
                                             <span>
                                                 @Localizer["DebugViewJson"]

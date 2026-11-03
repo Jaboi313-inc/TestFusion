@@ -211,7 +211,7 @@
                                 injector),
 
                         Message =
-                            $"{GetInjectorComparisonName(injector)} — PartNumber: " +
+                            $"{GetInjectorComparisonName(injector)} — {localizer["InjectorPartNumber"]}: " +
                             $"{DisplayComparisonValue(referenceInjector.Data.PartNumber)} ≠ " +
                             $"{DisplayComparisonValue(injector.Data.PartNumber)}"
                     });
@@ -243,7 +243,7 @@
                                 injector),
 
                         Message =
-                            $"{GetInjectorComparisonName(injector)} — PartBrand: " +
+                            $"{GetInjectorComparisonName(injector)} — {localizer["InjectorBrand"]}: " +
                             $"{DisplayComparisonValue(referenceInjector.Data.PartBrand)} ≠ " +
                             $"{DisplayComparisonValue(injector.Data.PartBrand)}"
                     });
@@ -275,7 +275,7 @@
                                 injector),
 
                         Message =
-                            $"{GetInjectorComparisonName(injector)} — PartType: " +
+                            $"{GetInjectorComparisonName(injector)} — {localizer["InjectorType"]}: " +
                             $"{DisplayComparisonValue(referenceInjector.Data.PartType)} ≠ " +
                             $"{DisplayComparisonValue(injector.Data.PartType)}"
                     });
@@ -359,7 +359,7 @@
 
                             Message =
                                 $"{GetInjectorComparisonName(injector)} — " +
-                                $"{displayName} — test ontbreekt"
+                                $"{displayName} — {localizer["AnalysisValidationDetailTestMissing"]}"
                         });
                 }
 
@@ -434,7 +434,7 @@
 
                             Message =
                                 $"{GetInjectorComparisonName(entry.Injector)} — " +
-                                $"{canonicalTestName} — TestName: " +
+                                $"{canonicalTestName} — {localizer["AnalysisValidationDetailTestName"]}: " +
                                 $"{DisplayComparisonValue(canonicalTestName)} ≠ " +
                                 $"{DisplayComparisonValue(NormalizeTestName(entry.Test.TestName, groupTestsByBaseName))}"
                         });
@@ -495,7 +495,7 @@
 
                                 Message =
                                     $"{GetInjectorComparisonName(entry.Injector)} — " +
-                                    $"{canonicalTestName} — TestType: " +
+                                    $"{canonicalTestName} — {localizer["TestType"]}: " +
                                     $"{DisplayComparisonValue(canonicalTestType)} ≠ " +
                                     $"{DisplayComparisonValue(entry.Test.TestType)}"
                             });
@@ -535,7 +535,8 @@
                     var differences =
                         GetSubTestDefinitionDifferences(
                             referenceDefinition.Test,
-                            entry.Test);
+                            entry.Test,
+                            localizer);
 
                     foreach (var difference in differences)
                     {
@@ -611,7 +612,8 @@
 
     private List<string> GetSubTestDefinitionDifferences(
         TestModel referenceTest,
-        TestModel otherTest)
+        TestModel otherTest,
+        IStringLocalizer<SharedResource> localizer)
     {
         var differences =
             new List<string>();
@@ -662,7 +664,7 @@
                 otherSubTests.Count)
             {
                 differences.Add(
-                    $"TankPosition {position} — aantal tanks: " +
+                    $"{localizer["AnalysisValidationDetailTankPosition"]} {position} — {localizer["AnalysisValidationDetailTankCount"]}: " +
                     $"{referenceSubTests.Count} ≠ " +
                     $"{otherSubTests.Count}");
 
@@ -683,7 +685,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "TankName",
+                    localizer,
+                    localizer["AnalysisValidationDetailTankName"],
                     DisplayComparisonValue(
                         reference.TankName),
                     DisplayComparisonValue(
@@ -692,7 +695,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "Min",
+                    localizer,
+                    localizer["AnalysisValidationDetailMin"],
                     reference.Min.ToString(
                         CultureInfo.CurrentCulture),
                     other.Min.ToString(
@@ -701,7 +705,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "Max",
+                    localizer,
+                    localizer["AnalysisValidationDetailMax"],
                     reference.Max.ToString(
                         CultureInfo.CurrentCulture),
                     other.Max.ToString(
@@ -710,7 +715,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "BlueMin",
+                    localizer,
+                    localizer["AnalysisValidationDetailBlueMin"],
                     reference.BlueMin.ToString(
                         CultureInfo.CurrentCulture),
                     other.BlueMin.ToString(
@@ -719,7 +725,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "BlueMax",
+                    localizer,
+                    localizer["AnalysisValidationDetailBlueMax"],
                     reference.BlueMax.ToString(
                         CultureInfo.CurrentCulture),
                     other.BlueMax.ToString(
@@ -728,7 +735,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "YellowMin",
+                    localizer,
+                    localizer["AnalysisValidationDetailYellowMin"],
                     reference.YellowMin.ToString(
                         CultureInfo.CurrentCulture),
                     other.YellowMin.ToString(
@@ -737,7 +745,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "YellowMax",
+                    localizer,
+                    localizer["AnalysisValidationDetailYellowMax"],
                     reference.YellowMax.ToString(
                         CultureInfo.CurrentCulture),
                     other.YellowMax.ToString(
@@ -746,7 +755,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "TolBlue",
+                    localizer,
+                    localizer["AnalysisValidationDetailTolBlue"],
                     reference.TolBlue.ToString(
                         CultureInfo.CurrentCulture),
                     other.TolBlue.ToString(
@@ -755,7 +765,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "ProcentMin",
+                    localizer,
+                    localizer["AnalysisValidationDetailPercentMin"],
                     DisplayComparisonValue(
                         reference.ProcentMin),
                     DisplayComparisonValue(
@@ -764,7 +775,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "ProcentMax",
+                    localizer,
+                    localizer["AnalysisValidationDetailPercentMax"],
                     DisplayComparisonValue(
                         reference.ProcentMax),
                     DisplayComparisonValue(
@@ -773,7 +785,8 @@
                 AddDifference(
                     differences,
                     position,
-                    "ProcentText",
+                    localizer,
+                    localizer["AnalysisValidationDetailPercentText"],
                     DisplayComparisonValue(
                         reference.ProcentText),
                     DisplayComparisonValue(
@@ -787,6 +800,7 @@
     private void AddDifference(
         List<string> differences,
         int position,
+        IStringLocalizer<SharedResource> localizer,
         string field,
         string referenceValue,
         string otherValue)
@@ -798,7 +812,7 @@
                 StringComparison.OrdinalIgnoreCase))
         {
             differences.Add(
-                $"TankPosition {position} — {field}: " +
+                $"{localizer["AnalysisValidationDetailTankPosition"]} {position} — {field}: " +
                 $"{referenceValue} ≠ {otherValue}");
         }
     }

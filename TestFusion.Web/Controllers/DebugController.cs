@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -70,7 +70,7 @@ public class DebugController : Controller {
         _logger.LogInformation("Debug settings update requested");
         await _settingsService.UpdateDebugAsync(model.ShowDebugInformation, navigationPages);
 
-        TempData["DebugMessage"] = "Debuginstellingen zijn opgeslagen.";
+        TempData["DebugMessage"] = _localizer["DebugSettingsSaved"].Value + _localizer["SymbolDot"].Value;
 
         return RedirectToAction(nameof(Index));
     }

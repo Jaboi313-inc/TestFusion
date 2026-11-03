@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+﻿document.addEventListener("DOMContentLoaded", function () {
     const rowCheckboxes = document.querySelectorAll(".row-checkbox");
     const selectAllRows = document.getElementById("select-all-rows");
     const deleteSelectedButton = document.getElementById("delete-selected");
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const icon = button.querySelector(".debug-json-toggle-icon");
 
             if (icon) {
-                icon.textContent = isOpen ? "▶" : "▼";
+                icon.textContent = isOpen ? button.dataset.symbolCollapsed : button.dataset.symbolExpanded;
             }
         });
     });

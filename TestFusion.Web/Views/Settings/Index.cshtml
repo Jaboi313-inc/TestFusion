@@ -1,7 +1,10 @@
-﻿@model TestFusion.Core.Models.WebModels.SettingsViewModel
+﻿@using Microsoft.Extensions.Localization
+@using TestFusion.Core
+@inject IStringLocalizer<SharedResource> Localizer
+@model TestFusion.Core.Models.WebModels.SettingsViewModel
 
 @{
-    ViewData["Title"] = "Instellingen";
+    ViewData["Title"] = Localizer["PageTitleSettings"];
 
     var successDuration = 5000;
 
@@ -17,8 +20,8 @@
 
 <div class="settings-page">
     <div class="settings-header">
-        <h2>Instellingen</h2>
-        <p>Beheer de algemene instellingen van TestFusion.</p>
+        <h2>@Localizer["PageTitleSettings"]</h2>
+        <p>@Localizer["SettingsDescription"]</p>
     </div>
 
     @if (TempData["Success"] != null)
@@ -32,8 +35,8 @@
 
                 <button type="button"
                         class="settings-message-close"
-                        aria-label="Melding sluiten">
-                    &times;
+                        aria-label="@Localizer["SettingsMessageClose"]">
+                    @Localizer["SymbolCross"]
                 </button>
             </div>
 
@@ -61,23 +64,23 @@
                 <nav class="settings-navigation">
                     <a href="#settings-analysis"
                        class="active">
-                        Analyse
+                        @Localizer["SettingsSectionAnalysis"]
                     </a>
 
                     <a href="#settings-customer">
-                        Klantgroepering
+                        @Localizer["SettingsSectionCustomerGrouping"]
                     </a>
 
                     <a href="#settings-pdf">
-                        PDF
+                        @Localizer["SettingsSectionPdf"]
                     </a>
 
                     <a href="#settings-navigation">
-                        Navigatie
+                        @Localizer["SettingsSectionNavigation"]
                     </a>
 
                     <a href="#settings-carbonx">
-                        CarbonX
+                        @Localizer["SettingsSectionCarbonX"]
                     </a>
                 </nav>
 
@@ -86,14 +89,14 @@
                             id="settings-save"
                             class="btn"
                             disabled>
-                        Opslaan
+                        @Localizer["ButtonSave"]
                     </button>
 
                     @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
                     {
                         <a href="@Model.ReturnUrl"
                            class="btn settings-button-secondary">
-                            Terug
+                            @Localizer["ButtonBack"]
                         </a>
                     }
                     else
@@ -101,7 +104,7 @@
                         <a asp-controller="Home"
                            asp-action="Index"
                            class="btn settings-button-secondary">
-                            Terug
+                            @Localizer["ButtonBack"]
                         </a>
                     }
 
@@ -110,8 +113,8 @@
                                 asp-action="ResetToDefaults"
                                 class="btn settings-button-reset"
                                 formnovalidate
-                                data-confirm="Weet je zeker dat je de standaardinstellingen wilt herstellen? CarbonX-inloggegevens blijven behouden.">
-                            Standaard herstellen
+                                data-confirm="@Localizer["SettingsResetDefaultsConfirm"]">
+                            @Localizer["ButtonResetDefaults"]
                         </button>
                     </div>
                 </div>
@@ -121,8 +124,8 @@
                 <section id="settings-analysis"
                          class="settings-section">
                     <div class="settings-section-header">
-                        <h2>Analyse</h2>
-                        <p>Instellingen voor het groeperen van testresultaten.</p>
+                        <h2>@Localizer["SettingsSectionAnalysis"]</h2>
+                        <p>@Localizer["SettingsAnalysisDescription"]</p>
                     </div>
 
                     <div class="settings-section-content">
@@ -130,8 +133,8 @@
                             <input asp-for="GroupTestsByBaseName" />
 
                             <span>
-                                <strong>Tests groeperen op basisnaam</strong>
-                                <small>Groepeert varianten van dezelfde test onder één testnaam.</small>
+                                <strong>@Localizer["SettingsGroupTestsByBaseName"]</strong>
+                                <small>@Localizer["SettingsGroupTestsByBaseNameDescription"]</small>
                             </span>
                         </label>
                     </div>
@@ -140,8 +143,8 @@
                 <section id="settings-customer"
                          class="settings-section">
                     <div class="settings-section-header">
-                        <h2>Klantgroepering</h2>
-                        <p>Bepaal welke klantgegevens worden gebruikt om verstuivers te groeperen.</p>
+                        <h2>@Localizer["SettingsSectionCustomerGrouping"]</h2>
+                        <p>@Localizer["SettingsCustomerGroupingDescription"]</p>
                     </div>
 
                     <div class="settings-section-content">
@@ -149,8 +152,8 @@
                             <input asp-for="MatchCustomerName" />
 
                             <span>
-                                <strong>Naam vergelijken</strong>
-                                <small>Gebruik de klantnaam bij het bepalen van dezelfde klant.</small>
+                                <strong>@Localizer["SettingsMatchCustomerName"]</strong>
+                                <small>@Localizer["SettingsMatchCustomerNameDescription"]</small>
                             </span>
                         </label>
 
@@ -158,8 +161,8 @@
                             <input asp-for="MatchCustomerPhone" />
 
                             <span>
-                                <strong>Telefoonnummer vergelijken</strong>
-                                <small>Gebruik het telefoonnummer bij het bepalen van dezelfde klant.</small>
+                                <strong>@Localizer["SettingsMatchCustomerPhone"]</strong>
+                                <small>@Localizer["SettingsMatchCustomerPhoneDescription"]</small>
                             </span>
                         </label>
 
@@ -167,8 +170,8 @@
                             <input asp-for="MatchCustomerMail" />
 
                             <span>
-                                <strong>E-mailadres vergelijken</strong>
-                                <small>Gebruik het e-mailadres bij het bepalen van dezelfde klant.</small>
+                                <strong>@Localizer["SettingsMatchCustomerMail"]</strong>
+                                <small>@Localizer["SettingsMatchCustomerMailDescription"]</small>
                             </span>
                         </label>
 
@@ -176,8 +179,8 @@
                             <input asp-for="MatchCustomerNotes" />
 
                             <span>
-                                <strong>Notities vergelijken</strong>
-                                <small>Gebruik de klantnotities bij het bepalen van dezelfde klant.</small>
+                                <strong>@Localizer["SettingsMatchCustomerNotes"]</strong>
+                                <small>@Localizer["SettingsMatchCustomerNotesDescription"]</small>
                             </span>
                         </label>
                     </div>
@@ -186,14 +189,14 @@
                 <section id="settings-pdf"
                          class="settings-section">
                     <div class="settings-section-header">
-                        <h2>PDF</h2>
-                        <p>Instellingen voor het genereren van vergelijkings-PDF's.</p>
+                        <h2>@Localizer["SettingsSectionPdf"]</h2>
+                        <p>@Localizer["SettingsPdfDescription"]</p>
                     </div>
 
                     <div class="settings-section-content">
                         <div class="settings-field">
                             <label asp-for="PdfMaxInjectorsPerPage">
-                                Maximaal aantal verstuivers per pagina
+                                @Localizer["SettingsPdfMaxInjectorsPerPage"]
                             </label>
 
                             <input asp-for="PdfMaxInjectorsPerPage"
@@ -205,7 +208,7 @@
                                   class="settings-field-error">
                             </span>
 
-                            <small>Toegestaan: 1 tot en met 10 verstuivers per pagina.</small>
+                            <small>@Localizer["SettingsPdfMaxInjectorsPerPageDescription"]</small>
                         </div>
                     </div>
                 </section>
@@ -213,17 +216,17 @@
                 <section id="settings-navigation"
                          class="settings-section">
                     <div class="settings-section-header">
-                        <h2>Navigatie</h2>
-                        <p>Bepaal per pagina welke zwevende navigatieknoppen beschikbaar zijn.</p>
+                        <h2>@Localizer["SettingsSectionNavigation"]</h2>
+                        <p>@Localizer["SettingsNavigationDescription"]</p>
                     </div>
 
                     <div class="settings-section-content">
                         <div class="settings-navigation-table">
                             <div class="settings-navigation-row settings-navigation-row-header">
-                                <span>Pagina</span>
-                                <span>← Links</span>
-                                <span>↑ Boven</span>
-                                <span>↖ Linksboven</span>
+                                <span>@Localizer["Page"]</span>
+                                <span>@Localizer["SymbolArrowLeft"] @Localizer["DebugNavigationLeft"]</span>
+                                <span>@Localizer["SymbolArrowUp"] @Localizer["DebugNavigationTop"]</span>
+                                <span>@Localizer["SymbolArrowUpLeft"] @Localizer["DebugNavigationTopLeft"]</span>
                             </div>
 
                             @foreach (var navigationPage in Model.NavigationPages
@@ -236,21 +239,21 @@
                                         @Html.CheckBox(
                                             $"NavigationPages[{navigationPage.Key}].ShowBackToLeft",
                                             navigationPage.Value.ShowBackToLeft)
-                                        <span>←</span>
+                                        <span>@Localizer["SymbolArrowLeft"]</span>
                                     </label>
 
                                     <label class="settings-navigation-toggle">
                                         @Html.CheckBox(
                                             $"NavigationPages[{navigationPage.Key}].ShowBackToTop",
                                             navigationPage.Value.ShowBackToTop)
-                                        <span>↑</span>
+                                        <span>@Localizer["SymbolArrowUp"]</span>
                                     </label>
 
                                     <label class="settings-navigation-toggle">
                                         @Html.CheckBox(
                                             $"NavigationPages[{navigationPage.Key}].ShowBackToStart",
                                             navigationPage.Value.ShowBackToStart)
-                                        <span>↖</span>
+                                        <span>@Localizer["SymbolArrowUpLeft"]</span>
                                     </label>
                                 </div>
                             }
@@ -261,14 +264,14 @@
                 <section id="settings-carbonx"
                          class="settings-section">
                     <div class="settings-section-header">
-                        <h2>CarbonX</h2>
-                        <p>Inloggegevens die TestFusion gebruikt om verbinding te maken met CarbonX.</p>
+                        <h2>@Localizer["SettingsSectionCarbonX"]</h2>
+                        <p>@Localizer["SettingsCarbonXDescription"]</p>
                     </div>
 
                     <div class="settings-section-content">
                         <div class="settings-field">
                             <label asp-for="CarbonXEmail">
-                                E-mailadres
+                                @Localizer["SettingsCarbonXEmail"]
                             </label>
 
                             <input asp-for="CarbonXEmail"
@@ -282,13 +285,13 @@
 
                         <div class="settings-field">
                             <label asp-for="NewCarbonXPassword">
-                                Wachtwoord
+                                @Localizer["SettingsCarbonXPassword"]
                             </label>
 
                             <input asp-for="NewCarbonXPassword"
                                    type="password"
                                    autocomplete="new-password"
-                                   placeholder="Nieuw wachtwoord" />
+                                   placeholder="@Localizer["SettingsCarbonXNewPasswordPlaceholder"]" />
 
                             <span asp-validation-for="NewCarbonXPassword"
                                   class="settings-field-error">
@@ -297,7 +300,7 @@
                             @if (Model.HasCarbonXPassword)
                             {
                                 <small>
-                                    Er is al een wachtwoord opgeslagen. Laat dit veld leeg om het bestaande wachtwoord te behouden.
+                                    @Localizer["SettingsCarbonXPasswordStoredDescription"]
                                 </small>
                             }
                         </div>

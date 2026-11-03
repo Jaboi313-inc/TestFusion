@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Tests.Helpers;
 using TestFusion.Web.Controllers;
@@ -11,7 +11,7 @@ public class SettingsControllerTests
     public async Task Index_ReturnsView()
     {
         var settingsService = new TestSettingsService();
-        var controller = new SettingsController(settingsService);
+        var controller = new SettingsController(settingsService, new TestStringLocalizer());
 
         var result = await controller.Index(returnUrl: null);
 
