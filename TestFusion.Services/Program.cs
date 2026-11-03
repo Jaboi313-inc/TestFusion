@@ -31,6 +31,9 @@ var logDirectory = Path.GetFullPath(
 
 Directory.CreateDirectory(logDirectory);
 
+var loggingSettings = builder.Configuration.GetSection("LoggingSettings").Get<LoggingSettings>() ?? new LoggingSettings();
+var removedLogFiles = LogFileMaintenance.Cleanup(logDirectory, loggingSettings.RetentionDays);
+
 var fileLogger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .Enrich.FromLogContext()
@@ -38,7 +41,7 @@ var fileLogger = new LoggerConfiguration()
         new CompactJsonFormatter(),
         Path.Combine(logDirectory, "worker-.jsonl"),
         rollingInterval: RollingInterval.Day,
-        retainedFileCountLimit: 30,
+        retainedFileCountLimit: Math.Max(loggingSettings.RetentionDays, 1),
         flushToDiskInterval: TimeSpan.FromSeconds(1))
     .CreateLogger();
 
@@ -49,6 +52,9 @@ builder.Services.Configure<SiteSettings>(
 
 builder.Services.Configure<Intervals>(
     builder.Configuration.GetSection("Intervals"));
+
+builder.Services.Configure<LoggingSettings>(
+    builder.Configuration.GetSection("LoggingSettings"));
 
 builder.Services
     .AddDataProtection()
@@ -69,4 +75,9 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("PostGresConnection")));
 
 var host = builder.Build();
+
+if (removedLogFiles > 0) {
+    host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("LogRetention").LogInformation("Log retention cleanup removed {RemovedCount} files older than {RetentionDays} days", removedLogFiles, loggingSettings.RetentionDays);
+}
+
 host.Run();

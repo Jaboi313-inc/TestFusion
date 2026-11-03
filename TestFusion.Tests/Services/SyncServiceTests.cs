@@ -2,9 +2,11 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
 using TestFusion.Services.Services;
+using TestFusion.Services.Models;
 using TestFusion.Tests.Helpers;
 
 namespace TestFusion.Tests.Services;
@@ -132,6 +134,7 @@ public class SyncServiceTests
         return new SyncService(
             provider.GetRequiredService<IServiceScopeFactory>(),
             NullLogger<SyncService>.Instance,
-            new JSONService(new TimeZoneService()));
+            new JSONService(new TimeZoneService()),
+            Options.Create(new LoggingSettings()));
     }
 }

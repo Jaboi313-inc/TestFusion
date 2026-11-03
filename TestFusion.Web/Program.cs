@@ -11,6 +11,7 @@ using TestFusion.Data;
 using TestFusion.Services.Models;
 using TestFusion.Services.Services;
 using TestFusion.Web.Data;
+using TestFusion.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,9 @@ var logDirectory = Path.GetFullPath(
 
 Directory.CreateDirectory(logDirectory);
 
+var loggingSettings = builder.Configuration.GetSection("LoggingSettings").Get<LoggingSettings>() ?? new LoggingSettings();
+var removedLogFiles = LogFileMaintenance.Cleanup(logDirectory, loggingSettings.RetentionDays);
+
 var fileLogger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .Enrich.FromLogContext()
@@ -41,7 +45,7 @@ var fileLogger = new LoggerConfiguration()
         new CompactJsonFormatter(),
         Path.Combine(logDirectory, "web-.jsonl"),
         rollingInterval: RollingInterval.Day,
-        retainedFileCountLimit: 30,
+        retainedFileCountLimit: Math.Max(loggingSettings.RetentionDays, 1),
         flushToDiskInterval: TimeSpan.FromSeconds(1))
     .CreateLogger();
 
@@ -98,7 +102,14 @@ builder.Services.Configure<SiteSettings>(
 builder.Services.Configure<Intervals>(
     builder.Configuration.GetSection("Intervals"));
 
+builder.Services.Configure<LoggingSettings>(
+    builder.Configuration.GetSection("LoggingSettings"));
+
 var app = builder.Build();
+
+if (removedLogFiles > 0) {
+    app.Logger.LogInformation("Log retention cleanup removed {RemovedCount} files older than {RetentionDays} days", removedLogFiles, loggingSettings.RetentionDays);
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -127,6 +138,7 @@ app.UseRequestLocalization(localizationOptions);
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

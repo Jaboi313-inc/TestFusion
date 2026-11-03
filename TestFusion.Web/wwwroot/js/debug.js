@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const rowCheckboxes = document.querySelectorAll(".row-checkbox");
     const selectAllRows = document.getElementById("select-all-rows");
     const deleteSelectedButton = document.getElementById("delete-selected");
@@ -49,7 +49,6 @@
             }
 
             const isOpen = !row.hidden;
-
             row.hidden = isOpen;
             button.setAttribute("aria-expanded", (!isOpen).toString());
 
@@ -62,23 +61,40 @@
     });
 
     const logEntries = document.querySelectorAll(".log-entry");
-    const logSourceFilter = document.getElementById("log-source-filter");
+    const logApplicationFilter = document.getElementById("log-application-filter");
+    const logCategoryFilter = document.getElementById("log-category-filter");
     const logLevelFilter = document.getElementById("log-level-filter");
     const logSearch = document.getElementById("log-search");
     const visibleLogCount = document.getElementById("visible-log-count");
     const noVisibleLogs = document.getElementById("no-visible-logs");
+    const exportLogsTxt = document.getElementById("export-logs-txt");
+    const exportLogsJson = document.getElementById("export-logs-json");
+
+    function updateExportLinks() {
+        [exportLogsTxt, exportLogsJson].forEach(link => {
+            if (!link?.dataset.exportBase) return;
+            const url = new URL(link.dataset.exportBase, window.location.origin);
+            if (logApplicationFilter?.value) url.searchParams.set("application", logApplicationFilter.value);
+            if (logCategoryFilter?.value) url.searchParams.set("category", logCategoryFilter.value);
+            if (logLevelFilter?.value) url.searchParams.set("level", logLevelFilter.value);
+            if (logSearch?.value.trim()) url.searchParams.set("search", logSearch.value.trim());
+            link.href = url.pathname + url.search;
+        });
+    }
 
     function updateLogFilters() {
-        const source = logSourceFilter?.value ?? "";
+        const application = logApplicationFilter?.value ?? "";
+        const category = logCategoryFilter?.value ?? "";
         const level = logLevelFilter?.value ?? "";
         const search = (logSearch?.value ?? "").trim().toLowerCase();
         let visibleCount = 0;
 
         logEntries.forEach(entry => {
-            const matchesSource = source === "" || entry.dataset.source === source;
+            const matchesApplication = application === "" || entry.dataset.application === application;
+            const matchesCategory = category === "" || entry.dataset.category === category;
             const matchesLevel = level === "" || entry.dataset.level === level;
             const matchesSearch = search === "" || entry.textContent.toLowerCase().includes(search);
-            const visible = matchesSource && matchesLevel && matchesSearch;
+            const visible = matchesApplication && matchesCategory && matchesLevel && matchesSearch;
 
             entry.style.display = visible ? "" : "none";
 
@@ -94,9 +110,12 @@
         if (noVisibleLogs) {
             noVisibleLogs.style.display = visibleCount === 0 ? "block" : "none";
         }
+
+        updateExportLinks();
     }
 
-    logSourceFilter?.addEventListener("change", updateLogFilters);
+    logApplicationFilter?.addEventListener("change", updateLogFilters);
+    logCategoryFilter?.addEventListener("change", updateLogFilters);
     logLevelFilter?.addEventListener("change", updateLogFilters);
     logSearch?.addEventListener("input", updateLogFilters);
 

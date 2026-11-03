@@ -1,9 +1,11 @@
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
 using TestFusion.Core.Interfaces;
 using TestFusion.Core.Models;
 using TestFusion.Core.Models.TestResult;
 using TestFusion.Core.Models.WebModels;
 using TestFusion.Services.Services;
+using TestFusion.Services.Models;
 using TestFusion.Tests.Helpers;
 using TestFusion.Web.Controllers;
 
@@ -168,7 +170,7 @@ public class AnalysisControllerTests
     }
 
     private static AnalysisController CreateController(TestFusion.Data.AppDbContext db)
-        => new(db, new TestStringLocalizer(), new TimeZoneService(), new TestSettingsService());
+        => new(db, new TestStringLocalizer(), new TimeZoneService(), new TestSettingsService(), Microsoft.Extensions.Logging.Abstractions.NullLogger<AnalysisController>.Instance, Options.Create(new LoggingSettings()));
 
     private static TestFusion.Core.Models.TestReportModel ToReport(TestResultModel result)
     {

@@ -1,4 +1,4 @@
-﻿@using System.Text.Json
+@using System.Text.Json
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
 @model TestFusion.Web.Models.DebugViewModel
@@ -584,182 +584,110 @@
         </div>
 
         <div class="log-filters">
-
             <div class="log-filter">
-
-                <label for="log-source-filter">
-                    @Localizer["Source"]
-                </label>
-
-                <select id="log-source-filter"
-                        class="debug-input">
-
-                    <option value="">
-                        @Localizer["All"] (@totalLogCount)
-                    </option>
-
-                    <option value="Web">
-                        @Localizer["Web"] (@webLogCount)
-                    </option>
-
-                    <option value="Worker">
-                        @Localizer["Worker"] (@workerLogCount)
-                    </option>
-
+                <label for="log-application-filter">Application</label>
+                <select id="log-application-filter" class="debug-input">
+                    <option value="">All (@totalLogCount)</option>
+                    <option value="Web">Web (@webLogCount)</option>
+                    <option value="Worker">Worker (@workerLogCount)</option>
                 </select>
-
             </div>
 
             <div class="log-filter">
-
-                <label for="log-level-filter">
-                    @Localizer["Level"]
-                </label>
-
-                <select id="log-level-filter"
-                        class="debug-input">
-
-                    <option value="">
-                        @Localizer["All"] (@totalLogCount)
-                    </option>
-
-                    <option value="Information">
-                        @Localizer["DebugLogInformation"] (@informationLogCount)
-                    </option>
-
-                    <option value="Warning">
-                        @Localizer["DebugLogWarning"] (@warningLogCount)
-                    </option>
-
-                    <option value="Error">
-                        @Localizer["DebugLogError"] (@errorLogCount)
-                    </option>
-
-                    <option value="Debug">
-                        @Localizer["DebugLogDebug"] (@debugLogCount)
-                    </option>
-
+                <label for="log-category-filter">Category</label>
+                <select id="log-category-filter" class="debug-input">
+                    <option value="">All (@totalLogCount)</option>
+                    @foreach (var category in Model.Logs.GroupBy(x => x.Category).OrderBy(x => x.Key))
+                    {
+                        <option value="@category.Key">@category.Key (@category.Count())</option>
+                    }
                 </select>
+            </div>
 
+            <div class="log-filter">
+                <label for="log-level-filter">Level</label>
+                <select id="log-level-filter" class="debug-input">
+                    <option value="">All (@totalLogCount)</option>
+                    <option value="Information">Information (@informationLogCount)</option>
+                    <option value="Warning">Warning (@warningLogCount)</option>
+                    <option value="Error">Error (@errorLogCount)</option>
+                    <option value="Debug">Debug (@debugLogCount)</option>
+                </select>
             </div>
 
             <div class="log-filter log-filter-search">
-
-                <label for="log-search">
-                    @Localizer["Search"]
-                </label>
-
-                <input type="text"
-                       id="log-search"
-                       class="debug-input"
-                       placeholder="@Localizer["DebugLogSearchPlaceholder"]" />
-
+                <label for="log-search">Search</label>
+                <input type="text" id="log-search" class="debug-input" placeholder="Search logs..." />
             </div>
-
         </div>
 
-        <div class="log-count">
-
-            @Localizer["Total"]:
-
-            <span id="visible-log-count">
-                @Model.Logs.Count
-            </span>
-
+        <div class="log-toolbar">
+            <div class="log-count">Showing <span id="visible-log-count">@Model.Logs.Count</span> of @Model.Logs.Count log entries</div>
+            <div class="log-export-actions">
+                <a id="export-logs-txt" class="btn" data-export-base="@Url.Action("ExportLogs", "Debug", new { format = "txt" })">Export TXT</a>
+                <a id="export-logs-json" class="btn" data-export-base="@Url.Action("ExportLogs", "Debug", new { format = "json" })">Export JSON</a>
+            </div>
         </div>
 
-        <div id="log-list"
-             class="log-list">
-
+        <div id="log-list" class="log-list">
             @foreach (var log in Model.Logs)
             {
-                var levelClass =
-                    log.Level.ToLowerInvariant() switch
-                    {
-                        "error" or "fatal" => "log-entry-error",
-                        "warning" => "log-entry-warning",
-                        "debug" or "verbose" => "log-entry-debug",
-                        _ => "log-entry-information"
-                    };
+                var levelClass = log.Level.ToLowerInvariant() switch
+                {
+                    "error" or "fatal" => "log-entry-error",
+                    "warning" => "log-entry-warning",
+                    "debug" or "verbose" => "log-entry-debug",
+                    _ => "log-entry-information"
+                };
 
-                <article class="log-entry @levelClass"
-                         data-source="@log.Application"
-                         data-level="@log.Level">
-
+                <article class="log-entry @levelClass" data-application="@log.Application" data-category="@log.Category" data-level="@log.Level">
                     <div class="log-entry-main">
-
-                        <time class="log-time"
-                              datetime="@log.Timestamp.ToString("O")">
-                            @log.Timestamp.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss")
-                        </time>
-
-                        <span class="log-application">
-                            @log.Application
-                        </span>
-
-                        <span class="log-level">
-                            @log.Level
-                        </span>
-
-                        <span class="log-source">
-                            @log.SourceContext
-                        </span>
-
-                        <span class="log-message">
-                            @log.Message
-                        </span>
-
+                        <time class="log-time" datetime="@log.Timestamp.ToString("O")">@log.Timestamp.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss")</time>
+                        <span class="log-category">@log.Category</span>
+                        <span class="log-level">@log.Level</span>
+                        <span class="log-message">@log.Message</span>
                     </div>
 
-                    @if (!string.IsNullOrWhiteSpace(log.Exception) ||
-                         log.Properties.Count > 0)
-                    {
-                        <details class="log-details">
+                    <details class="log-details">
+                        <summary>Details</summary>
+                        <div class="log-detail-block">
+                            <dl class="log-properties log-technical-properties">
+                                @if (log.DurationMs.HasValue)
+                                {
+                                    <dt>Duration</dt>
+                                    <dd>@log.DurationMs.Value ms</dd>
+                                }
+                                <dt>Application</dt>
+                                <dd>@log.Application</dd>
+                                <dt>Source</dt>
+                                <dd>@log.SourceContext</dd>
+                            </dl>
+                        </div>
 
-                            <summary>
-                                @Localizer["DebugLogDetails"]
-                            </summary>
+                        @if (!string.IsNullOrWhiteSpace(log.Exception))
+                        {
+                            <div class="log-detail-block">
+                                <strong>Exception</strong>
+                                <pre>@log.Exception</pre>
+                            </div>
+                        }
 
-                            @if (!string.IsNullOrWhiteSpace(log.Exception))
-                            {
-                                <div class="log-detail-block">
-
-                                    <strong>
-                                        @Localizer["DebugLogException"]
-                                    </strong>
-
-                                    <pre>@log.Exception</pre>
-
-                                </div>
-                            }
-
-                            @if (log.Properties.Count > 0)
-                            {
-                                <div class="log-detail-block">
-
-                                    <strong>
-                                        @Localizer["DebugLogProperties"]
-                                    </strong>
-
-                                    <dl class="log-properties">
-
-                                        @foreach (var property in log.Properties)
-                                        {
-                                            <dt>@property.Key</dt>
-                                            <dd>@property.Value</dd>
-                                        }
-
-                                    </dl>
-
-                                </div>
-                            }
-
-                        </details>
-                    }
-
+                        @if (log.Properties.Count > 0)
+                        {
+                            <div class="log-detail-block">
+                                <strong>Properties</strong>
+                                <dl class="log-properties">
+                                    @foreach (var property in log.Properties)
+                                    {
+                                        <dt>@property.Key</dt>
+                                        <dd>@property.Value</dd>
+                                    }
+                                </dl>
+                            </div>
+                        }
+                    </details>
                 </article>
             }
-
         </div>
 
         <p id="no-visible-logs"
