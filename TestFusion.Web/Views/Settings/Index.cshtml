@@ -1,5 +1,6 @@
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
+@using TestFusion.Core.Enums
 @inject IStringLocalizer<SharedResource> Localizer
 @model TestFusion.Core.Models.WebModels.SettingsViewModel
 
@@ -150,6 +151,15 @@
                                     </span>
                                 </label>
 
+                                <label class="settings-checkbox">
+                                    <input asp-for="ShowFullySkippedTests" />
+
+                                    <span>
+                                        <strong>@Localizer["SettingsShowFullySkippedTests"]</strong>
+                                        <small>@Localizer["SettingsShowFullySkippedTestsDescription"]@Localizer["SymbolDot"]</small>
+                                    </span>
+                                </label>
+
                                 <div class="settings-subgroup">
                                     <div class="settings-subgroup-header">
                                         <h4>@Localizer["SettingsSectionCustomerGrouping"]</h4>
@@ -205,6 +215,24 @@
                             </div>
 
                             <div class="settings-subsection-content">
+                                <div class="settings-field">
+                                    <label asp-for="PdfDefaultLayoutMode">
+                                        @Localizer["SettingsPdfDefaultLayout"]
+                                    </label>
+
+                                    <select asp-for="PdfDefaultLayoutMode"
+                                            class="form-select">
+                                        @foreach (var layoutMode in Enum.GetValues<PdfLayoutModeEnum>())
+                                        {
+                                            <option value="@layoutMode">
+                                                @Localizer[$"PDFOption{layoutMode}"]
+                                            </option>
+                                        }
+                                    </select>
+
+                                    <small>@Localizer["SettingsPdfDefaultLayoutDescription"]@Localizer["SymbolDot"]</small>
+                                </div>
+
                                 <div class="settings-field">
                                     <label asp-for="PdfMaxInjectorsPerPage">
                                         @Localizer["SettingsPdfMaxInjectorsPerPage"]

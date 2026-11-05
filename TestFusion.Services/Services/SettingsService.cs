@@ -28,10 +28,12 @@ public class SettingsService : ISettingsService {
         return new SettingsViewModel {
             ShowDebugInformation = settings.ShowDebugInformation,
             GroupTestsByBaseName = settings.GroupTestsByBaseName,
+            ShowFullySkippedTests = settings.ShowFullySkippedTests,
             MatchCustomerName = settings.MatchCustomerName,
             MatchCustomerPhone = settings.MatchCustomerPhone,
             MatchCustomerMail = settings.MatchCustomerMail,
             MatchCustomerNotes = settings.MatchCustomerNotes,
+            PdfDefaultLayoutMode = settings.PdfDefaultLayoutMode,
             PdfMaxInjectorsPerPage = settings.PdfMaxInjectorsPerPage,
             NavigationPages = GetNavigationPages(settings),
             CarbonXEmail = string.IsNullOrWhiteSpace(settings.CarbonXEmailEncrypted) ? null : _secretProtector.Unprotect(settings.CarbonXEmailEncrypted),
@@ -42,17 +44,21 @@ public class SettingsService : ISettingsService {
     public async Task UpdateAsync(SettingsViewModel model) {
         var settings = await GetSettingsAsync();
         LogSettingChange("Group tests by base name", settings.GroupTestsByBaseName, model.GroupTestsByBaseName);
+        LogSettingChange("Show fully skipped tests", settings.ShowFullySkippedTests, model.ShowFullySkippedTests);
         LogSettingChange("Match customer name", settings.MatchCustomerName, model.MatchCustomerName);
         LogSettingChange("Match customer phone", settings.MatchCustomerPhone, model.MatchCustomerPhone);
         LogSettingChange("Match customer email", settings.MatchCustomerMail, model.MatchCustomerMail);
         LogSettingChange("Match customer notes", settings.MatchCustomerNotes, model.MatchCustomerNotes);
+        LogSettingChange("PDF default layout mode", settings.PdfDefaultLayoutMode, model.PdfDefaultLayoutMode);
         LogSettingChange("PDF injectors per page", settings.PdfMaxInjectorsPerPage, model.PdfMaxInjectorsPerPage);
 
         settings.GroupTestsByBaseName = model.GroupTestsByBaseName;
+        settings.ShowFullySkippedTests = model.ShowFullySkippedTests;
         settings.MatchCustomerName = model.MatchCustomerName;
         settings.MatchCustomerPhone = model.MatchCustomerPhone;
         settings.MatchCustomerMail = model.MatchCustomerMail;
         settings.MatchCustomerNotes = model.MatchCustomerNotes;
+        settings.PdfDefaultLayoutMode = model.PdfDefaultLayoutMode;
         settings.PdfMaxInjectorsPerPage = model.PdfMaxInjectorsPerPage;
 
         var navigationPages = GetNavigationPages(settings);

@@ -1,6 +1,7 @@
 ﻿@using System.Globalization
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
+@using TestFusion.Core.Enums
 @using TestFusion.Core.Interfaces
 @using TestFusion.Core.Models.TestResult
 @using TestFusion.Core.Models.WebModels
@@ -12,12 +13,16 @@
 @{
     ViewData["Title"] = Localizer["PageTitleAnalysis"];
 
-    var selectedLayoutMode =
-        Context.Request.Query["layoutMode"].FirstOrDefault()
-        ?? "Compact";
+    var selectedLayoutMode = Model.Settings.PdfDefaultLayoutMode;
+    var requestedLayoutMode = Context.Request.Query["layoutMode"].FirstOrDefault();
+
+    if (Enum.TryParse<PdfLayoutModeEnum>(requestedLayoutMode, true, out var parsedLayoutMode) && Enum.IsDefined(parsedLayoutMode)) {
+        selectedLayoutMode = parsedLayoutMode;
+    }
 
     var showDebugInformation = Model.Settings.ShowDebugInformation;
     var groupTestsByBaseName = Model.Settings.GroupTestsByBaseName;
+    var showFullySkippedTests = Model.Settings.ShowFullySkippedTests;
 
     var matchCustomerName = Model.Settings.MatchCustomerName;
     var matchCustomerPhone = Model.Settings.MatchCustomerPhone;
@@ -34,8 +39,7 @@
             matchCustomerPhone,
             matchCustomerMail,
             matchCustomerNotes))
-        .Select(group => new
-        {
+        .Select(group => new {
             Injectors = group.ToList()
         })
         .ToList();
@@ -47,8 +51,7 @@
     var customerSegmentStartIndexes = new HashSet<int>();
     var customerStartIndex = 0;
 
-    foreach (var group in customerGroups)
-    {
+    foreach (var group in customerGroups) {
         customerSegmentStartIndexes.Add(customerStartIndex);
         customerStartIndex += group.Injectors.Count;
     }
@@ -58,13 +61,10 @@
             test => NormalizeTestName(test.TestName, groupTestsByBaseName),
             StringComparer.OrdinalIgnoreCase)
         .Select(group => group.First())
+        .Where(test => showFullySkippedTests || !IsFullySkippedTest(test, Model.Injectors, groupTestsByBaseName))
         .ToList();
 
-    var comparisonValidation =
-        ValidateComparison(
-            Model.Injectors,
-            Localizer,
-            groupTestsByBaseName);
+    var comparisonValidation = ValidateComparison(Model.Injectors, Localizer, groupTestsByBaseName);
 }
 
 @functions {
@@ -932,6 +932,17 @@
                     " ")
                 .Trim();
     }
+
+    public bool IsFullySkippedTest(TestModel test, List<TestResultViewModel> injectors, bool groupTestsByBaseName) {
+        var normalizedTestName = NormalizeTestName(test.TestName, groupTestsByBaseName);
+
+        var injectorTests = injectors
+            .Select(injector => injector.NormalizedTests
+                .FirstOrDefault(injectorTest => NormalizeTestName(injectorTest.TestName, groupTestsByBaseName) == normalizedTestName))
+            .ToList();
+
+        return injectorTests.Count > 0 && injectorTests.All(injectorTest => injectorTest != null && injectorTest.IsSkipped);
+    }
 }
 
 <link rel="stylesheet"
@@ -960,49 +971,17 @@
                     <select name="layoutMode"
                             id="layoutMode"
                             class="form-select">
-
-                        @if (selectedLayoutMode == "Compact")
-                        {
-                            <option value="Compact"
-                                    selected>
-                                @Localizer["PDFOptionCompact"]
-                            </option>
-                        }
-                        else
-                        {
-                            <option value="Compact">
-                                @Localizer["PDFOptionCompact"]
-                            </option>
-                        }
-
-                        @if (selectedLayoutMode ==
-                             "KeepTestTogether")
-                        {
-                            <option value="KeepTestTogether"
-                                    selected>
-                                @Localizer["PDFOptionKeepTestTogether"]@Localizer["SymbolDot"]
-                            </option>
-                        }
-                        else
-                        {
-                            <option value="KeepTestTogether">
-                                @Localizer["PDFOptionKeepTestTogether"]@Localizer["SymbolDot"]
-                            </option>
-                        }
-
-                        @if (selectedLayoutMode ==
-                             "OneTestPerPage")
-                        {
-                            <option value="OneTestPerPage"
-                                    selected>
-                                @Localizer["PDFOptionOneTestPerPage"]
-                            </option>
-                        }
-                        else
-                        {
-                            <option value="OneTestPerPage">
-                                @Localizer["PDFOptionOneTestPerPage"]
-                            </option>
+                        @foreach (var layoutMode in Enum.GetValues<PdfLayoutModeEnum>()) {
+                            if (layoutMode == selectedLayoutMode) {
+                                <option value="@layoutMode" selected>
+                                    @Localizer[$"PDFOption{layoutMode}"]
+                                </option>
+                            }
+                            else {
+                                <option value="@layoutMode">
+                                    @Localizer[$"PDFOption{layoutMode}"]
+                                </option>
+                            }
                         }
                     </select>
 

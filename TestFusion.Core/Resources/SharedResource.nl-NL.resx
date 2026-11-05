@@ -736,4 +736,16 @@
   <data name="SettingsSectionPdfExport" xml:space="preserve">
     <value>PDF-export</value>
   </data>
+  <data name="SettingsShowFullySkippedTests" xml:space="preserve">
+    <value>Volledig overgeslagen tests tonen</value>
+  </data>
+  <data name="SettingsShowFullySkippedTestsDescription" xml:space="preserve">
+    <value>Toont tests waarbij alle geselecteerde verstuivers zijn overgeslagen</value>
+  </data>
+  <data name="SettingsPdfDefaultLayout" xml:space="preserve">
+    <value>Standaard PDF-indeling</value>
+  </data>
+  <data name="SettingsPdfDefaultLayoutDescription" xml:space="preserve">
+    <value>Bepaalt welke PDF-indeling standaard geselecteerd is bij het openen van een analyse</value>
+  </data>
 </root>

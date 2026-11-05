@@ -736,4 +736,16 @@
   <data name="SettingsSectionPdfExport" xml:space="preserve">
     <value>PDF export</value>
   </data>
+  <data name="SettingsShowFullySkippedTests" xml:space="preserve">
+    <value>Show fully skipped tests</value>
+  </data>
+  <data name="SettingsShowFullySkippedTestsDescription" xml:space="preserve">
+    <value>Shows tests where all selected injectors are skipped</value>
+  </data>
+  <data name="SettingsPdfDefaultLayout" xml:space="preserve">
+    <value>Default PDF layout</value>
+  </data>
+  <data name="SettingsPdfDefaultLayoutDescription" xml:space="preserve">
+    <value>Determines which PDF layout is selected by default when opening an analysis</value>
+  </data>
 </root>

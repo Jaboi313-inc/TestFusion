@@ -54,10 +54,16 @@ namespace TestFusion.Data.Migrations
                     b.Property<string>("PageNavigationSettingsJson")
                         .HasColumnType("jsonb");
 
+                    b.Property<int>("PdfDefaultLayoutMode")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PdfMaxInjectorsPerPage")
                         .HasColumnType("integer");
 
                     b.Property<bool>("ShowDebugInformation")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ShowFullySkippedTests")
                         .HasColumnType("boolean");
 
                     b.HasKey("Id");
