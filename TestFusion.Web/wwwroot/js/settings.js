@@ -3,7 +3,7 @@
     const saveButton = document.getElementById("settings-save");
     const navigationLinks = Array.from(document.querySelectorAll(".settings-navigation a"));
     const sections = Array.from(document.querySelectorAll(".settings-section, .settings-subsection[id]"));
-    const message = document.querySelector(".settings-message-temporary");
+    const messages = document.querySelectorAll(".settings-message-temporary");
 
     let isNavigationScrolling = false;
     let navigationScrollTimeout = null;
@@ -21,7 +21,7 @@
         form.addEventListener("change", updateSaveButton);
     }
 
-    if (message) {
+    messages.forEach(function (message) {
         const closeButton = message.querySelector(".settings-message-close");
         const duration = parseInt(message.dataset.duration || "5000", 10);
         let hideTimeout;
@@ -46,7 +46,7 @@
         if (closeButton) {
             closeButton.addEventListener("click", hideMessage);
         }
-    }
+    });
 
     function getNavbarHeight() {
         const value = getComputedStyle(document.documentElement).getPropertyValue("--navbar-height");

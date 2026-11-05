@@ -57,8 +57,21 @@
 
         @if (!ViewData.ModelState.IsValid)
         {
-            <div asp-validation-summary="All"
-                 class="settings-validation">
+            <div class="settings-message settings-message-error settings-message-temporary"
+                 data-duration="@successDuration"
+                 role="alert"
+                 aria-live="assertive">
+                <div class="settings-message-content">
+                    <div asp-validation-summary="All"></div>
+
+                    <button type="button"
+                            class="settings-message-close"
+                            aria-label="@Localizer["SettingsMessageClose"]">
+                        @Localizer["SymbolCross"]
+                    </button>
+                </div>
+
+                <div class="settings-message-progress"></div>
             </div>
         }
 

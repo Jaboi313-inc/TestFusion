@@ -345,6 +345,12 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
+.settings-message-error {
+    background: #fff0ee;
+    border-color: #f0b8b2;
+    color: #b42318;
+}
+
 .settings-message-content {
     display: flex;
     align-items: center;
@@ -352,6 +358,21 @@
     gap: 16px;
     padding: 12px 14px;
 }
+
+    .settings-message-content .validation-summary-errors {
+        margin: 0;
+    }
+
+        .settings-message-content .validation-summary-errors ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .settings-message-content .validation-summary-errors li {
+            margin: 0;
+            padding: 0;
+        }
 
 .settings-message-close {
     padding: 0;
