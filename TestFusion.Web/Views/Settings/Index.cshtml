@@ -1,6 +1,7 @@
 @using Microsoft.Extensions.Localization
 @using TestFusion.Core
 @using TestFusion.Core.Enums
+@using TestFusion.Core.Models
 @inject IStringLocalizer<SharedResource> Localizer
 @model TestFusion.Core.Models.WebModels.SettingsViewModel
 
@@ -47,7 +48,8 @@
 
     <form asp-action="Index"
           method="post"
-          class="settings-form">
+          class="settings-form"
+          novalidate>
         @Html.AntiForgeryToken()
 
         <input asp-for="ReturnUrl"
@@ -240,14 +242,20 @@
 
                                     <input asp-for="PdfMaxInjectorsPerPage"
                                            type="number"
-                                           min="1"
-                                           max="10" />
+                                           min="@ApplicationSettings.MinPdfInjectorsPerPage"
+                                           max="@ApplicationSettings.MaxPdfInjectorsPerPage" />
 
                                     <span asp-validation-for="PdfMaxInjectorsPerPage"
                                           class="settings-field-error">
                                     </span>
 
-                                    <small>@Localizer["SettingsPdfMaxInjectorsPerPageDescription"]@Localizer["SymbolDot"]</small>
+                                    <small>
+                                        @Localizer[
+                                            "SettingsPdfMaxInjectorsPerPageDescription",
+                                            ApplicationSettings.MinPdfInjectorsPerPage,
+                                            ApplicationSettings.MaxPdfInjectorsPerPage
+                                        ]@Localizer["SymbolDot"]
+                                    </small>
                                 </div>
                             </div>
                         </div>

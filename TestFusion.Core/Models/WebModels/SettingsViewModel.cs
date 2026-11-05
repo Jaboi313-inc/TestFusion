@@ -14,7 +14,10 @@ public class SettingsViewModel {
     public bool MatchCustomerNotes { get; set; }
     public PdfLayoutModeEnum PdfDefaultLayoutMode { get; set; }
 
-    [Range(1, 10, ErrorMessage = "Het aantal verstuivers moet tussen 1 en 10 liggen.")]
+    [Range(
+        ApplicationSettings.MinPdfInjectorsPerPage,
+        ApplicationSettings.MaxPdfInjectorsPerPage,
+        ErrorMessage = "SettingsPdfMaxInjectorsPerPageRangeError")]
     public int PdfMaxInjectorsPerPage { get; set; }
 
     public Dictionary<string, PageNavigationSettings> NavigationPages { get; set; } = [];

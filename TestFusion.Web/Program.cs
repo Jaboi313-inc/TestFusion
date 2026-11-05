@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Console;
 using Serilog;
 using Serilog.Formatting.Compact;
 using System.Globalization;
+using TestFusion.Core;
 using TestFusion.Core.Interfaces;
 using TestFusion.Data;
 using TestFusion.Services.Models;
@@ -87,7 +88,10 @@ builder.Services.AddLocalization(options =>
 builder.Services
     .AddControllersWithViews()
     .AddViewLocalization()
-    .AddDataAnnotationsLocalization();
+    .AddDataAnnotationsLocalization(options => {
+        options.DataAnnotationLocalizerProvider = (type, factory) =>
+            factory.Create(typeof(SharedResource));
+    });
 
 builder.Services.AddRazorPages();
 
