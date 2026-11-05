@@ -5,9 +5,33 @@
     const sections = Array.from(document.querySelectorAll(".settings-section, .settings-subsection[id]"));
     const messages = document.querySelectorAll(".settings-message-temporary");
 
+    const analysisValidationEnabled = document.getElementById("analysis-validation-enabled");
+    const analysisValidationDisplayMode = document.getElementById("analysis-validation-display-mode");
+    const analysisValidationDisplayModeHidden = document.getElementById("analysis-validation-display-mode-hidden");
+
     let isNavigationScrolling = false;
     let navigationScrollTimeout = null;
     let clickedSectionId = null;
+
+    if (analysisValidationEnabled && analysisValidationDisplayMode && analysisValidationDisplayModeHidden) {
+        function updateAnalysisValidationState() {
+            const enabled = analysisValidationEnabled.checked;
+
+            analysisValidationDisplayMode.disabled = !enabled;
+            analysisValidationDisplayModeHidden.disabled = enabled;
+            analysisValidationDisplayModeHidden.value = analysisValidationDisplayMode.value;
+
+            analysisValidationDisplayMode.setAttribute("aria-disabled", enabled ? "false" : "true");
+        }
+
+        analysisValidationEnabled.addEventListener("change", updateAnalysisValidationState);
+
+        analysisValidationDisplayMode.addEventListener("change", function () {
+            analysisValidationDisplayModeHidden.value = analysisValidationDisplayMode.value;
+        });
+
+        updateAnalysisValidationState();
+    }
 
     if (form && saveButton) {
         const getFormState = () => new URLSearchParams(new FormData(form)).toString();

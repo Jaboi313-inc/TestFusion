@@ -258,6 +258,21 @@
     gap: 16px;
 }
 
+.settings-option-group {
+    padding: 16px;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.settings-option-group-child {
+    margin-top: 14px;
+    margin-left: 30px;
+    padding: 12px 14px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
 .settings-checkbox {
     display: flex;
     align-items: flex-start;
@@ -319,6 +334,13 @@
         .settings-field input[type="number"] {
             width: 110px;
         }
+
+    .settings-field select:disabled {
+        background: #eeeeee;
+        color: #777;
+        cursor: not-allowed;
+        opacity: 1;
+    }
 
 .settings-field-error,
 .settings-validation {
@@ -548,6 +570,15 @@
 
     .settings-subsection {
         padding: 15px;
+    }
+
+    .settings-option-group {
+        padding: 14px;
+    }
+
+    .settings-option-group-child {
+        margin-left: 18px;
+        padding: 10px 12px;
     }
 
     .settings-message {

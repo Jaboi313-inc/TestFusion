@@ -175,31 +175,48 @@
                                     </span>
                                 </label>
 
-                                <label class="settings-checkbox">
-                                    <input asp-for="AnalysisValidationEnabled" />
+                                <div class="settings-option-group">
+                                    <label class="settings-checkbox">
+                                        <input asp-for="AnalysisValidationEnabled"
+                                               id="analysis-validation-enabled"
+                                               aria-controls="analysis-validation-options" />
 
-                                    <span>
-                                        <strong>@Localizer["SettingsAnalysisValidationEnabled"]</strong>
-                                        <small>@Localizer["SettingsAnalysisValidationEnabledDescription"]@Localizer["SymbolDot"]</small>
-                                    </span>
-                                </label>
-
-                                <div class="settings-field">
-                                    <label asp-for="AnalysisValidationDisplayMode">
-                                        @Localizer["SettingsAnalysisValidationDisplayMode"]
+                                        <span>
+                                            <strong>@Localizer["SettingsAnalysisValidationEnabled"]</strong>
+                                            <small>@Localizer["SettingsAnalysisValidationEnabledDescription"]@Localizer["SymbolDot"]</small>
+                                        </span>
                                     </label>
 
-                                    <select asp-for="AnalysisValidationDisplayMode"
-                                            class="form-select">
-                                        @foreach (var displayMode in Enum.GetValues<AnalysisValidationDisplayModeEnum>())
-                                        {
-                                            <option value="@displayMode">
-                                                @Localizer[$"AnalysisValidationDisplayMode{displayMode}"]
-                                            </option>
-                                        }
-                                    </select>
+                                    <div id="analysis-validation-options"
+                                         class="settings-option-group-child">
+                                        <div class="settings-field">
+                                            <label asp-for="AnalysisValidationDisplayMode">
+                                                @Localizer["SettingsAnalysisValidationDisplayMode"]
+                                            </label>
 
-                                    <small>@Localizer["SettingsAnalysisValidationDisplayModeDescription"]@Localizer["SymbolDot"]</small>
+                                            <select asp-for="AnalysisValidationDisplayMode"
+                                                    id="analysis-validation-display-mode"
+                                                    class="form-select"
+                                                    aria-describedby="analysis-validation-display-description">
+                                                @foreach (var displayMode in Enum.GetValues<AnalysisValidationDisplayModeEnum>())
+                                                {
+                                                    <option value="@displayMode">
+                                                        @Localizer[$"AnalysisValidationDisplayMode{displayMode}"]
+                                                    </option>
+                                                }
+                                            </select>
+
+                                            <input type="hidden"
+                                                   id="analysis-validation-display-mode-hidden"
+                                                   name="AnalysisValidationDisplayMode"
+                                                   value="@Model.AnalysisValidationDisplayMode"
+                                                   disabled />
+
+                                            <small id="analysis-validation-display-description">
+                                                @Localizer["SettingsAnalysisValidationDisplayModeDescription"]@Localizer["SymbolDot"]
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="settings-subgroup">
