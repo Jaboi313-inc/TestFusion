@@ -828,4 +828,16 @@
   <data name="AnalysisValidationDisplayModeAlways" xml:space="preserve">
     <value>Always show</value>
   </data>
+  <data name="PDFSelectedTests" xml:space="preserve">
+    <value>Selected tests</value>
+  </data>
+  <data name="PDFSelectAllTests" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="PDFSelectNoTests" xml:space="preserve">
+    <value>Select none</value>
+  </data>
+  <data name="PDFSelectAtLeastOneTest" xml:space="preserve">
+    <value>Select at least one test</value>
+  </data>
 </root>

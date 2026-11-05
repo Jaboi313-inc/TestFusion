@@ -52,7 +52,7 @@
 
 .analysis-page-toolbar-content {
     display: grid;
-    grid-template-columns: minmax(320px, 520px) 460px;
+    grid-template-columns: minmax(520px, 720px) 460px;
     grid-template-rows: auto auto;
     justify-content: start;
     column-gap: 50px;
@@ -82,9 +82,109 @@
     grid-row: 2;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     min-width: 0;
     margin: 0;
+}
+
+/* PDF test selector */
+
+.analysis-pdf-test-selector {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+    .analysis-pdf-test-selector > summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-width: 190px;
+        list-style: none;
+        cursor: pointer;
+    }
+
+        .analysis-pdf-test-selector > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .analysis-pdf-test-selector > summary::after {
+            content: "▼";
+            margin-left: 4px;
+            font-size: 0.7rem;
+            transition: transform 0.15s ease;
+        }
+
+    .analysis-pdf-test-selector[open] > summary::after {
+        transform: rotate(180deg);
+    }
+
+.analysis-pdf-test-selector-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 1300;
+    width: min(360px, calc(100vw - 32px));
+    max-height: 420px;
+    overflow: hidden;
+    background: #fff;
+    color: #212529;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.analysis-pdf-test-selector-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: #fff;
+}
+
+.analysis-pdf-test-selector-divider {
+    height: 1px;
+    background: #e5e5e5;
+}
+
+.analysis-pdf-test-selector-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 340px;
+    margin: 0;
+    padding: 8px 0;
+    overflow-y: auto;
+    border: 0;
+}
+
+.analysis-pdf-test-selector-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+    .analysis-pdf-test-selector-item:hover {
+        background: #f5f5f5;
+    }
+
+    .analysis-pdf-test-selector-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin: 1px 0 0;
+        flex: 0 0 auto;
+        cursor: pointer;
+    }
+
+    .analysis-pdf-test-selector-item span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+#pdf-download-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
 }
 
 .analysis-validation-toast {
@@ -499,6 +599,11 @@ table.table {
         grid-row: 2;
         flex-wrap: wrap;
         min-width: 0;
+    }
+
+    .analysis-pdf-test-selector-menu {
+        left: 0;
+        right: auto;
     }
 
     .analysis-validation-toast {

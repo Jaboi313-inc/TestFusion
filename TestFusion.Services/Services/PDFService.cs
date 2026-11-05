@@ -24,6 +24,15 @@ public static class PDFService {
         PdfLayoutModeEnum layoutMode,
         IStringLocalizer<SharedResource> localizer,
         ITimeZoneService timeZoneService) {
+        return Generate(model, layoutMode, null, localizer, timeZoneService);
+    }
+
+    public static byte[] Generate(
+        GeneratedModel model,
+        PdfLayoutModeEnum layoutMode,
+        IReadOnlyCollection<string>? selectedTests,
+        IStringLocalizer<SharedResource> localizer,
+        ITimeZoneService timeZoneService) {
         QuestPDF.Settings.License = LicenseType.Community;
 
         var showDebugInformation = model.Settings.ShowDebugInformation;
@@ -36,6 +45,7 @@ public static class PDFService {
         var matchCustomerNotes = model.Settings.MatchCustomerNotes;
 
         var maxInjectorsPerPage = model.Settings.PdfMaxInjectorsPerPage;
+        var selectedTestKeys = selectedTests?.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var displayTests = model.AllTests
             .GroupBy(
@@ -43,6 +53,7 @@ public static class PDFService {
                 StringComparer.OrdinalIgnoreCase)
             .Select(group => group.First())
             .Where(test => showFullySkippedTests || !IsFullySkippedTest(test, model, groupTestsByBaseName))
+            .Where(test => selectedTestKeys == null || selectedTestKeys.Contains(NormalizeTestName(test.TestName, groupTestsByBaseName)))
             .ToList();
 
         var orderedInjectorIndexes = model.Injectors

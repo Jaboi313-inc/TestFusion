@@ -68,10 +68,22 @@ public class AnalysisController : Controller {
     }
 
     [HttpPost]
-    public async Task<IActionResult> GeneratePdf(List<string> selectedIds, PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact) {
+    public async Task<IActionResult> GeneratePdf(
+        List<string> selectedIds,
+        List<string>? selectedTests,
+        PdfLayoutModeEnum layoutMode = PdfLayoutModeEnum.Compact) {
+
         if (selectedIds == null || selectedIds.Count == 0) {
             _logger.LogWarning("PDF generation rejected because no injectors were selected");
             return RedirectToAction("Index", "Home");
+        }
+
+        if (selectedTests == null || selectedTests.Count == 0) {
+            _logger.LogWarning("PDF generation rejected because no tests were selected");
+
+            return BadRequest(
+                _localizer["PDFSelectAtLeastOneTest"].Value +
+                _localizer["SymbolDot"].Value);
         }
 
         var stopwatch = Stopwatch.StartNew();
@@ -79,18 +91,49 @@ public class AnalysisController : Controller {
 
         if (model == null) {
             stopwatch.Stop();
-            _logger.LogWarning("PDF generation rejected because selected injectors have different part numbers: {InjectorIds}", string.Join(", ", selectedIds));
-            TempData["Error"] = _localizer["ErrorDiffirentInjectorPartNumber"].Value + _localizer["SymbolDot"];
+            _logger.LogWarning(
+                "PDF generation rejected because selected injectors have different part numbers: {InjectorIds}",
+                string.Join(", ", selectedIds));
+
+            TempData["Error"] =
+                _localizer["ErrorDiffirentInjectorPartNumber"].Value +
+                _localizer["SymbolDot"];
+
             return RedirectToAction("Index", "Home");
         }
 
-        var pdf = PDFService.Generate(model, layoutMode, _localizer, _timeZoneService);
+        var pdf = PDFService.Generate(
+            model,
+            layoutMode,
+            selectedTests,
+            _localizer,
+            _timeZoneService);
+
         var fileName = $"Analyse-{DateTime.Now:yyyy-MM-dd-HHmm}.pdf";
+
         stopwatch.Stop();
 
-        using var scope = _logger.BeginScope(new Dictionary<string, object> { ["DurationMs"] = stopwatch.ElapsedMilliseconds });
-        if (stopwatch.ElapsedMilliseconds >= _loggingSettings.SlowOperationThresholds.PdfGenerationMs) _logger.LogWarning("PDF generated successfully for {Count} injectors, but took longer than expected. File: {FileName}, size: {ByteCount} bytes", model.Injectors.Count, fileName, pdf.Length);
-        else _logger.LogInformation("PDF generated successfully for {Count} injectors. File: {FileName}, size: {ByteCount} bytes", model.Injectors.Count, fileName, pdf.Length);
+        using var scope = _logger.BeginScope(
+            new Dictionary<string, object> {
+                ["DurationMs"] = stopwatch.ElapsedMilliseconds
+            });
+
+        if (stopwatch.ElapsedMilliseconds >= _loggingSettings.SlowOperationThresholds.PdfGenerationMs) {
+            _logger.LogWarning(
+                "PDF generated successfully for {InjectorCount} injectors and {TestCount} selected tests, but took longer than expected. File: {FileName}, size: {ByteCount} bytes",
+                model.Injectors.Count,
+                selectedTests.Count,
+                fileName,
+                pdf.Length);
+        }
+        else {
+            _logger.LogInformation(
+                "PDF generated successfully for {InjectorCount} injectors and {TestCount} selected tests. File: {FileName}, size: {ByteCount} bytes",
+                model.Injectors.Count,
+                selectedTests.Count,
+                fileName,
+                pdf.Length);
+        }
 
         return File(pdf, "application/pdf", fileName);
     }

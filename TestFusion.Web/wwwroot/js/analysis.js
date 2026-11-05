@@ -165,6 +165,74 @@
         clearAnalysisHighlights();
     });
 
+    const layoutSelect = document.getElementById("layoutMode");
+
+    if (layoutSelect) {
+        const storageKey = "analysisPdfLayoutMode";
+        const savedLayout = sessionStorage.getItem(storageKey);
+
+        if (savedLayout) {
+            const optionExists = Array.from(layoutSelect.options).some(option => option.value === savedLayout);
+
+            if (optionExists) {
+                layoutSelect.value = savedLayout;
+            }
+        }
+
+        layoutSelect.addEventListener("change", function () {
+            sessionStorage.setItem(storageKey, layoutSelect.value);
+
+            const url = new URL(window.location.href);
+            url.searchParams.set("layoutMode", layoutSelect.value);
+            window.history.replaceState({}, "", url);
+        });
+    }
+
+    const pdfTestSelector = document.getElementById("pdf-test-selector");
+    const pdfTestCheckboxes = Array.from(document.querySelectorAll(".analysis-pdf-test-checkbox"));
+    const pdfTestSelectorCount = document.getElementById("pdf-test-selector-count");
+    const pdfSelectAllButton = document.getElementById("pdf-test-select-all");
+    const pdfSelectNoneButton = document.getElementById("pdf-test-select-none");
+    const pdfDownloadButton = document.getElementById("pdf-download-button");
+
+    function updatePdfTestSelection() {
+        const selectedCount = pdfTestCheckboxes.filter(checkbox => checkbox.checked).length;
+
+        if (pdfTestSelectorCount) {
+            pdfTestSelectorCount.textContent = `${selectedCount}/${pdfTestCheckboxes.length}`;
+        }
+
+        if (pdfDownloadButton) {
+            pdfDownloadButton.disabled = selectedCount === 0;
+        }
+    }
+
+    pdfTestCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener("change", updatePdfTestSelection);
+    });
+
+    if (pdfSelectAllButton) {
+        pdfSelectAllButton.addEventListener("click", function () {
+            pdfTestCheckboxes.forEach(checkbox => checkbox.checked = true);
+            updatePdfTestSelection();
+        });
+    }
+
+    if (pdfSelectNoneButton) {
+        pdfSelectNoneButton.addEventListener("click", function () {
+            pdfTestCheckboxes.forEach(checkbox => checkbox.checked = false);
+            updatePdfTestSelection();
+        });
+    }
+
+    document.addEventListener("click", function (event) {
+        if (!pdfTestSelector?.open || pdfTestSelector.contains(event.target)) {
+            return;
+        }
+
+        pdfTestSelector.removeAttribute("open");
+    });
+
     document.addEventListener("keydown", function (event) {
         if (event.key !== "Escape") {
             return;
@@ -175,30 +243,11 @@
         if (validationDetails?.open) {
             validationDetails.removeAttribute("open");
         }
-    });
 
-    const layoutSelect = document.getElementById("layoutMode");
-
-    if (!layoutSelect) {
-        return;
-    }
-
-    const storageKey = "analysisPdfLayoutMode";
-    const savedLayout = sessionStorage.getItem(storageKey);
-
-    if (savedLayout) {
-        const optionExists = Array.from(layoutSelect.options).some(option => option.value === savedLayout);
-
-        if (optionExists) {
-            layoutSelect.value = savedLayout;
+        if (pdfTestSelector?.open) {
+            pdfTestSelector.removeAttribute("open");
         }
-    }
-
-    layoutSelect.addEventListener("change", function () {
-        sessionStorage.setItem(storageKey, layoutSelect.value);
-
-        const url = new URL(window.location.href);
-        url.searchParams.set("layoutMode", layoutSelect.value);
-        window.history.replaceState({}, "", url);
     });
+
+    updatePdfTestSelection();
 });
