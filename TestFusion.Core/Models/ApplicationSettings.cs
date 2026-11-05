@@ -4,8 +4,8 @@ using TestFusion.Core.Enums;
 namespace TestFusion.Core.Models;
 
 public class ApplicationSettings {
-    public const int MinPdfInjectorsPerPage = 2;
-    public const int MaxPdfInjectorsPerPage = 11;
+    public const int MinPdfInjectorsPerPage = 1;
+    public const int MaxPdfInjectorsPerPage = 10;
     public const int DefaultPdfMaxInjectorsPerPage = 8;
 
     private const bool DefaultShowDebugInformation = false;
