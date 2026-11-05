@@ -11,6 +11,8 @@ public class ApplicationSettings {
     private const bool DefaultShowDebugInformation = false;
     private const bool DefaultGroupTestsByBaseName = true;
     private const bool DefaultShowFullySkippedTests = true;
+    private const bool DefaultAnalysisValidationEnabled = true;
+    private const AnalysisValidationDisplayModeEnum DefaultAnalysisValidationDisplayMode = AnalysisValidationDisplayModeEnum.OnlyWhenInvalid;
     private const bool DefaultMatchCustomerName = true;
     private const bool DefaultMatchCustomerPhone = true;
     private const bool DefaultMatchCustomerMail = true;
@@ -25,6 +27,8 @@ public class ApplicationSettings {
     public bool ShowDebugInformation { get; set; }
     public bool GroupTestsByBaseName { get; set; }
     public bool ShowFullySkippedTests { get; set; }
+    public bool AnalysisValidationEnabled { get; set; }
+    public AnalysisValidationDisplayModeEnum AnalysisValidationDisplayMode { get; set; }
     public bool MatchCustomerName { get; set; }
     public bool MatchCustomerPhone { get; set; }
     public bool MatchCustomerMail { get; set; }
@@ -42,6 +46,8 @@ public class ApplicationSettings {
         ShowDebugInformation = DefaultShowDebugInformation;
         GroupTestsByBaseName = DefaultGroupTestsByBaseName;
         ShowFullySkippedTests = DefaultShowFullySkippedTests;
+        AnalysisValidationEnabled = DefaultAnalysisValidationEnabled;
+        AnalysisValidationDisplayMode = DefaultAnalysisValidationDisplayMode;
         MatchCustomerName = DefaultMatchCustomerName;
         MatchCustomerPhone = DefaultMatchCustomerPhone;
         MatchCustomerMail = DefaultMatchCustomerMail;

@@ -8,6 +8,8 @@ public class SettingsViewModel {
     public bool ShowDebugInformation { get; set; }
     public bool GroupTestsByBaseName { get; set; }
     public bool ShowFullySkippedTests { get; set; }
+    public bool AnalysisValidationEnabled { get; set; }
+    public AnalysisValidationDisplayModeEnum AnalysisValidationDisplayMode { get; set; }
     public bool MatchCustomerName { get; set; }
     public bool MatchCustomerPhone { get; set; }
     public bool MatchCustomerMail { get; set; }

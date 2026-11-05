@@ -810,4 +810,22 @@
   <data name="SettingsPdfMaxInjectorsPerPageRangeError" xml:space="preserve">
     <value>Het aantal verstuivers moet tussen {1} en {2} liggen</value>
   </data>
+  <data name="SettingsAnalysisValidationEnabled" xml:space="preserve">
+    <value>Weergave van analysecontrole</value>
+  </data>
+  <data name="SettingsAnalysisValidationEnabledDescription" xml:space="preserve">
+    <value>Controleert of de geselecteerde verstuivers en tests correct met elkaar vergeleken kunnen worden</value>
+  </data>
+  <data name="SettingsAnalysisValidationDisplayMode" xml:space="preserve">
+    <value>Analysecontrole inschakelen</value>
+  </data>
+  <data name="SettingsAnalysisValidationDisplayModeDescription" xml:space="preserve">
+    <value>Bepaalt wanneer het resultaat van de analysecontrole wordt getoond</value>
+  </data>
+  <data name="AnalysisValidationDisplayModeOnlyWhenInvalid" xml:space="preserve">
+    <value>Alleen tonen bij problemen</value>
+  </data>
+  <data name="AnalysisValidationDisplayModeAlways" xml:space="preserve">
+    <value>Altijd tonen</value>
+  </data>
 </root>

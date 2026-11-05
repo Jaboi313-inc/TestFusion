@@ -29,6 +29,8 @@ public class SettingsService : ISettingsService {
             ShowDebugInformation = settings.ShowDebugInformation,
             GroupTestsByBaseName = settings.GroupTestsByBaseName,
             ShowFullySkippedTests = settings.ShowFullySkippedTests,
+            AnalysisValidationEnabled = settings.AnalysisValidationEnabled,
+            AnalysisValidationDisplayMode = settings.AnalysisValidationDisplayMode,
             MatchCustomerName = settings.MatchCustomerName,
             MatchCustomerPhone = settings.MatchCustomerPhone,
             MatchCustomerMail = settings.MatchCustomerMail,
@@ -45,6 +47,8 @@ public class SettingsService : ISettingsService {
         var settings = await GetSettingsAsync();
         LogSettingChange("Group tests by base name", settings.GroupTestsByBaseName, model.GroupTestsByBaseName);
         LogSettingChange("Show fully skipped tests", settings.ShowFullySkippedTests, model.ShowFullySkippedTests);
+        LogSettingChange("Analysis validation enabled", settings.AnalysisValidationEnabled, model.AnalysisValidationEnabled);
+        LogSettingChange("Analysis validation display mode", settings.AnalysisValidationDisplayMode, model.AnalysisValidationDisplayMode);
         LogSettingChange("Match customer name", settings.MatchCustomerName, model.MatchCustomerName);
         LogSettingChange("Match customer phone", settings.MatchCustomerPhone, model.MatchCustomerPhone);
         LogSettingChange("Match customer email", settings.MatchCustomerMail, model.MatchCustomerMail);
@@ -54,6 +58,8 @@ public class SettingsService : ISettingsService {
 
         settings.GroupTestsByBaseName = model.GroupTestsByBaseName;
         settings.ShowFullySkippedTests = model.ShowFullySkippedTests;
+        settings.AnalysisValidationEnabled = model.AnalysisValidationEnabled;
+        settings.AnalysisValidationDisplayMode = model.AnalysisValidationDisplayMode;
         settings.MatchCustomerName = model.MatchCustomerName;
         settings.MatchCustomerPhone = model.MatchCustomerPhone;
         settings.MatchCustomerMail = model.MatchCustomerMail;

@@ -64,7 +64,12 @@
         .Where(test => showFullySkippedTests || !IsFullySkippedTest(test, Model.Injectors, groupTestsByBaseName))
         .ToList();
 
-    var comparisonValidation = ValidateComparison(Model.Injectors, Localizer, groupTestsByBaseName);
+    ComparisonValidationResult? comparisonValidation = null;
+
+    if (Model.Settings.AnalysisValidationEnabled) {
+        comparisonValidation = ValidateComparison(Model.Injectors, Localizer, groupTestsByBaseName);
+    }
+
 }
 
 @functions {
@@ -991,69 +996,66 @@
                     </button>
                 </form>
 
-                @if (!comparisonValidation.IsValid)
-                {
-                    <div class="analysis-validation-toast analysis-validation-toast-warning"
-                         role="alert">
+            @if (comparisonValidation != null && !comparisonValidation.IsValid)
+            {
+                <div class="analysis-validation-toast analysis-validation-toast-warning"
+                     role="alert">
 
-                        <div class="analysis-validation-message">
-                            <strong>
-                                @Localizer["AnalysisValidationErrorTitle"]
+                    <div class="analysis-validation-message">
+                        <strong>
+                            @Localizer["AnalysisValidationErrorTitle"]
+                        </strong>
+
+                        <small>
+                            @Localizer["AnalysisValidationAccuracyWarning"]@Localizer["SymbolDot"]
+                        </small>
+                    </div>
+
+                    <details class="analysis-validation-details">
+                        <summary class="btn btn-sm btn-outline-warning text-nowrap">
+                            @Localizer["AnalysisValidationShowDetails"]
+                        </summary>
+
+                        <div class="analysis-validation-details-panel">
+                            <strong class="d-block mb-2">
+                                @Localizer["AnalysisValidationExactDifferences"]
                             </strong>
 
-                            <small>
-                                @Localizer["AnalysisValidationAccuracyWarning"]@Localizer["SymbolDot"]
-                            </small>
+                            <ul class="mb-0 ps-4">
+                                @foreach (var detail in comparisonValidation.Details)
+                                {
+                                    <li class="analysis-validation-detail-row">
+                                        <span>@detail.Message</span>
+
+                                        <a href="#@detail.TargetId"
+                                           data-scroll-target="@detail.TargetId"
+                                           class="btn btn-sm btn-outline-secondary text-nowrap analysis-validation-jump">
+                                            @Localizer["AnalysisValidationGoToDifference"]
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
                         </div>
+                    </details>
+                </div>
+            }
+            else if (comparisonValidation != null &&
+                     Model.Settings.AnalysisValidationDisplayMode == AnalysisValidationDisplayModeEnum.Always)
+            {
+                <div class="analysis-validation-toast analysis-validation-toast-success"
+                     role="status">
 
-                        <details class="analysis-validation-details">
-                            <summary class="btn btn-sm btn-outline-warning text-nowrap">
-                                @Localizer["AnalysisValidationShowDetails"]
-                            </summary>
+                    <div class="analysis-validation-message">
+                        <strong>
+                            @Localizer["AnalysisValidationSuccessTitle"]
+                        </strong>
 
-                            <div class="analysis-validation-details-panel">
-                                <strong class="d-block mb-2">
-                                    @Localizer["AnalysisValidationExactDifferences"]
-                                </strong>
-
-                                <ul class="mb-0 ps-4">
-                                    @foreach (
-                                        var detail in
-                                        comparisonValidation.Details)
-                                    {
-                                        <li class="analysis-validation-detail-row">
-                                            <span>
-                                                @detail.Message
-                                            </span>
-
-                                            <a href="#@detail.TargetId"
-                                               data-scroll-target="@detail.TargetId"
-                                               class="btn btn-sm btn-outline-secondary text-nowrap analysis-validation-jump">
-                                                @Localizer["AnalysisValidationGoToDifference"]
-                                            </a>
-                                        </li>
-                                    }
-                                </ul>
-                            </div>
-                        </details>
+                        <small>
+                            @Localizer["AnalysisValidationSuccess"]@Localizer["SymbolDot"]
+                        </small>
                     </div>
-                }
-                else
-                {
-                    <div class="analysis-validation-toast analysis-validation-toast-success"
-                         role="status">
-
-                        <div class="analysis-validation-message">
-                            <strong>
-                                @Localizer["AnalysisValidationSuccessTitle"]
-                            </strong>
-
-                            <small>
-                                @Localizer["AnalysisValidationSuccess"]@Localizer["SymbolDot"]
-                            </small>
-                        </div>
-                    </div>
-                }
+                </div>
+            }
             </div>
         </div>
     </div>

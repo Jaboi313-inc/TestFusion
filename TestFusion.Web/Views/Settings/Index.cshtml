@@ -175,6 +175,33 @@
                                     </span>
                                 </label>
 
+                                <label class="settings-checkbox">
+                                    <input asp-for="AnalysisValidationEnabled" />
+
+                                    <span>
+                                        <strong>@Localizer["SettingsAnalysisValidationEnabled"]</strong>
+                                        <small>@Localizer["SettingsAnalysisValidationEnabledDescription"]@Localizer["SymbolDot"]</small>
+                                    </span>
+                                </label>
+
+                                <div class="settings-field">
+                                    <label asp-for="AnalysisValidationDisplayMode">
+                                        @Localizer["SettingsAnalysisValidationDisplayMode"]
+                                    </label>
+
+                                    <select asp-for="AnalysisValidationDisplayMode"
+                                            class="form-select">
+                                        @foreach (var displayMode in Enum.GetValues<AnalysisValidationDisplayModeEnum>())
+                                        {
+                                            <option value="@displayMode">
+                                                @Localizer[$"AnalysisValidationDisplayMode{displayMode}"]
+                                            </option>
+                                        }
+                                    </select>
+
+                                    <small>@Localizer["SettingsAnalysisValidationDisplayModeDescription"]@Localizer["SymbolDot"]</small>
+                                </div>
+
                                 <div class="settings-subgroup">
                                     <div class="settings-subgroup-header">
                                         <h4>@Localizer["SettingsSectionCustomerGrouping"]</h4>

@@ -30,6 +30,12 @@ namespace TestFusion.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AnalysisValidationDisplayMode")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("AnalysisValidationEnabled")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("CarbonXEmailEncrypted")
                         .HasColumnType("text");
 

@@ -810,4 +810,22 @@
   <data name="SettingsPdfMaxInjectorsPerPageRangeError" xml:space="preserve">
     <value>The number of injectors must be between {1} and {2}</value>
   </data>
+  <data name="SettingsAnalysisValidationEnabled" xml:space="preserve">
+    <value>Enable analysis validation</value>
+  </data>
+  <data name="SettingsAnalysisValidationEnabledDescription" xml:space="preserve">
+    <value>Checks whether the selected injectors and tests can be compared correctly</value>
+  </data>
+  <data name="SettingsAnalysisValidationDisplayMode" xml:space="preserve">
+    <value>Analysis validation display</value>
+  </data>
+  <data name="SettingsAnalysisValidationDisplayModeDescription" xml:space="preserve">
+    <value>Determines when the result of the analysis validation is shown</value>
+  </data>
+  <data name="AnalysisValidationDisplayModeOnlyWhenInvalid" xml:space="preserve">
+    <value>Only show when there are problems</value>
+  </data>
+  <data name="AnalysisValidationDisplayModeAlways" xml:space="preserve">
+    <value>Always show</value>
+  </data>
 </root>
