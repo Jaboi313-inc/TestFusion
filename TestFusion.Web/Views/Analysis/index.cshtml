@@ -16,7 +16,8 @@
     var selectedLayoutMode = Model.Settings.PdfDefaultLayoutMode;
     var requestedLayoutMode = Context.Request.Query["layoutMode"].FirstOrDefault();
 
-    if (Enum.TryParse<PdfLayoutModeEnum>(requestedLayoutMode, true, out var parsedLayoutMode) && Enum.IsDefined(parsedLayoutMode)) {
+    if (Enum.TryParse<PdfLayoutModeEnum>(requestedLayoutMode, true, out var parsedLayoutMode) && Enum.IsDefined(parsedLayoutMode))
+    {
         selectedLayoutMode = parsedLayoutMode;
     }
 
@@ -39,7 +40,8 @@
             matchCustomerPhone,
             matchCustomerMail,
             matchCustomerNotes))
-        .Select(group => new {
+        .Select(group => new
+        {
             Injectors = group.ToList()
         })
         .ToList();
@@ -51,7 +53,8 @@
     var customerSegmentStartIndexes = new HashSet<int>();
     var customerStartIndex = 0;
 
-    foreach (var group in customerGroups) {
+    foreach (var group in customerGroups)
+    {
         customerSegmentStartIndexes.Add(customerStartIndex);
         customerStartIndex += group.Injectors.Count;
     }
@@ -66,7 +69,8 @@
 
     ComparisonValidationResult? comparisonValidation = null;
 
-    if (Model.Settings.AnalysisValidationEnabled) {
+    if (Model.Settings.AnalysisValidationEnabled)
+    {
         comparisonValidation = ValidateComparison(Model.Injectors, Localizer, groupTestsByBaseName);
     }
 }
@@ -937,7 +941,8 @@
                 .Trim();
     }
 
-    public bool IsFullySkippedTest(TestModel test, List<TestResultViewModel> injectors, bool groupTestsByBaseName) {
+    public bool IsFullySkippedTest(TestModel test, List<TestResultViewModel> injectors, bool groupTestsByBaseName)
+    {
         var normalizedTestName = NormalizeTestName(test.TestName, groupTestsByBaseName);
 
         var injectorTests = injectors
@@ -973,13 +978,16 @@
                     <select name="layoutMode"
                             id="layoutMode"
                             class="form-select">
-                        @foreach (var layoutMode in Enum.GetValues<PdfLayoutModeEnum>()) {
-                            if (layoutMode == selectedLayoutMode) {
+                        @foreach (var layoutMode in Enum.GetValues<PdfLayoutModeEnum>())
+                        {
+                            if (layoutMode == selectedLayoutMode)
+                            {
                                 <option value="@layoutMode" selected>
                                     @Localizer[$"PDFOption{layoutMode}"]
                                 </option>
                             }
-                            else {
+                            else
+                            {
                                 <option value="@layoutMode">
                                     @Localizer[$"PDFOption{layoutMode}"]
                                 </option>
@@ -1021,6 +1029,21 @@
                                 {
                                     var testKey = NormalizeTestName(test.TestName, groupTestsByBaseName);
 
+                                    var selectorTanks = orderedInjectors
+                                        .SelectMany(injector => injector.Data.Tests)
+                                        .Where(injectorTest =>
+                                            NormalizeTestName(
+                                                injectorTest.TestName,
+                                                groupTestsByBaseName) ==
+                                            testKey &&
+                                            injectorTest.TestStatus != 1)
+                                        .SelectMany(injectorTest => injectorTest.SubTests)
+                                        .GroupBy(subTest => subTest.TankName)
+                                        .Select(group => group.First())
+                                        .OrderBy(subTest => subTest.TankPosition)
+                                        .ThenBy(subTest => subTest.TankName)
+                                        .ToList();
+
                                     <label class="analysis-pdf-test-selector-item">
                                         <input type="checkbox"
                                                class="analysis-pdf-test-checkbox"
@@ -1028,7 +1051,66 @@
                                                value="@testKey"
                                                checked />
 
-                                        <span>@testKey</span>
+                                        <span class="analysis-pdf-test-name">@testKey</span>
+
+                                        <span class="analysis-pdf-test-colors">
+                                            @foreach (var injector in orderedInjectors)
+                                            {
+                                                var injectorTestsForSelection = injector.Data.Tests
+                                                    .Where(injectorTest =>
+                                                        NormalizeTestName(
+                                                            injectorTest.TestName,
+                                                            groupTestsByBaseName) ==
+                                                        testKey)
+                                                    .ToList();
+
+                                                var injectorTestIsSkipped =
+                                                    injectorTestsForSelection.Count > 0 &&
+                                                    injectorTestsForSelection.All(injectorTest =>
+                                                        injectorTest.TestStatus == 1);
+
+                                                var injectorTitle = GetInjectorComparisonName(injector);
+
+                                                <span class="analysis-pdf-test-injector-colors"
+                                                      title="@injectorTitle">
+                                                    @if (selectorTanks.Count == 0)
+                                                    {
+                                                        <span class="analysis-pdf-test-color @(injectorTestIsSkipped ? "analysis-pdf-test-color-skipped" : "analysis-pdf-test-color-empty")"
+                                                              title="@(injectorTestIsSkipped ? $"{injectorTitle} - {Localizer["TestSkipped"]}" : injectorTitle)"></span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @foreach (var selectorTank in selectorTanks)
+                                                        {
+                                                            if (injectorTestIsSkipped)
+                                                            {
+                                                                <span class="analysis-pdf-test-color analysis-pdf-test-color-skipped"
+                                                                      title="@($"{injectorTitle} - {selectorTank.TankName} - {Localizer["TestSkipped"]}")"></span>
+                                                            }
+                                                            else
+                                                            {
+                                                                var tankResult = injectorTestsForSelection
+                                                                    .Where(injectorTest => injectorTest.TestStatus != 1)
+                                                                    .SelectMany(injectorTest => injectorTest.SubTests)
+                                                                    .FirstOrDefault(subTest =>
+                                                                        subTest.TankName == selectorTank.TankName);
+
+                                                                if (tankResult == null)
+                                                                {
+                                                                    <span class="analysis-pdf-test-color analysis-pdf-test-color-empty"
+                                                                          title="@($"{injectorTitle} - {selectorTank.TankName}")"></span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="analysis-pdf-test-color result-@tankResult.ResultColor"
+                                                                          title="@($"{injectorTitle} - {selectorTank.TankName}")"></span>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                </span>
+                                            }
+                                        </span>
                                     </label>
                                 }
                             </div>
@@ -1559,9 +1641,7 @@
                                                 s.TankName ==
                                                 tank.TankName);
 
-                                if (
-                                    injectorTest == null ||
-                                    injectorTest.IsSkipped)
+                                if (injectorTest?.IsSkipped == true)
                                 {
                                     <td class="skipped-cell @segmentClass">
                                         <div class="skipped-content">
@@ -1571,14 +1651,14 @@
                                         </div>
                                     </td>
                                 }
-                                else if (sub == null)
+                                else if (
+                                    injectorTest == null ||
+                                    sub == null ||
+                                    sub.Results == null ||
+                                    sub.Results.Count == 0)
                                 {
-                                    <td class="skipped-cell @segmentClass">
-                                        <div class="skipped-content">
-                                            <strong>
-                                                @Localizer["TestSkipped"]
-                                            </strong>
-                                        </div>
+                                    <td class="@segmentClass">
+                                        -
                                     </td>
                                 }
                                 else
@@ -1656,16 +1736,7 @@
                                             <hr />
                                         }
 
-                                        @if (
-                                            sub.Results == null ||
-                                            sub.Results.Count == 0)
-                                        {
-                                            <strong>
-                                                @Localizer["TestNoResults"]
-                                            </strong>
-                                        }
-                                        else
-                                        {
+                                        @{
                                             var results =
                                                 sub.Results;
 

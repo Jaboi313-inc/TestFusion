@@ -125,7 +125,9 @@
     top: calc(100% + 6px);
     left: 0;
     z-index: 1300;
-    width: min(360px, calc(100vw - 32px));
+    width: max-content;
+    min-width: 390px;
+    max-width: calc(100vw - 24px);
     max-height: 420px;
     overflow: hidden;
     background: #fff;
@@ -150,18 +152,27 @@
 .analysis-pdf-test-selector-list {
     display: flex;
     flex-direction: column;
+    width: max-content;
+    min-width: 100%;
+    max-width: 100%;
     max-height: 340px;
     margin: 0;
     padding: 8px 0;
+    overflow-x: auto;
     overflow-y: auto;
-    border: 0;
+    box-sizing: border-box;
 }
 
 .analysis-pdf-test-selector-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 18px 150px max-content;
+    align-items: start;
+    justify-content: start;
+    gap: 8px;
+    width: max-content;
+    min-width: 100%;
     padding: 8px 12px;
+    box-sizing: border-box;
     cursor: pointer;
 }
 
@@ -173,14 +184,48 @@
         width: 18px;
         height: 18px;
         margin: 1px 0 0;
-        flex: 0 0 auto;
         cursor: pointer;
     }
 
-    .analysis-pdf-test-selector-item span {
-        min-width: 0;
-        overflow-wrap: anywhere;
-    }
+.analysis-pdf-test-name {
+    width: 150px;
+    min-width: 150px;
+    overflow-wrap: anywhere;
+}
+
+.analysis-pdf-test-colors {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 4px;
+    width: max-content;
+    min-width: max-content;
+}
+
+.analysis-pdf-test-injector-colors {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 0 0 16px;
+    width: 16px;
+}
+
+.analysis-pdf-test-color {
+    display: block;
+    width: 16px;
+    height: 12px;
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+}
+
+.analysis-pdf-test-color-skipped {
+    background-color: #d9dde1;
+}
+
+.analysis-pdf-test-color-empty {
+    background-color: #fff;
+}
 
 #pdf-download-button:disabled {
     cursor: not-allowed;
@@ -302,8 +347,6 @@
     filter: none !important;
     background-color: #fff;
 }
-
-    /* Dim only the text in the sticky information column */
 
     .analysis-table.analysis-has-highlight
     tr > td:first-child:not(.analysis-highlight-row),
@@ -604,6 +647,7 @@ table.table {
     .analysis-pdf-test-selector-menu {
         left: 0;
         right: auto;
+        max-width: calc(100vw - 24px);
     }
 
     .analysis-validation-toast {
